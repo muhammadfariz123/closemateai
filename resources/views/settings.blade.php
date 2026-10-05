@@ -164,9 +164,9 @@
         @media (max-width: 768px) {
             .sidebar {
                 width: 100% !important;
-                height: auto;
+                height: 64px !important;
                 position: fixed;
-                top: 73px; /* Just below topbar */
+                top: 72px; /* Height of topbar */
                 left: 0;
                 z-index: 90;
                 background: white;
@@ -179,30 +179,34 @@
                 display: flex;
                 flex-direction: row;
                 overflow-x: auto;
-                padding: 12px 16px;
+                padding: 10px 16px;
                 gap: 8px;
                 -webkit-overflow-scrolling: touch;
+                height: 64px;
+                align-items: center;
             }
             .nav-menu::-webkit-scrollbar { display: none; }
             
             .nav-item {
                 padding: 8px 16px;
-                background: #f1f1f4;
-                color: var(--text-dark);
+                background: transparent;
+                color: var(--text-muted);
                 border-radius: 30px;
                 margin: 0;
+                font-size: 13px;
+                font-weight: 600;
+                white-space: nowrap;
             }
             .nav-item.active {
-                background: var(--sidebar-active-bg);
-                color: var(--primary);
+                background: var(--primary);
+                color: white;
             }
-            .nav-item:hover { color: var(--primary); }
+            .nav-item:hover { color: var(--primary); background: transparent; }
             #btn-collapse, .nav-menu div[style*="margin-top: 30px"] { display: none !important; }
             
             .main-content {
                 margin-left: 0 !important;
-                padding: 16px;
-                padding-top: 145px; /* Topbar (73px) + Nav (60px) + Gap */
+                padding: 160px 16px 24px 16px !important; /* Force padding */
             }
             
             .topbar {
@@ -210,25 +214,38 @@
                 top: 0;
                 left: 0;
                 right: 0;
-                margin: 0;
+                height: 72px;
+                margin: 0 !important;
+                padding: 0 16px !important;
                 z-index: 100;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: white;
+                border-bottom: 1px solid var(--border-color);
             }
             
-            .settings-grid { grid-template-columns: 1fr; gap: 16px; }
-            .form-grid { grid-template-columns: 1fr; gap: 16px; }
-            
-            .page-title h1 { font-size: 18px; }
-            .page-title p { font-size: 12px; }
-            .status-pill { padding: 6px 12px; font-size: 11px; }
+            .page-title h1 { font-size: 16px; margin-bottom: 2px; }
+            .page-title p { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+            .status-pill { padding: 4px 10px; font-size: 10px; }
             .user-info { display: none; } /* Hide user text, show only avatar */
+            .avatar { width: 32px; height: 32px; font-size: 12px; }
+            .top-actions { gap: 10px; }
             
-            .card { padding: 16px; }
-            .card-header { flex-direction: column; gap: 12px; }
+            /* Grids */
+            .settings-grid, .form-grid, .grid-stats, .grid-main, .mini-stats-grid { 
+                grid-template-columns: 1fr !important; 
+                gap: 16px; 
+            }
+            
+            .card, .panel { padding: 16px; margin-bottom: 16px; }
+            .card-header, .panel-header { flex-direction: column; gap: 12px; align-items: flex-start; margin-bottom: 16px; }
             .progress-steps { flex-direction: column; align-items: flex-start; gap: 16px; }
-            .progress-line, .progress-line-active { display: none; } /* Hide line on mobile */
+            .progress-line, .progress-line-active { display: none; }
             .step { flex-direction: row; text-align: left; padding: 0; }
             .step-text { text-align: left; }
             .qr-placeholder { width: 100%; max-width: 240px; }
+            .alert-box { flex-direction: column; align-items: flex-start; gap: 12px; }
         }
     </style>
 </head>
