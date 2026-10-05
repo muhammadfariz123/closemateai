@@ -159,6 +159,77 @@
         /* Toast Alert */
         .toast { background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; font-size: 14px; font-weight: 500; color: var(--text-dark); transition: 0.3s; }
         .toast i { color: var(--text-dark); font-size: 16px; }
+
+        /* Responsive Mobile Layout */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100% !important;
+                height: auto;
+                position: fixed;
+                top: 73px; /* Just below topbar */
+                left: 0;
+                z-index: 90;
+                background: white;
+                border-bottom: 1px solid var(--border-color);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            }
+            .sidebar-header { display: none; }
+            
+            .nav-menu {
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 12px 16px;
+                gap: 8px;
+                -webkit-overflow-scrolling: touch;
+            }
+            .nav-menu::-webkit-scrollbar { display: none; }
+            
+            .nav-item {
+                padding: 8px 16px;
+                background: #f1f1f4;
+                color: var(--text-dark);
+                border-radius: 30px;
+                margin: 0;
+            }
+            .nav-item.active {
+                background: var(--sidebar-active-bg);
+                color: var(--primary);
+            }
+            .nav-item:hover { color: var(--primary); }
+            #btn-collapse, .nav-menu div[style*="margin-top: 30px"] { display: none !important; }
+            
+            .main-content {
+                margin-left: 0 !important;
+                padding: 16px;
+                padding-top: 145px; /* Topbar (73px) + Nav (60px) + Gap */
+            }
+            
+            .topbar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                margin: 0;
+                z-index: 100;
+            }
+            
+            .settings-grid { grid-template-columns: 1fr; gap: 16px; }
+            .form-grid { grid-template-columns: 1fr; gap: 16px; }
+            
+            .page-title h1 { font-size: 18px; }
+            .page-title p { font-size: 12px; }
+            .status-pill { padding: 6px 12px; font-size: 11px; }
+            .user-info { display: none; } /* Hide user text, show only avatar */
+            
+            .card { padding: 16px; }
+            .card-header { flex-direction: column; gap: 12px; }
+            .progress-steps { flex-direction: column; align-items: flex-start; gap: 16px; }
+            .progress-line, .progress-line-active { display: none; } /* Hide line on mobile */
+            .step { flex-direction: row; text-align: left; padding: 0; }
+            .step-text { text-align: left; }
+            .qr-placeholder { width: 100%; max-width: 240px; }
+        }
     </style>
 </head>
 <body>
