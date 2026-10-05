@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     nodejs \
     npm \
+    libsqlite3-dev \
     sqlite3
 
 # Install PHP extensions
