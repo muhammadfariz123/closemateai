@@ -138,7 +138,20 @@
                 height: 64px;
                 align-items: center;
             }
-            .nav-menu::-webkit-scrollbar { display: none; }
+                        .nav-menu::-webkit-scrollbar { 
+                height: 4px; /* Scrollbar horizontal yang tipis */
+                display: block;
+            }
+            .nav-menu::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .nav-menu::-webkit-scrollbar-thumb {
+                background: #d1d5db;
+                border-radius: 4px;
+            }
+            .nav-menu::-webkit-scrollbar-thumb:hover {
+                background: #9ca3af;
+            }
             
             .nav-item {
                 padding: 8px 16px;
