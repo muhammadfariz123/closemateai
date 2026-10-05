@@ -347,10 +347,21 @@
                 <p>Buat invoice profesional, simpan riwayatnya, dan kirim ke klien</p>
             </div>
             <div class="top-actions">
+                                @php
+                    $currentUser = auth()->user() ?? \App\Models\User::first();
+                    $isWaConnected = $currentUser && $currentUser->wa_status == 'connected' ? true : false;
+                @endphp
+                @if($isWaConnected)
                 <div class="status-pill">
                     <div class="status-dot"></div>
                     WhatsApp Connected
                 </div>
+                @else
+                <div class="status-pill" style="background-color: #f1f1f4; color: var(--text-muted); border-color: #e4e6ef;">
+                    <div class="status-dot" style="background-color: var(--text-muted);"></div>
+                    WhatsApp Disconnected
+                </div>
+                @endif
                 <div class="profile-wrapper">
                     <div class="avatar">{{ auth()->check() ? auth()->user()->name[0] ?? 'P' : 'P' }}</div>
                     <div class="user-info">

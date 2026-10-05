@@ -92,7 +92,7 @@
         .step { display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 3; position: relative; background: white; padding: 0 10px; }
         .step-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; border: 2px solid #e4e6ef; color: var(--text-muted); background: white; transition: 0.3s; }
         .step.active .step-icon { border-color: var(--primary); color: var(--primary); }
-        .step.completed .step-icon { background: var(--primary); color: white; border-color: var(--primary); }
+        .step.completed .step-icon { border-color: var(--success); color: var(--success); }
         .step-text { font-size: 12px; font-weight: 500; color: var(--text-muted); text-align: center; }
         .step.active .step-text { color: var(--text-dark); font-weight: 600; }
 
@@ -157,11 +157,12 @@
         input:checked + .slider:before { transform: translateX(20px); }
 
         /* Toast Alert */
-        .toast { background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; font-size: 14px; font-weight: 500; color: var(--text-dark); transition: 0.3s; }
-        .toast i { color: var(--text-dark); font-size: 16px; }
+        .toast { position: fixed; top: 80px; right: 24px; background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 1000; font-size: 14px; font-weight: 500; color: var(--text-dark); transition: 0.3s; }
+        .toast i { font-size: 16px; }
 
         /* Responsive Mobile Layout */
         @media (max-width: 768px) {
+            .toast { top: 20px; right: 16px; left: 16px; justify-content: center; }
             .sidebar {
                 width: 100% !important;
                 height: 64px !important;
@@ -185,7 +186,7 @@
                 height: 64px;
                 align-items: center;
             }
-                        .nav-menu::-webkit-scrollbar { 
+            .nav-menu::-webkit-scrollbar { 
                 height: 4px; /* Scrollbar horizontal yang tipis */
                 display: block;
             }
@@ -310,10 +311,21 @@
             </div>
             
             <div class="top-actions">
+                @php
+                    $currentUser = auth()->user() ?? \App\Models\User::first();
+                    $isWaConnected = $currentUser && $currentUser->wa_status == 'connected' ? true : false;
+                @endphp
+                @if($isWaConnected)
                 <div class="status-pill">
                     <div class="status-dot"></div>
                     WhatsApp Connected
                 </div>
+                @else
+                <div class="status-pill" style="background-color: #f1f1f4; color: var(--text-muted); border-color: #e4e6ef;">
+                    <div class="status-dot" style="background-color: var(--text-muted);"></div>
+                    WhatsApp Disconnected
+                </div>
+                @endif
                 
                 <div class="profile-wrapper">
                     <div class="user-profile">
@@ -360,7 +372,7 @@
 
                     <div class="progress-steps">
                         <div class="progress-line"></div>
-                        <div class="progress-line-active" style="width: {{ $isConnected ? '100%' : ($hasToken ? '50%' : '33%') }};"></div>
+                        <div class="progress-line-active" style="width: {{ $isConnected ? '100%' : ($hasToken ? '50%' : '33%') }}; {{ $isConnected ? 'background-color: var(--success);' : '' }}"></div>
                         
                         <div class="step {{ $hasToken ? 'completed' : 'active' }}">
                             <div class="step-icon"><i class="fa-solid fa-key"></i></div>
@@ -625,6 +637,12 @@
                 }
             });
 
+            if (localStorage.getItem('show_disconnect_toast') === 'true') {
+                localStorage.removeItem('show_disconnect_toast');
+                $('#toast-message').html('<i class="fa-solid fa-check-circle" style="color:var(--text-dark);"></i> WhatsApp diputuskan');
+                $('#toast-box').css('display', 'flex').hide().fadeIn().delay(3000).fadeOut();
+            }
+
             $('#btn-save-token').click(function() {
                 let token = $('#fonnte_token_input').val();
                 if (!token) return alert('Silakan masukkan token!');
@@ -634,7 +652,7 @@
                 $.post('/settings/token', { fonnte_token: token }, function(res) {
                     if (res.success) {
                         $('#toast-message').html('<i class="fa-solid fa-check-circle" style="color:var(--success);"></i> Token tersimpan - silakan scan QR');
-                        $('#toast-box').show();
+                        $('#toast-box').css('display', 'flex').hide().fadeIn();
                         setTimeout(() => location.reload(), 1500);
                     }
                 }).fail(function(err) {
@@ -674,6 +692,7 @@
                 
                 $.post('/settings/disconnect', function(res) {
                     if(res.success) {
+                        localStorage.setItem('show_disconnect_toast', 'true');
                         location.reload();
                     }
                 });
