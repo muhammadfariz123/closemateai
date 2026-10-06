@@ -19,9 +19,13 @@ Route::get('/chat', function () {
     return view('chat');
 });
 
-Route::get('/knowledge', function () {
-    return view('knowledge');
-});
+use App\Http\Controllers\KnowledgeFileController;
+
+Route::get('/knowledge', [KnowledgeFileController::class, 'index']);
+Route::post('/knowledge/upload', [KnowledgeFileController::class, 'upload']);
+Route::post('/knowledge/update-text', [KnowledgeFileController::class, 'updateText']);
+Route::post('/knowledge/delete', [KnowledgeFileController::class, 'destroy']);
+Route::post('/knowledge/re-extract', [KnowledgeFileController::class, 'reExtract']);
 
 Route::get('/leads', function () {
     return view('leads');
@@ -61,6 +65,8 @@ Route::get('/settings', [SettingsController::class, 'index']);
 Route::post('/settings/token', [SettingsController::class, 'saveToken']);
 Route::get('/settings/device', [SettingsController::class, 'getDevice']);
 Route::post('/settings/disconnect', [SettingsController::class, 'disconnect']);
+Route::post('/settings/notifications', [SettingsController::class, 'saveNotifications']);
+Route::post('/settings/business-profile', [SettingsController::class, 'saveBusinessProfile']);
 
 use App\Http\Controllers\WebhookController;
 Route::match(['get', 'post'], '/api/public/wa/{secret}', [WebhookController::class, 'handle']);

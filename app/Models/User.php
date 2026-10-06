@@ -25,6 +25,16 @@ class User extends Authenticatable
         'business_name',
         'category',
         'google_id',
+        'fonnte_token',
+        'wa_status',
+        'wa_number',
+        'business_wa_number',
+        'business_description',
+        'webhook_secret',
+        'notification_number',
+        'owner_whatsapp',
+        'notify_hot_lead',
+        'notify_human_takeover',
     ];
 
     /**

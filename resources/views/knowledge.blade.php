@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Knowledge Base - CloseMateAI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         :root {
             --sidebar-bg: #1e1e2d;
@@ -152,6 +156,9 @@
         .toast.show { transform: translateX(0); }
         .toast i { color: var(--text-dark); font-size: 16px; }
 
+        
+        .file-empty-block { border: 1px dashed var(--border-color); border-radius: 8px; padding: 32px 16px; text-align: center; color: var(--text-muted); font-size: 13px; background: white; margin-top: 16px; }
+        @keyframes progress-animation { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
         /* Floating Widgets */
         .floating-widgets { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; align-items: flex-end; gap: 16px; z-index: 100; }
         .btn-simulator { background: var(--primary); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(107, 92, 216, 0.3); display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
@@ -383,19 +390,38 @@
                     <div style="font-weight: 500; font-size: 14px; margin-bottom: 4px;">Upload File Price List (Sumber Teks AI)</div>
                     <div class="kb-card-desc" style="margin-bottom: 12px;">Format: PDF, JPG, PNG, WebP · Maks. 10 MB per file. File ini tidak dikirim ke klien, hanya dikonversi jadi teks rincian.</div>
                     
-                    <button class="btn btn-primary"><i class="fa-solid fa-upload"></i> Tambah / Ganti File</button>
+                    <input type="file" id="file_upload_input" accept=".pdf,.jpg,.jpeg,.png,.webp" style="display: none;">
+                    <button class="btn btn-primary" id="btn-upload-file" style="background-color: #9282f1; border: none; padding: 12px 24px;"><i class="fa-solid fa-upload"></i> Tambah / Ganti File</button>
                     
-                    <div class="file-upload-block">
+                    <div id="ai-extraction-progress" style="display: none; margin-top: 24px; margin-bottom: 8px;">
+                        <div style="font-size: 13px; color: var(--primary); margin-bottom: 8px;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI sedang mengekstrak teks...</div>
+                        <div style="width: 100%; background-color: #f1f1f4; height: 8px; border-radius: 4px; overflow: hidden; position: relative;">
+                            <div id="progress-bar-fill" style="width: 0%; height: 100%; background-color: var(--primary); border-radius: 4px; transition: width 0.3s ease;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="file-empty-block" id="file_empty_block" style="{{ isset($file) ? 'display:none;' : '' }}">
+                        Belum ada file media price list yang diunggah.
+                    </div>
+                    
+                    <div class="file-upload-block" id="file_info_block" style="{{ isset($file) ? '' : 'display:none;' }}">
                         <div class="file-info">
-                            <i class="fa-solid fa-file-pdf file-icon"></i>
+                            @php
+                                $ext = isset($file) ? strtolower($file->file_type) : '';
+                                $iconClass = 'fa-file-pdf';
+                                if(in_array($ext, ['jpg','jpeg','png','webp','gif']) || $ext === 'gambar') {
+                                    $iconClass = 'fa-image';
+                                }
+                            @endphp
+                            <i id="display_file_icon" class="fa-solid {{ $iconClass }} file-icon"></i>
                             <div>
-                                <div class="file-name">BUNDLING WEDDING PRICE GUIDE 2026 PENAPICT</div>
-                                <div class="file-meta">BUNDLING WEDDING PRICE GUIDE 2026 PENAPICT.pdf · 2.99 MB · Dokumen · 2/10/2026</div>
+                                <div class="file-name" id="display_file_name">{{ $file->file_name ?? '' }}</div>
+                                <div class="file-meta" id="display_file_meta">{{ $file->file_name ?? '' }} · {{ $file->file_size ?? '' }} · {{ isset($file) ? $file->created_at->format('j/n/Y') : '' }}</div>
                             </div>
                         </div>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px;"><i class="fa-regular fa-eye"></i> Preview</button>
-                            <button class="btn btn-danger-outline" style="padding: 8px 12px;"><i class="fa-regular fa-trash-can"></i></button>
+                            <a id="btn_preview_file" href="{{ isset($file) ? asset('storage/' . $file->file_path) : '#' }}" target="_blank" class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px; text-decoration: none;"><i class="fa-regular fa-eye"></i> Preview</a>
+                            <button id="btn_delete_file" class="btn btn-danger-outline" style="padding: 8px 12px;"><i class="fa-regular fa-trash-can"></i></button>
                         </div>
                     </div>
                 </div>
@@ -405,197 +431,13 @@
                 <div class="kb-card-title">Rincian Teks Price List (Pengetahuan Internal AI)</div>
                 <div class="kb-card-desc">Tulis rincian paket, add-on (fotografer, videografer, drone, same-day edit), syarat & ketentuan, serta charge luar kota. Teks ini dipakai AI untuk menjawab pertanyaan detail, bukan dikirim sebagai file.</div>
                 
-                <div style="font-size: 13px; margin-bottom: 8px; font-weight: 500;">Rincian untuk file: BUNDLING WEDDING PRICE GUIDE 2026 PENAPICT</div>
+                <div style="font-size: 13px; margin-bottom: 8px; font-weight: 500;">Rincian untuk file: <span id="text_file_name">{{ $file->file_name ?? 'Belum ada file' }}</span></div>
                 
-                <textarea class="form-control" style="background: #f9f9fa; border: 1px solid #e1e1e4;"># WEDDING PRICE GUIDE - PENAPICT
-
-## INFORMASI VENDOR & PROMO UMUM
-* **Nama Vendor:** Penapict Studio (Pena Pictures)
-* **Tagline:** Make Your Moments Beyond Special
-* **Kontak:**
-  * Instagram: @penapict
-  * TikTok: Penapict
-  * YouTube: Penapict
-  * Facebook: Pena Pictures
-  * WhatsApp: 0877 0999 2220
-  * Website: www.penapict.com
-* **Promo Khusus All In One Package (Photo, Video, & Konten):**
-  * Periode Booking: 01 November 2025 - 28 Februari 2026
-  * Layanan All in One: Foto + Exclusive Wedding Book, Liputan Video, Konten Video atau Cinema Video.
-
----
-
-## DAFTAR PAKET & HARGA
-
-### 1. AIO PHOTO, CINEMA, & KONTEN VIDEO (BEST SELLER)
-* **Harga:** IDR 4.400.000,- *(Harga Normal: IDR 4.700.000,-)*
-* **Fasilitas / Benefit:**
-  * EXCLUSIVE WEDDING BOOK (120 Foto Cetak)
-  * ONE DAY UNLIMITED SHOOT
-  * 140 Foto Cetak Ukuran 4R dengan Magnetic Album
-  * Tim Profesional: 2 Fotografer, 1 Cinematographer, & 1 Content Creator
-  * Semua File dalam Flashdisk
-  * Exclusive Packaging
-* **Promo Spesial (GRATIS):**
-  * VIDEO CINEMA 1 Menit
-  * Wedding Content Creator SOCIAL SPARK
-  * 1 Foto Cetak Ukuran 16R dengan Frame
-  * 1 Foto Cetak Ukuran 10R (Non-Frame)
-
-### 2. AIO PHOTO & WEDDING CONTENT VIDEO
-* **Harga:** IDR 3.180.000,-
-* **Fasilitas / Benefit:**
-  * EXCLUSIVE WEDDING BOOK (120 Foto Cetak)
-  * ONE DAY UNLIMITED SHOOT
-  * 140 Foto Cetak Ukuran 4R dengan Magnetic Album
-  * Tim: 2 Fotografer & 1 Content Creator
-  * Semua File dalam Flashdisk
-  * EXCLUSIVE PACKAGING
-* **Promo Spesial (GRATIS):**
-  * Wedding Content Creator SOCIAL SPARK
-  * 1 Foto Cetak Ukuran 16R dengan Frame
-  * 1 Foto Cetak Ukuran 10R (Non-Frame)
-
-### 3. Premium PHOTO & CINEMA (BEST SELLER)
-* **Harga:** IDR 3.650.000,- *(Harga Normal: IDR 3.800.000,-)*
-* **Fasilitas / Benefit:**
-  * ONE DAY UNLIMITED SHOOT
-  * 120 Foto Cetak Ukuran 4R dengan Magnetic Album
-  * Tim: 2 Fotografer & 1 Cinematographer
-  * Semua File dalam Flashdisk
-  * EXCLUSIVE PACKAGING
-* **Promo Spesial (GRATIS):**
-  * VIDEO CINEMA 1 Menit
-  * 1 Foto Cetak Ukuran 14R dengan Frame
-  * 1 Foto Cetak Ukuran 10R (Non-Frame)
-
-### 4. Premium PHOTO & WEDDING CONTENT VIDEO
-* **Harga:** IDR 2.630.000,-
-* **Fasilitas / Benefit:**
-  * ONE DAY UNLIMITED SHOOT
-  * 120 Foto Cetak Ukuran 4R dengan Magnetic Album
-  * Tim: 2 Fotografer & 1 Content Creator
-  * Semua File dalam Flashdisk
-  * EXCLUSIVE PACKAGING
-* **Promo Spesial (GRATIS):**
-  * Wedding Content Creator SOCIAL SPARK
-  * 1 Foto Cetak Ukuran 14R dengan Frame
-  * 1 Foto Cetak Ukuran 10R (Non-Frame)
-
----
-
-## BONUS SPESIAL: FREE PAS FOTO WEDDING
-* **Fasilitas yang Didapat:**
-  * 1 set pas foto untuk pasangan (CPP & CPW)
-  * Sesi Foto Studio singkat (max 10 menit) di Teras Studio
-  * Cetak Foto (Latar Biru):
-    * Ukuran 3x4 = 4 lembar
-    * Ukuran 4x6 = 2 lembar
-  * Digital File (Soft File) high-resolution yang sudah di-retouch
-* **Syarat & Ketentuan Promo Pas Foto:**
-  * **Validitas:** Berlaku untuk semua klien yang telah melakukan Booking Fee (DP) untuk paket Wedding Penapict (semua tipe paket: Prewedding, Wedding Day, Intimate, dll).
-  * **Masa Klaim:** Dapat diklaim kapan saja setelah DP lunas, paling lambat H-14 sebelum tanggal acara pernikahan.
-  * **Lokasi:** Sesi dan pengambilan pas foto wajib dilakukan di Teras Studio.
-  * **Reservasi:** Wajib melakukan reservasi/booking jadwal minimal H-3 sebelum kedatangan (sesi walk-in tidak dilayani).
-  * **Pakaian:** Pakaian formal dan rapi (kemeja putih berkerah) sesuai standar administrasi (KUA/Gereja).
-  * **Non-Transferabel:** Tidak dapat diuangkan, dipindahtangankan, atau ditukar dengan diskon/potongan harga/produk/jasa lainnya.
-  * **Ketentuan Lain:** Tidak dapat digabungkan dengan promo spesial atau diskon lainnya dari Penapict.
-  * **Hak Manajemen:** Penapict & Teras Studio berhak mengubah syarat dan ketentuan sewaktu-waktu jika diperlukan.
-
----
-
-## BIAYA TAMBAHAN & ADD-ON (EXTRAS PRICEGUIDE)
-* Extra Profesional Edit: Rp. 25.000,- / Photo
-* Extra RAW File Video Cinema: Rp. 300.000,-
-* Extra 100 Print 4R Magnetic Album: Rp. 400.000,-
-* Extra 120 Print 4R Magnetic Album: Rp. 450.000,-
-* Extra 140 Print 4R Magnetic Album: Rp. 500.000,-
-* Extra Exclusive Wedding Book 20x30 cm, 100 Photos: Rp. 700.000,-
-* Frame 14RW (Frame Kaca): Rp. 200.000,-
-* Extra 16RW (Frame Kaca): Rp 300.000,-
-* Exclusive Flashdisk Penapict (16 GB): Rp. 150.000,-
-* Upload Google Drive (All Wedding Package): Rp. 100.000,- (estimasi upload 3x24 Hours)
-
----
-
-## SYARAT & KETENTUAN (MEMORANDUM OF UNDERSTANDING)
-
-### Pembayaran (Down Payment)
-* DP minimal 20% dari Price Guide berdasarkan paket untuk booking tanggal.
-* DP tidak dapat dikembalikan apabila booking dibatalkan (cancel).
-* Pelunasan di bayar maksimal sebelum pengiriman all file/album Estimated File.
-* Edit photo pro (sosial media) diberikan 3 minggu setelah Photoshoot.
-* All file / Album magnetic diberikan 4 minggu setelah Photoshoot/Videoshoot.
-
-### Triangle Service
-* Sesi pemotretan resepsi maksimal 8 jam kerja dihitung dari jam Akad/dimulainya acara yang sudah disepakati. Jika melebihi, dikenakan biaya tambahan sesuai kesepakatan (All Wedding Package).
-* Jam Kerja adalah 8 jam kerja dan atau maksimal pukul 15.00 WIB.
-* Client dapat menanyakan file jika sudah mendekati/melebihi estimasi file.
-* Komunikasi dengan photographer untuk foto family group (wedding).
-* Penapict tidak bertanggung jawab jika terjadi kerusakan/kehilangan pada foto/flashdisk client yang sudah diberikan.
-
-### Ketentuan Jam Kerja & Biaya Lembur
-1. **Jam Kerja:** Pukul 07.00 hingga 15.00 WIB (8 jam kerja). Fleksibel asalkan tidak melebihi 8 jam atau acara sudah selesai.
-2. **Biaya Tambahan Jam Kerja (>8 jam):**
-   * Contoh 1: Acara 09.00 - 18.30 WIB (9,5 jam) -> Tambahan 1,5 jam dikenakan **Rp150.000**.
-   * Contoh 2: Acara 07.00 - 16.00 WIB (9 jam) -> Tambahan 1 jam dikenakan **Rp100.000**.
-3. **Acara Dimulai Sebelum Pukul 07.00 WIB:**
-   * Waktu sebelum pukul 07.00 dianggap sebagai bonus waktu kerja tanpa biaya tambahan.
-   * Contoh: Acara mulai 06.00 WIB, jam kerja tetap dihitung 07.00 - 15.00 WIB (8 jam), jam 06.00 - 07.00 dianggap bonus.
-4. **Biaya Penambahan Hari & Lembur Resepsi:**
-   * Penambahan hari: **1,5jt/Hari** (File Only via 1pcs Flashdisk hari Pertama).
-   * Penambahan jam kerja resepsi (melebihi pukul 15.00 WIB): **100k/Jam**.
-5. **Event Full Day / Unduh Mantu:**
-   * Crew wajib mengonfirmasi kepada klien dan divisi studio jika acara selesai sebelum waktu kerja berakhir. Jika selesai lebih cepat, crew dapat pulang lebih awal atas persetujuan klien dan Divisi Studio.
-
-### Biaya Transportasi
-* **Gratis Biaya Transport:** Area Kebumen Kota (sekitar Alun-alun Kebumen).
-* **Biaya Transport Tambahan:** Dikenakan untuk luar Kebumen Kota maupun luar Kabupaten Kebumen (besaran menyesuaikan jarak tempuh).
-
-### Kelengkapan Produk Fisik
-* Setiap pemesanan 1 set paket (kecuali Paket Wedding Content Creator) mendapatkan 1 set packaging eksklusif berupa:
-  * 1 buah Flashdisk
-  * 1 buah Gantungan Kunci
-  * 1 buah Kertas Ucapan Terima Kasih
-  * 1 buah Koper Kayu Estetik
-
-### Ketentuan Penyerahan File & File Mentah (RAW)
-* **File Foto:**
-  * Klien menerima *File Original (Mentah)* sekitar 500 - 1000 file, dan *File Edit* sesuai jumlah cetak paket.
-  * Semua file diserahkan dalam format `.jpg` resolusi tinggi.
-* **File Video:**
-  * Output standar berupa File Video Edit (Video Cinema, Highlight, Teaser, dan/atau Dokumentasi Liputan).
-  * RAW Video Cinema dapat diminta dengan biaya tambahan **Rp300.000**.
-  * RAW Video Dokumentasi (Liputan) tidak disediakan.
-  * RAW Video WCC by Storytadi disediakan via link Google Drive.
-
-### Mekanisme Penyerahan & Penyimpanan File Digital
-* **Google Drive:**
-  * Link Google Drive aktif dan dapat diunduh selama **3 (tiga) hari**.
-  * Klien wajib mengunduh dan melakukan backup pribadi sebelum 3 hari.
-  * Setelah 3 hari, file di Google Drive berhak dihapus dan vendor tidak bertanggung jawab atas kehilangan file.
-  * Penambahan akses Google Drive harus menggunakan email yang terdaftar.
-* **Flashdisk Fisik:**
-  * Penyerahan via Flashdisk Penapict dikenakan biaya tambahan **Rp150.000**.
-* **Pengiriman Produk Fisik:**
-  * Dapat diambil langsung di studio Penapict atau dikirim via ekspedisi.
-  * Seluruh biaya pengiriman dan pengemasan (packing) via ekspedisi ditanggung oleh klien.
-
----
-
-## TECHNICAL RIDER (FASILITAS KHUSUS FOTOGRAFER)
-
-Mohon disiapkan oleh Klien:
-1. **Makanan & Minuman:** Makanan ringan, air mineral, dan kopi untuk menjaga stamina fotografer selama acara.
-2. **Peralatan Teknis:**
-   * Beberapa colokan listrik/stop kontak tambahan di lokasi.
-   * Colokan/stop kontak khusus untuk pengisian baterai kamera dan perangkat lainnya.
-   * Nomor telepon / kontak darurat.
-3</textarea>
+                                <textarea id="extracted_text_input" class="form-control" style="background: #f9f9fa; border: 1px solid #e1e1e4;" placeholder="Unggah file media terlebih dahulu untuk mengisi rincian teksnya.">{{ $file->extracted_text ?? '' }}</textarea>
                 
                 <div class="d-flex gap-2" style="margin-top: 16px;">
-                    <button class="btn btn-secondary"><i class="fa-solid fa-arrows-rotate"></i> Coba Ekstraksi Lagi</button>
-                    <button class="btn btn-primary"><i class="fa-regular fa-floppy-disk"></i> Simpan Rincian Teks</button>
+                    <button id="btn_extract_again" class="btn btn-secondary"><i class="fa-solid fa-arrows-rotate"></i> Coba Ekstraksi Lagi</button>
+                    <button id="btn_save_text" class="btn btn-primary"><i class="fa-regular fa-floppy-disk"></i> Simpan Rincian Teks</button>
                 </div>
             </div>
         </div>
@@ -868,7 +710,7 @@ BATASAN & KEAMANAN (GUARDRAILS & HUMAN TAKEOVER)
     
     <!-- Toast Container -->
     <div class="toast-container" id="toast-container"></div>
-    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         // Fitur Sidebar Collapse
         const btnCollapse = document.getElementById('btn-collapse');
@@ -1056,6 +898,158 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
 - Jika klien hanya menyapa ("Halo", "P", "Selamat pagi", "Permisi"):
   Balas sapaan sesuai dengan gaya bahasa.`
         };
+
+        
+        // Knowledge Base Logic
+        $(document).ready(function() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
+
+            // Upload File
+            $('#btn-upload-file').click(function() {
+                $('#file_upload_input').click();
+            });
+
+            $('#file_upload_input').change(function() {
+                let file = this.files[0];
+                if (!file) return;
+
+                let formData = new FormData();
+                formData.append('file', file);
+
+                let btn = $('#btn-upload-file');
+                btn.prop('disabled', true).css('opacity', '0.7');
+                $('#file_empty_block').hide();
+                $('#file_info_block').hide();
+                
+                $('#ai-extraction-progress').show();
+                $('#progress-bar-fill').css('width', '0%');
+                $('#progress-bar-fill').css('transition', 'width 0.5s ease');
+                
+                let progress = 0;
+                let progressInterval = setInterval(() => {
+                    if (progress < 90) {
+                        progress += Math.random() * 5 + 2;
+                        if(progress > 90) progress = 90;
+                        $('#progress-bar-fill').css('width', progress + '%');
+                    }
+                }, 400);
+
+                $.ajax({
+                    url: '/knowledge/upload',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(res) {
+                        clearInterval(progressInterval);
+                        $('#progress-bar-fill').css('width', '100%');
+                        
+                        setTimeout(() => {
+                            btn.prop('disabled', false).css('opacity', '1');
+                            $('#ai-extraction-progress').hide();
+                            
+                            if (res.success) {
+                            showToast(res.message);
+                            
+                            // Update UI
+                            $('#file_info_block').show();
+                            
+                            let ext = (res.data.file_type || '').toLowerCase();
+                            let isImg = ['jpg','jpeg','png','webp','gif', 'gambar'].includes(ext);
+                            $('#display_file_icon').removeClass('fa-file-pdf fa-image').addClass(isImg ? 'fa-image' : 'fa-file-pdf');
+                            
+                            $('#display_file_name').text(res.data.file_name);
+                            $('#display_file_meta').text(res.data.file_name + ' · ' + res.data.file_size + ' · ' + res.data.created_at);
+                            $('#btn_preview_file').attr('href', res.data.file_path);
+                            
+                            $('#text_file_name').text(res.data.file_name);
+                            $('#extracted_text_input').val(res.data.extracted_text);
+                        } else {
+                            alert(res.message);
+                        }
+                    }, 500); // end setTimeout
+                    },
+                    error: function() {
+                        clearInterval(progressInterval);
+                        btn.html(originalText).prop('disabled', false);
+                        alert('Gagal mengupload file.');
+                    }
+                });
+            });
+
+            // Delete File
+            $('#btn_delete_file').click(function(e) {
+                e.preventDefault();
+                if(!confirm('Hapus file ini beserta teksnya dari Knowledge Base?')) return;
+                
+                let btn = $(this);
+                btn.prop('disabled', true);
+                
+                $.post('/knowledge/delete', function(res) {
+                    btn.prop('disabled', false);
+                    if (res.success) {
+                        showToast(res.message);
+                        $('#file_info_block').hide();
+                        $('#file_empty_block').show();
+                        $('#text_file_name').text('Belum ada file');
+                        $('#extracted_text_input').val('');
+                        $('#file_upload_input').val('');
+                    } else {
+                        alert(res.message);
+                    }
+                }).fail(function(xhr) {
+                    btn.prop('disabled', false);
+                    alert("Error: " + xhr.responseText);
+                });
+            });
+
+            // Save Text
+            $('#btn_save_text').click(function() {
+                let btn = $(this);
+                let originalText = btn.html();
+                btn.html('<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...').prop('disabled', true);
+
+                let data = {
+                    extracted_text: $('#extracted_text_input').val()
+                };
+
+                $.post('/knowledge/update-text', data, function(res) {
+                    btn.html(originalText).prop('disabled', false);
+                    if (res.success) {
+                        showToast(res.message);
+                    }
+                }).fail(function() {
+                    btn.html(originalText).prop('disabled', false);
+                    alert('Gagal menyimpan teks.');
+                });
+            });
+            
+            // Extract Again
+            $('#btn_extract_again').click(function() {
+                if(!confirm('Rincian teks sudah terisi. Ganti dengan hasil ekstraksi baru?')) return;
+                
+                let btn = $(this);
+                let originalText = btn.html();
+                btn.html('<i class="fa-solid fa-spinner fa-spin"></i> Mengekstrak...').prop('disabled', true);
+
+                $.post('/knowledge/re-extract', function(res) {
+                    btn.html(originalText).prop('disabled', false);
+                    if (res.success) {
+                        showToast(res.message);
+                        $('#extracted_text_input').val(res.data.extracted_text);
+                    } else {
+                        alert(res.message);
+                    }
+                }).fail(function(xhr) {
+                    btn.html(originalText).prop('disabled', false);
+                    alert("Error: " + xhr.responseText);
+                });
+            });
+        });
 
         function loadPrompt(type, element) {
             // Update UI Active State

@@ -351,6 +351,56 @@
             <!-- Left Column -->
             <div class="col-left">
                 
+                <!-- Business Profile Card -->
+                <div class="card">
+                    <div class="card-header" style="margin-bottom: 24px;">
+                        <div class="card-header-left">
+                            <div class="header-icon" style="background: rgba(107, 92, 216, 0.1);"><i class="fa-solid fa-building"></i></div>
+                            <div class="header-title">
+                                <h3>Business Profile</h3>
+                                <p>Tampil pada balasan AI dan proposal</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Business Name</label>
+                            <input type="text" id="business_name" class="form-control" value="{{ $user->business_name ?? '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">WhatsApp Number</label>
+                            <input type="text" id="business_wa_number" class="form-control" value="{{ $user->business_wa_number ?? '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Owner Name</label>
+                            <input type="text" id="owner_name" class="form-control" value="{{ $user->name ?? '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" id="business_email" class="form-control" value="{{ $user->email ?? '' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Kategori Bisnis</label>
+                        <select id="business_category" class="form-control">
+                            <option>Pilih kategori bisnis</option>
+                            <option {{ ($user && $user->category == "Fotografi / Videografi") ? "selected" : "" }}>Fotografi / Videografi</option>
+                            <option {{ ($user && $user->category == "Makeup Artist") ? "selected" : "" }}>Makeup Artist</option>
+                            <option {{ ($user && $user->category == "Dekorasi") ? "selected" : "" }}>Dekorasi</option>
+                        </select>
+                        <div class="form-text">Pilih "Dekorasi" untuk mengaktifkan Katalog Prop & Gudang, penawaran berfoto, dan tab Operasional Dekor.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Business Description</label>
+                        <textarea id="business_description" class="form-control" rows="4" placeholder="Ceritakan singkat tentang bisnis kamu...">{{ $user->business_description ?? '' }}</textarea>
+                    </div>
+
+                    <button id="btn-save-profile" class="btn btn-primary"><i class="fa-regular fa-floppy-disk"></i> Save Profile</button>
+                </div>
+
                 <!-- Onboarding WhatsApp Card -->
                 <div class="card">
                     <div class="card-header">
@@ -489,55 +539,7 @@
                     @endif
                 </div>
 
-                <!-- Business Profile Card -->
-                <div class="card">
-                    <div class="card-header" style="margin-bottom: 24px;">
-                        <div class="card-header-left">
-                            <div class="header-icon" style="background: rgba(107, 92, 216, 0.1);"><i class="fa-solid fa-building"></i></div>
-                            <div class="header-title">
-                                <h3>Business Profile</h3>
-                                <p>Tampil pada balasan AI dan proposal</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">Business Name</label>
-                            <input type="text" class="form-control" value="Penapict">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">WhatsApp Number</label>
-                            <input type="text" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Owner Name</label>
-                            <input type="text" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-control" value="hotautomag@gmail.com">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Kategori Bisnis</label>
-                        <select class="form-control">
-                            <option>Pilih kategori bisnis</option>
-                            <option>Fotografi / Videografi</option>
-                            <option>Makeup Artist</option>
-                            <option>Dekorasi</option>
-                        </select>
-                        <div class="form-text">Pilih "Dekorasi" untuk mengaktifkan Katalog Prop & Gudang, penawaran berfoto, dan tab Operasional Dekor.</div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Business Description</label>
-                        <textarea class="form-control" rows="4" placeholder="Ceritakan singkat tentang bisnis kamu..."></textarea>
-                    </div>
-
-                    <button class="btn btn-primary"><i class="fa-regular fa-floppy-disk"></i> Save Profile</button>
-                </div>
+            
 
             </div>
             
@@ -565,13 +567,13 @@
 
                     <div class="form-group">
                         <label class="form-label">Nomor tujuan notifikasi</label>
-                        <input type="text" class="form-control" value="628123456789">
+                        <input type="text" id="notification_number" class="form-control" value="{{ $user->notification_number ?? '' }}" placeholder="628123456789">
                         <div class="form-text">Kosongkan untuk memakai nomor WhatsApp bisnis di atas.</div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Nomor WhatsApp Owner</label>
-                        <input type="text" class="form-control" value="628xxxxxxxxx">
+                        <input type="text" id="owner_whatsapp" class="form-control" value="{{ $user->owner_whatsapp ?? '' }}" placeholder="628xxxxxxxxx">
                         <div class="form-text">Dipakai saat AI butuh bantuan owner (human takeover). Format 628xxx.</div>
                     </div>
 
@@ -581,7 +583,7 @@
                             <p>Notif saat ada lead panas masuk</p>
                         </div>
                         <label class="switch">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" id="notify_hot_lead" {{ ($user && isset($user->notify_hot_lead) && !$user->notify_hot_lead) ? '' : 'checked' }}>
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -592,12 +594,12 @@
                             <p>Notif saat AI butuh bantuan owner</p>
                         </div>
                         <label class="switch">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" id="notify_human_takeover" {{ ($user && isset($user->notify_human_takeover) && !$user->notify_human_takeover) ? '' : 'checked' }}>
                             <span class="slider"></span>
                         </label>
                     </div>
 
-                    <button class="btn btn-primary" style="width: 100%;"><i class="fa-regular fa-floppy-disk"></i> Simpan Notifikasi</button>
+                    <button id="btn-save-notifications" class="btn btn-primary" style="width: 100%;"><i class="fa-regular fa-floppy-disk"></i> Simpan Notifikasi</button>
                 </div>
 
                 <!-- Billing Card -->
@@ -740,6 +742,62 @@
                     }
                 });
             }
+
+            $('#btn-save-notifications').click(function() {
+                let btn = $(this);
+                let originalText = btn.html();
+                btn.html('<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...').prop('disabled', true);
+
+                let data = {
+                    notification_number: $('#notification_number').val(),
+                    owner_whatsapp: $('#owner_whatsapp').val(),
+                    notify_hot_lead: $('#notify_hot_lead').is(':checked') ? 1 : 0,
+                    notify_human_takeover: $('#notify_human_takeover').is(':checked') ? 1 : 0
+                };
+
+                $.post('/settings/notifications', data, function(res) {
+                    btn.html(originalText).prop('disabled', false);
+                    if (res.success) {
+                        $('#toast-message').html('<i class="fa-solid fa-check-circle" style="color:var(--success);"></i> Notifikasi tersimpan');
+                        $('#toast-box').css('display', 'flex').hide().fadeIn().delay(3000).fadeOut();
+                    }
+                }).fail(function() {
+                    btn.html(originalText).prop('disabled', false);
+                    alert('Gagal menyimpan pengaturan notifikasi.');
+                });
+            });
+        
+            $('#btn-save-profile').click(function() {
+                let btn = $(this);
+                let originalText = btn.html();
+                btn.html('<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...').prop('disabled', true);
+
+                let data = {
+                    business_name: $('#business_name').val(),
+                    business_wa_number: $('#business_wa_number').val(),
+                    name: $('#owner_name').val(),
+                    email: $('#business_email').val(),
+                    category: $('#business_category').val(),
+                    business_description: $('#business_description').val()
+                };
+
+                $.post('/settings/business-profile', data, function(res) {
+                    btn.html(originalText).prop('disabled', false);
+                    if (res.success) {
+                        $('#toast-message').html('<i class="fa-solid fa-check-circle" style="color:var(--success);"></i> Profil Bisnis tersimpan');
+                        $('#toast-box').css('display', 'flex').hide().fadeIn().delay(3000).fadeOut();
+                        
+                        // Update UI names if changed
+                        if (data.business_name) {
+                            $('.sidebar-title h2').text(data.business_name);
+                        }
+                    }
+                }).fail(function() {
+                    btn.html(originalText).prop('disabled', false);
+                    alert('Gagal menyimpan profil bisnis.');
+                });
+            });
+
         });
     </script>
 </body>

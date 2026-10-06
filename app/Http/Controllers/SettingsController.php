@@ -123,4 +123,40 @@ class SettingsController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
+
+    public function saveNotifications(Request $request)
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found']);
+        }
+
+        $user->notification_number = $request->notification_number;
+        $user->owner_whatsapp = $request->owner_whatsapp;
+        $user->notify_hot_lead = $request->boolean('notify_hot_lead');
+        $user->notify_human_takeover = $request->boolean('notify_human_takeover');
+        
+        $user->save();
+
+        return response()->json(['success' => true, 'message' => 'Notifikasi tersimpan']);
+    }
+
+    public function saveBusinessProfile(Request $request)
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found']);
+        }
+
+        $user->business_name = $request->business_name;
+        $user->business_wa_number = $request->business_wa_number;
+        $user->name = $request->name; // Owner Name
+        $user->email = $request->email;
+        $user->category = $request->category;
+        $user->business_description = $request->business_description;
+        
+        $user->save();
+
+        return response()->json(['success' => true, 'message' => 'Business profile tersimpan']);
+    }
 }
