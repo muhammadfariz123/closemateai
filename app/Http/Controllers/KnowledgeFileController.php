@@ -330,40 +330,56 @@ class KnowledgeFileController extends Controller
             . "5. JANGAN memberikan harga atau paket yang tidak ada di Knowledge Base.\n"
             . "6. Balaslah hanya sebagai respon untuk pesan klien, jangan tambahkan embel-embel format aneh.";
 
-        try {
-            // Tambahkan Http::retry untuk mencegah gagal di percobaan pertama akibat API sibuk
-            $response = Http::retry(4, 2000)->timeout(30)->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=' . $apiKey, [
-                'system_instruction' => [
-                    'parts' => [
-                        ['text' => $systemPrompt]
-                    ]
-                ],
-                'contents' => [
-                    [
-                        'role' => 'user',
+        $modelsToTry = ['gemini-3.7-flash', 'gemini-1.5-flash'];
+        $lastExceptionMessage = 'Gagal mendapatkan balasan dari AI.';
+
+        foreach ($modelsToTry as $modelName) {
+            try {
+                // Jangan pakai retry() otomatis dari Laravel agar kita bisa ganti model jika gagal
+                $response = Http::timeout(30)->post('https://generativelanguage.googleapis.com/v1beta/models/' . $modelName . ':generateContent?key=' . $apiKey, [
+                    'system_instruction' => [
                         'parts' => [
-                            ['text' => $message]
+                            ['text' => $systemPrompt]
                         ]
+                    ],
+                    'contents' => [
+                        [
+                            'role' => 'user',
+                            'parts' => [
+                                ['text' => $message]
+                            ]
+                        ]
+                    ],
+                    'generationConfig' => [
+                        'temperature' => 0.8, // Sedikit lebih tinggi agar lebih natural/kreatif
+                        'maxOutputTokens' => 800,
                     ]
-                ],
-                'generationConfig' => [
-                    'temperature' => 0.8, // Sedikit lebih tinggi agar lebih natural/kreatif
-                    'maxOutputTokens' => 800,
-                ]
-            ]);
+                ]);
 
-            if ($response->successful()) {
-                $responseData = $response->json();
-                if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
-                    $reply = $responseData['candidates'][0]['content']['parts'][0]['text'];
-                    return response()->json([
-                        'success' => true,
-                        'reply' => trim($reply)
-                    ]);
+                if ($response->successful()) {
+                    $responseData = $response->json();
+                    if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
+                        $reply = $responseData['candidates'][0]['content']['parts'][0]['text'];
+                        return response()->json([
+                            'success' => true,
+                            'reply' => trim($reply)
+                        ]);
+                    }
+                } else {
+                    // Jika gagal (seperti 503 atau 429), simpan error dan lanjut ke model berikutnya
+                    $lastExceptionMessage = $response->body();
+                    continue; 
                 }
+            } catch (\Exception $e) {
+                // Jika timeout atau putus koneksi, simpan error dan lanjut
+                $lastExceptionMessage = $e->getMessage();
+                continue;
             }
+        }
 
-            return response()->json(['success' => false, 'message' => 'Gagal mendapatkan balasan dari AI.']);
+        // JIKA SEMUA MODEL GAGAL, baru kita lempar pesan error
+        try {
+            throw new \Exception($lastExceptionMessage);
         } catch (\Exception $e) {
             $msg = $e->getMessage();
             $friendlyMsg = 'Terjadi kesalahan sistem: ' . $msg;
