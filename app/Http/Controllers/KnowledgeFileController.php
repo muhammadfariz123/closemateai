@@ -330,13 +330,13 @@ class KnowledgeFileController extends Controller
             . "5. JANGAN memberikan harga atau paket yang tidak ada di Knowledge Base.\n"
             . "6. Balaslah hanya sebagai respon untuk pesan klien, jangan tambahkan embel-embel format aneh.";
 
+        // Daftar model AI yang akan dicoba berurutan jika terjadi High Demand (503)
+        $modelsToTry = ['gemini-3.7-flash', 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
         $lastExceptionMessage = 'Gagal mendapatkan balasan dari AI.';
 
-        // Coba berulang kali (maksimal 3 kali) ke model 3.7-flash jika terjadi error High Demand (503)
-        $maxRetries = 3;
-        for ($i = 0; $i < $maxRetries; $i++) {
+        foreach ($modelsToTry as $modelName) {
             try {
-                $response = Http::timeout(30)->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=' . $apiKey, [
+                $response = Http::timeout(30)->post('https://generativelanguage.googleapis.com/v1beta/models/' . $modelName . ':generateContent?key=' . $apiKey, [
                     'system_instruction' => [
                         'parts' => [
                             ['text' => $systemPrompt]
@@ -368,23 +368,22 @@ class KnowledgeFileController extends Controller
                 } else {
                     $lastExceptionMessage = $response->body();
                     
-                    // Jika error bukan 503/429 (misal error fatal), jangan retry
+                    // Jika error bukan 503/429 (misal error fatal dari Google API), jangan retry model lain
                     if ($response->status() !== 503 && $response->status() !== 429) {
                         break;
                     }
                     
-                    // Jika 503, tunggu 2 detik sebelum coba lagi (backoff)
-                    sleep(2);
+                    // Jika 503/429, lanjut coba ke model berikutnya di array
                     continue; 
                 }
             } catch (\Exception $e) {
+                // Jika jaringan putus, lanjut coba
                 $lastExceptionMessage = $e->getMessage();
-                sleep(2);
                 continue;
             }
         }
 
-        // JIKA SEMUA PERCOBAAN GAGAL, baru lempar error yang akan ditangkap di bawah
+        // JIKA SEMUA MODEL GAGAL, baru lempar error yang akan ditangkap di bawah
         try {
             throw new \Exception($lastExceptionMessage);
         } catch (\Exception $e) {
