@@ -57,12 +57,28 @@ class KnowledgeFileController extends Controller
                     $mimeType = $file->getMimeType();
                     $fileContent = file_get_contents($file->getRealPath());
                     
-                    // OPTIMIZATION: Compress image to drastically speed up AI payload upload
+                    // OPTIMIZATION: Resize & Compress image to drastically speed up AI payload upload & vision token processing
                     if (in_array(strtolower($file->getClientOriginalExtension()), ['jpg', 'jpeg', 'png', 'webp'])) {
                         $img = @imagecreatefromstring($fileContent);
                         if ($img !== false) {
+                            $width = imagesx($img);
+                            $height = imagesy($img);
+                            
+                            // Scale down to max 800px to reduce Gemini visual tiles (massive speedup)
+                            if ($width > 800 || $height > 800) {
+                                $ratio = min(800 / $width, 800 / $height);
+                                $newWidth = $width * $ratio;
+                                $newHeight = $height * $ratio;
+                                $resized = imagecreatetruecolor($newWidth, $newHeight);
+                                
+                                // Gunakan imagecopyresized karena jauh lebih cepat di CPU daripada imagecopyresampled
+                                imagecopyresized($resized, $img, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                                imagedestroy($img);
+                                $img = $resized;
+                            }
+                            
                             ob_start();
-                            imagejpeg($img, null, 60); // Compress to 60% JPEG
+                            imagejpeg($img, null, 50); // Compress to 50% JPEG
                             $fileContent = ob_get_clean();
                             imagedestroy($img);
                             $mimeType = 'image/jpeg';
@@ -206,12 +222,26 @@ class KnowledgeFileController extends Controller
             if (strtolower($extension) === 'webp') $mimeType = 'image/webp';
             if (strtolower($extension) === 'pdf') $mimeType = 'application/pdf';
 
-            // OPTIMIZATION: Compress image to drastically speed up AI payload upload
+            // OPTIMIZATION: Resize & Compress image to drastically speed up AI payload upload & vision token processing
             if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'webp'])) {
                 $img = @imagecreatefromstring($fileData);
                 if ($img !== false) {
+                    $width = imagesx($img);
+                    $height = imagesy($img);
+                    
+                    if ($width > 800 || $height > 800) {
+                        $ratio = min(800 / $width, 800 / $height);
+                        $newWidth = $width * $ratio;
+                        $newHeight = $height * $ratio;
+                        $resized = imagecreatetruecolor($newWidth, $newHeight);
+                        
+                        imagecopyresized($resized, $img, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                        imagedestroy($img);
+                        $img = $resized;
+                    }
+
                     ob_start();
-                    imagejpeg($img, null, 60); // Compress to 60% JPEG
+                    imagejpeg($img, null, 50); // Compress to 50% JPEG
                     $fileData = ob_get_clean();
                     imagedestroy($img);
                     $mimeType = 'image/jpeg';
