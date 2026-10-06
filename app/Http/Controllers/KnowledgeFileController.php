@@ -338,9 +338,8 @@ class KnowledgeFileController extends Controller
 
         foreach ($modelsToTry as $modelName) {
             try {
-                // Gunakan timeout yang sangat singkat (4 detik). 
-                // Jika model AI lemot/hang, langsung putuskan dan ganti ke model cadangan detik itu juga.
-                $response = Http::timeout(4)->post('https://generativelanguage.googleapis.com/v1beta/models/' . $modelName . ':generateContent?key=' . $apiKey, [
+                // Gunakan timeout 5 detik agar jika server nge-hang, langsung pindah ke model cadangan.
+                $response = Http::timeout(5)->post('https://generativelanguage.googleapis.com/v1beta/models/' . $modelName . ':generateContent?key=' . $apiKey, [
                     'contents' => [
                         [
                             'role' => 'user',
@@ -350,8 +349,8 @@ class KnowledgeFileController extends Controller
                         ]
                     ],
                     'generationConfig' => [
-                        'temperature' => 0.7, // Kurangi agar mikirnya lebih cepat
-                        'maxOutputTokens' => 200, // Batasi jawaban pendek agar tidak butuh waktu lama
+                        'temperature' => 0.8, // Kembalikan ke 0.8 agar natural
+                        'maxOutputTokens' => 800, // Kembalikan ke 800 agar pesan tidak terpotong
                     ]
                 ]);
 
