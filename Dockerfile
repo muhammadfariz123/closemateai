@@ -22,12 +22,20 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
+# Install dependencies PHP & Node (Optimized for caching)
+# Copy package files first
+COPY composer.json composer.lock* ./
+COPY package.json package-lock.json* ./
+
+# Install packages before copying source code
+RUN composer install --no-scripts --no-autoloader
+RUN npm install
+
 # Copy file project
 COPY . .
 
-# Install dependencies PHP & Node
-RUN composer install --optimize-autoloader --no-dev
-RUN npm install
+# Generate optimized autoload files and build assets
+RUN composer dump-autoload --optimize
 RUN npm run build
 
 # Setup Database SQLite (Khusus untuk Demo)
