@@ -38,8 +38,5 @@ RUN php artisan migrate --force
 # Set permission
 RUN chmod -R 775 storage bootstrap/cache database
 
-# Eksekusi server bawaan Laravel untuk demo
-ENV PORT=10000
-EXPOSE $PORT
-
-CMD php artisan migrate --force && php artisan storage:link && php artisan serve --host=0.0.0.0 --port=$PORT
+# Eksekusi server untuk produksi/Render
+CMD php artisan migrate --force && php artisan storage:link && php -S 0.0.0.0:${PORT:-8000} -t public
