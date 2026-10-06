@@ -55,7 +55,21 @@ class KnowledgeFileController extends Controller
             if ($apiKey) {
                 try {
                     $mimeType = $file->getMimeType();
-                    $base64Data = base64_encode(file_get_contents($file->getRealPath()));
+                    $fileContent = file_get_contents($file->getRealPath());
+                    
+                    // OPTIMIZATION: Compress image to drastically speed up AI payload upload
+                    if (in_array(strtolower($file->getClientOriginalExtension()), ['jpg', 'jpeg', 'png', 'webp'])) {
+                        $img = @imagecreatefromstring($fileContent);
+                        if ($img !== false) {
+                            ob_start();
+                            imagejpeg($img, null, 60); // Compress to 60% JPEG
+                            $fileContent = ob_get_clean();
+                            imagedestroy($img);
+                            $mimeType = 'image/jpeg';
+                        }
+                    }
+                    
+                    $base64Data = base64_encode($fileContent);
                     
                     $prompt = "Tolong ekstrak semua teks dari dokumen pricelist/katalog ini. Susun dengan rapi menggunakan Markdown. Pisahkan dengan jelas bagian-bagian seperti: Nama Paket, Harga, Fasilitas/Benefit, Syarat & Ketentuan, dan Informasi Kontak (jika ada). PENTING: JANGAN tambahkan kalimat pengantar atau penutup apapun (seperti 'Berikut adalah ekstraksinya...'). Kembalikan HANYA teks isi dokumen yang di-transcript seakurat dan semirip mungkin dengan aslinya.";
 
@@ -186,13 +200,25 @@ class KnowledgeFileController extends Controller
             $apiKey = env('GEMINI_API_KEY');
             
             $fileData = file_get_contents(storage_path('app/public/' . $file->file_path));
-            $base64Data = base64_encode($fileData);
-            
             $extension = pathinfo($file->file_path, PATHINFO_EXTENSION);
             $mimeType = 'image/jpeg';
             if (strtolower($extension) === 'png') $mimeType = 'image/png';
             if (strtolower($extension) === 'webp') $mimeType = 'image/webp';
             if (strtolower($extension) === 'pdf') $mimeType = 'application/pdf';
+
+            // OPTIMIZATION: Compress image to drastically speed up AI payload upload
+            if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'webp'])) {
+                $img = @imagecreatefromstring($fileData);
+                if ($img !== false) {
+                    ob_start();
+                    imagejpeg($img, null, 60); // Compress to 60% JPEG
+                    $fileData = ob_get_clean();
+                    imagedestroy($img);
+                    $mimeType = 'image/jpeg';
+                }
+            }
+            
+            $base64Data = base64_encode($fileData);
             
             $prompt = "Ekstrak teks dari dokumen ini. Pertahankan tata letaknya persis seperti aslinya. Jangan ubah strukturnya, jangan ubah format barisnya. Tuliskan persis seperti yang tertulis di gambar. JANGAN ada kalimat pembuka/penutup dari AI. Berikan murni isi teks gambarnya saja.";
 
