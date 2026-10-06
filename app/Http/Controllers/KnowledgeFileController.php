@@ -331,15 +331,15 @@ class KnowledgeFileController extends Controller
             . "6. Balaslah hanya sebagai respon untuk pesan klien, jangan tambahkan embel-embel format aneh.";
 
         // Daftar model AI yang akan dicoba berurutan jika terjadi High Demand (503)
-        $modelsToTry = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
+        $modelsToTry = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-flash-latest'];
         $lastExceptionMessage = 'Gagal mendapatkan balasan dari AI.';
 
         $finalPrompt = "INSTRUKSI SISTEM:\n" . $systemPrompt . "\n\nPESAN KLIEN:\n" . $message;
 
         foreach ($modelsToTry as $modelName) {
             try {
-                // Gunakan timeout 5 detik agar jika server nge-hang, langsung pindah ke model cadangan.
-                $response = Http::timeout(5)->post('https://generativelanguage.googleapis.com/v1beta/models/' . $modelName . ':generateContent?key=' . $apiKey, [
+                // Gunakan timeout 15 detik. Terlalu cepat (5 detik) justru akan gagal prematur karena AI butuh waktu berpikir.
+                $response = Http::timeout(15)->post('https://generativelanguage.googleapis.com/v1beta/models/' . $modelName . ':generateContent?key=' . $apiKey, [
                     'contents' => [
                         [
                             'role' => 'user',
