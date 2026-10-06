@@ -331,7 +331,7 @@ class KnowledgeFileController extends Controller
             . "6. Balaslah hanya sebagai respon untuk pesan klien, jangan tambahkan embel-embel format aneh.";
 
         // Daftar model AI yang akan dicoba berurutan jika terjadi High Demand (503)
-        $modelsToTry = ['gemini-3.7-flash', 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
+        $modelsToTry = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
         $lastExceptionMessage = 'Gagal mendapatkan balasan dari AI.';
 
         foreach ($modelsToTry as $modelName) {
