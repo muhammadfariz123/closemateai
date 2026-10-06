@@ -64,21 +64,23 @@ class KnowledgeFileController extends Controller
                             $width = imagesx($img);
                             $height = imagesy($img);
                             
-                            // Scale down to max 800px to reduce Gemini visual tiles (massive speedup)
-                            if ($width > 800 || $height > 800) {
-                                $ratio = min(800 / $width, 800 / $height);
+                            // Scale down to max 600px for absolute maximum speed
+                            if ($width > 600 || $height > 600) {
+                                $ratio = min(600 / $width, 600 / $height);
                                 $newWidth = $width * $ratio;
                                 $newHeight = $height * $ratio;
                                 $resized = imagecreatetruecolor($newWidth, $newHeight);
                                 
-                                // Gunakan imagecopyresized karena jauh lebih cepat di CPU daripada imagecopyresampled
                                 imagecopyresized($resized, $img, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
                                 imagedestroy($img);
                                 $img = $resized;
                             }
                             
+                            // Grayscale filter to remove color channels, making the file size extremely tiny
+                            imagefilter($img, IMG_FILTER_GRAYSCALE);
+                            
                             ob_start();
-                            imagejpeg($img, null, 50); // Compress to 50% JPEG
+                            imagejpeg($img, null, 40); // Compress to 40% JPEG
                             $fileContent = ob_get_clean();
                             imagedestroy($img);
                             $mimeType = 'image/jpeg';
@@ -87,9 +89,9 @@ class KnowledgeFileController extends Controller
                     
                     $base64Data = base64_encode($fileContent);
                     
-                    $prompt = "Tolong ekstrak semua teks dari dokumen pricelist/katalog ini. Susun dengan rapi menggunakan Markdown. Pisahkan dengan jelas bagian-bagian seperti: Nama Paket, Harga, Fasilitas/Benefit, Syarat & Ketentuan, dan Informasi Kontak (jika ada). PENTING: JANGAN tambahkan kalimat pengantar atau penutup apapun (seperti 'Berikut adalah ekstraksinya...'). Kembalikan HANYA teks isi dokumen yang di-transcript seakurat dan semirip mungkin dengan aslinya.";
+                    $prompt = "Extract text from this image exactly as written. No intro/outro.";
 
-                    $response = Http::retry(4, 2000)->timeout(60)->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=' . $apiKey, [
+                    $response = Http::retry(2, 500)->timeout(30)->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=' . $apiKey, [
                         'contents' => [
                             [
                                 'parts' => [
@@ -229,8 +231,8 @@ class KnowledgeFileController extends Controller
                     $width = imagesx($img);
                     $height = imagesy($img);
                     
-                    if ($width > 800 || $height > 800) {
-                        $ratio = min(800 / $width, 800 / $height);
+                    if ($width > 600 || $height > 600) {
+                        $ratio = min(600 / $width, 600 / $height);
                         $newWidth = $width * $ratio;
                         $newHeight = $height * $ratio;
                         $resized = imagecreatetruecolor($newWidth, $newHeight);
@@ -240,8 +242,11 @@ class KnowledgeFileController extends Controller
                         $img = $resized;
                     }
 
+                    // Grayscale filter to remove color channels, making the file size extremely tiny
+                    imagefilter($img, IMG_FILTER_GRAYSCALE);
+
                     ob_start();
-                    imagejpeg($img, null, 50); // Compress to 50% JPEG
+                    imagejpeg($img, null, 40); // Compress to 40% JPEG
                     $fileData = ob_get_clean();
                     imagedestroy($img);
                     $mimeType = 'image/jpeg';
@@ -250,9 +255,9 @@ class KnowledgeFileController extends Controller
             
             $base64Data = base64_encode($fileData);
             
-            $prompt = "Ekstrak teks dari dokumen ini. Pertahankan tata letaknya persis seperti aslinya. Jangan ubah strukturnya, jangan ubah format barisnya. Tuliskan persis seperti yang tertulis di gambar. JANGAN ada kalimat pembuka/penutup dari AI. Berikan murni isi teks gambarnya saja.";
+            $prompt = "Extract text from this image exactly as written. No intro/outro.";
 
-            $response = Http::retry(4, 2000)->timeout(60)->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=' . $apiKey, [
+            $response = Http::retry(2, 500)->timeout(30)->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=' . $apiKey, [
                 'contents' => [
                     [
                         'parts' => [
