@@ -22,21 +22,27 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-# Install dependencies PHP & Node (Optimized for caching)
-# Copy package files first
-COPY composer.json composer.lock* ./
+# 1. Install Node modules and build frontend FIRST
 COPY package.json package-lock.json* ./
-
-# Install packages before copying source code
-RUN composer install --no-scripts --no-autoloader
 RUN npm install
 
-# Copy file project
+COPY vite.config.js ./
+COPY resources/ resources/
+# We also need public/ for vite build sometimes, but usually just resources/ is enough.
+# Let's run build now. If it fails due to missing files, we might need tailwind.config.js etc if they exist.
+# Wait, let's just copy everything that might be needed for frontend.
+COPY tailwind.config.js* postcss.config.js* ./
+RUN npm run build
+
+# 2. Install PHP dependencies
+COPY composer.json composer.lock* ./
+RUN composer install --no-scripts --no-autoloader
+
+# 3. Copy the rest of the project (PHP files, etc)
 COPY . .
 
-# Generate optimized autoload files and build assets
+# Generate optimized autoload files
 RUN composer dump-autoload --optimize
-RUN npm run build
 
 # Setup Database SQLite (Khusus untuk Demo)
 RUN mkdir -p database
