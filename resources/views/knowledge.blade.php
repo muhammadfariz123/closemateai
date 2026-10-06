@@ -431,13 +431,19 @@
                 <div class="kb-card-title">Rincian Teks Price List (Pengetahuan Internal AI)</div>
                 <div class="kb-card-desc">Tulis rincian paket, add-on (fotografer, videografer, drone, same-day edit), syarat & ketentuan, serta charge luar kota. Teks ini dipakai AI untuk menjawab pertanyaan detail, bukan dikirim sebagai file.</div>
                 
-                <div style="font-size: 13px; margin-bottom: 8px; font-weight: 500;">Rincian untuk file: <span id="text_file_name">{{ $file->file_name ?? 'Belum ada file' }}</span></div>
-                
-                                <textarea id="extracted_text_input" class="form-control" style="background: #f9f9fa; border: 1px solid #e1e1e4;" placeholder="Unggah file media terlebih dahulu untuk mengisi rincian teksnya.">{{ $file->extracted_text ?? '' }}</textarea>
-                
-                <div class="d-flex gap-2" style="margin-top: 16px;">
-                    <button id="btn_extract_again" class="btn btn-secondary"><i class="fa-solid fa-arrows-rotate"></i> Coba Ekstraksi Lagi</button>
-                    <button id="btn_save_text" class="btn btn-primary"><i class="fa-regular fa-floppy-disk"></i> Simpan Rincian Teks</button>
+                <div id="text_empty_state" style="border: 1px dashed #cfd2d6; border-radius: 8px; padding: 40px; text-align: center; color: #6b7280; font-size: 14px; {{ isset($file) ? 'display: none;' : '' }}">
+                    Unggah file media terlebih dahulu untuk mengisi rincian teksnya.
+                </div>
+
+                <div id="text_content_state" style="{{ isset($file) ? '' : 'display: none;' }}">
+                    <div style="font-size: 13px; margin-bottom: 8px; font-weight: 500;">Rincian untuk file: <span id="text_file_name">{{ $file->file_name ?? 'Belum ada file' }}</span></div>
+                    
+                    <textarea id="extracted_text_input" class="form-control" style="background: #f9f9fa; border: 1px solid #e1e1e4; min-height: 200px;" placeholder="Unggah file media terlebih dahulu untuk mengisi rincian teksnya.">{{ $file->extracted_text ?? '' }}</textarea>
+                    
+                    <div class="d-flex gap-2" style="margin-top: 16px;">
+                        <button id="btn_extract_again" class="btn btn-secondary"><i class="fa-solid fa-arrows-rotate"></i> Coba Ekstraksi Lagi</button>
+                        <button id="btn_save_text" class="btn btn-primary"><i class="fa-regular fa-floppy-disk"></i> Simpan Rincian Teks</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -957,6 +963,8 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
                             
                             // Update UI
                             $('#file_info_block').show();
+                            $('#text_empty_state').hide();
+                            $('#text_content_state').show();
                             
                             let ext = (res.data.file_type || '').toLowerCase();
                             let isImg = ['jpg','jpeg','png','webp','gif', 'gambar'].includes(ext);
@@ -995,6 +1003,8 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
                         showToast(res.message);
                         $('#file_info_block').hide();
                         $('#file_empty_block').show();
+                        $('#text_content_state').hide();
+                        $('#text_empty_state').show();
                         $('#text_file_name').text('Belum ada file');
                         $('#extracted_text_input').val('');
                         $('#file_upload_input').val('');
