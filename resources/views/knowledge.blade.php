@@ -368,13 +368,12 @@
                 <div class="kb-card-desc" style="margin-bottom: 8px;">Tempel link Google Drive, Notion, atau website price list kamu. Link inilah yang dikirim AI saat calon klien meminta price list.</div>
                 
                 <div class="d-flex gap-2 align-items-center" style="margin-bottom: 12px;">
-                    <input type="text" class="form-control" style="width: 200px;" value="Bundling">
+                    <input type="text" class="form-control" style="width: 250px;" placeholder="Judul, mis. Paket Wedding 1">
                     <div style="position: relative; flex: 1;">
                         <i class="fa-solid fa-link" style="position: absolute; left: 14px; top: 12px; color: var(--text-muted);"></i>
-                        <input type="text" class="form-control" style="padding-left: 36px;" value="https://drive.google.com/file/d/1b908rZKm8S2uO1q2d8lXjW62Uo2YC-Dd/view?usp=sharing">
+                        <input type="text" class="form-control" style="padding-left: 36px;" placeholder="https://drive.google.com/...">
                     </div>
-                    <button class="btn btn-secondary" style="padding: 10px 14px;"><i class="fa-regular fa-eye"></i></button>
-                    <button class="btn btn-danger-outline" style="padding: 10px 14px;"><i class="fa-regular fa-trash-can"></i></button>
+                    <button class="btn btn-danger-outline" style="padding: 10px 14px; color: #ef4444; border-color: transparent;"><i class="fa-regular fa-trash-can"></i></button>
                 </div>
                 
                 <div class="d-flex gap-2">
