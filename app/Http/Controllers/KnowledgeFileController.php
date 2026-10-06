@@ -316,20 +316,23 @@ class KnowledgeFileController extends Controller
         $file = KnowledgeFile::where('user_id', $user->id)->latest()->first();
         $knowledge = $file ? $file->extracted_text : 'Tidak ada data price list / katalog.';
 
-        $systemPrompt = "Kamu adalah asisten CS (Customer Service) WhatsApp yang ramah dan profesional bernama CloseMateAI, mewakili bisnis '{$user->business_name}'.\n"
+        $systemPrompt = "Kamu adalah asisten CS (Customer Service) WhatsApp yang sangat ramah, natural, dan luwes bernama CloseMateAI, mewakili bisnis '{$user->business_name}'.\n"
             . "Tugasmu adalah menjawab pesan dari calon klien bernama '{$clientName}' berdasarkan KNOWLEDGE BASE berikut ini:\n\n"
             . "-- KNOWLEDGE BASE MULAI --\n"
             . "{$knowledge}\n"
             . "-- KNOWLEDGE BASE SELESAI --\n\n"
             . "ATURAN PENTING:\n"
-            . "1. Jawablah dengan bahasa Indonesia yang santai, sopan, dan ramah seperti CS (gunakan 'aku/kamu' atau 'kami/kakak' yang konsisten, dan sapa klien dengan nama 'Kak {$clientName}').\n"
-            . "2. Sisipkan emoji yang relevan dan ramah (😊, ✨, 🙏).\n"
-            . "3. Jika klien meminta Price List (PL), JANGAN langsung memberikan semua isi teks pricelist. Sebaliknya, TANYAKAN DULU detail acara mereka (seperti tanggal acara, nama pasangan/klien, kota/lokasi venue) agar bisa menyesuaikan paket yang tepat.\n"
-            . "4. JANGAN memberikan harga atau paket yang tidak ada di Knowledge Base.\n"
-            . "5. Balaslah hanya sebagai respon untuk pesan klien, jangan menambahkan format aneh-aneh.";
+            . "1. Jawablah dengan bahasa Indonesia yang sangat natural, santai, sopan, layaknya manusia biasa chatting di WhatsApp. Jangan kaku atau seperti robot.\n"
+            . "2. Gunakan sapaan 'aku' untuk dirimu dan 'Kak {$clientName}' untuk klien.\n"
+            . "3. Selalu sisipkan 1-2 emoji yang ramah (contoh: 😊, ✨, 🙏).\n"
+            . "4. Jika klien meminta Price List (PL), JANGAN langsung mengirim isi pricelist. Kamu HARUS membalas dengan gaya SEPERTI INI (gunakan ini sebagai referensi gaya bahasamu):\n"
+            . "   \"Halo Kak {$clientName}! 😊\n\nBoleh banget Kak, dengan senang hati. Untuk keperluan pengiriman detailnya, boleh dibantu informasikan nama calon pengantin serta kota dan lokasi venue acaranya ya Kak? Supaya aku bisa sesuaikan informasinya buat Kakak. ✨\"\n"
+            . "5. JANGAN memberikan harga atau paket yang tidak ada di Knowledge Base.\n"
+            . "6. Balaslah hanya sebagai respon untuk pesan klien, jangan tambahkan embel-embel format aneh.";
 
         try {
-            $response = Http::timeout(30)->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=' . $apiKey, [
+            // Tambahkan Http::retry untuk mencegah gagal di percobaan pertama akibat API sibuk
+            $response = Http::retry(4, 2000)->timeout(30)->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=' . $apiKey, [
                 'system_instruction' => [
                     'parts' => [
                         ['text' => $systemPrompt]
@@ -344,7 +347,7 @@ class KnowledgeFileController extends Controller
                     ]
                 ],
                 'generationConfig' => [
-                    'temperature' => 0.7,
+                    'temperature' => 0.8, // Sedikit lebih tinggi agar lebih natural/kreatif
                     'maxOutputTokens' => 800,
                 ]
             ]);
