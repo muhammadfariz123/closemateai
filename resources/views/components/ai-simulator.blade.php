@@ -217,7 +217,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 chatArea.insertBefore(wrapper, typingIndicator);
             } else {
-                alert(data.message || 'Gagal menghubungi AI.');
+                // Add Error Bubble instead of ugly alert popup
+                const wrapper = document.createElement('div');
+                wrapper.className = 'sim-ai-wrapper';
+                
+                const errorBubble = document.createElement('div');
+                errorBubble.className = 'sim-bubble sim-bubble-ai';
+                errorBubble.style.color = '#ef4444';
+                errorBubble.style.backgroundColor = '#fef2f2';
+                errorBubble.style.borderColor = '#fecaca';
+                errorBubble.innerHTML = '⚠️ ' + (data.message || 'Koneksi ke AI terputus.');
+                
+                wrapper.appendChild(errorBubble);
+                chatArea.insertBefore(wrapper, typingIndicator);
             }
             
         } catch (e) {

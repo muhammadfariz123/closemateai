@@ -365,7 +365,16 @@ class KnowledgeFileController extends Controller
 
             return response()->json(['success' => false, 'message' => 'Gagal mendapatkan balasan dari AI.']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()]);
+            $msg = $e->getMessage();
+            $friendlyMsg = 'Terjadi kesalahan sistem: ' . $msg;
+            
+            if (strpos($msg, '503') !== false || strpos($msg, 'high demand') !== false) {
+                $friendlyMsg = "Maaf Kak, server AI kami sedang sangat penuh (High Demand). Coba tunggu beberapa detik lalu kirim ulang ya! 🙏";
+            } elseif (strpos($msg, '429') !== false || strpos($msg, 'quota') !== false) {
+                $friendlyMsg = "Waduh, kuota gratis AI Kakak hari ini sudah habis. Silakan pakai API Key lain atau aktifkan billing ya Kak! 😅";
+            }
+            
+            return response()->json(['success' => false, 'message' => $friendlyMsg]);
         }
     }
 }
