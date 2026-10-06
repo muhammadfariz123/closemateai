@@ -334,25 +334,22 @@ class KnowledgeFileController extends Controller
         $modelsToTry = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
         $lastExceptionMessage = 'Gagal mendapatkan balasan dari AI.';
 
+        $finalPrompt = "INSTRUKSI SISTEM:\n" . $systemPrompt . "\n\nPESAN KLIEN:\n" . $message;
+
         foreach ($modelsToTry as $modelName) {
             try {
                 $response = Http::timeout(30)->post('https://generativelanguage.googleapis.com/v1beta/models/' . $modelName . ':generateContent?key=' . $apiKey, [
-                    'system_instruction' => [
-                        'parts' => [
-                            ['text' => $systemPrompt]
-                        ]
-                    ],
                     'contents' => [
                         [
                             'role' => 'user',
                             'parts' => [
-                                ['text' => $message]
+                                ['text' => $finalPrompt]
                             ]
                         ]
                     ],
                     'generationConfig' => [
-                        'temperature' => 0.7, // Turunkan sedikit agar tidak terlalu banyak "berpikir" alternatif kata
-                        'maxOutputTokens' => 250, // Batasi output maksimal agar mesin AI memproses dan membalas lebih cepat
+                        'temperature' => 0.8,
+                        'maxOutputTokens' => 800,
                     ]
                 ]);
 
