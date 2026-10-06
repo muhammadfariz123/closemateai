@@ -297,4 +297,72 @@ class KnowledgeFileController extends Controller
             return response()->json(['success' => false, 'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()]);
         }
     }
+
+    public function simulateChat(Request $request)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+        }
+
+        $message = $request->input('message');
+        $clientName = $request->input('client_name', 'Klien');
+        $apiKey = env('GEMINI_API_KEY');
+
+        if (!$apiKey) {
+            return response()->json(['success' => false, 'message' => 'API Key belum diatur di .env']);
+        }
+
+        $file = KnowledgeFile::where('user_id', $user->id)->latest()->first();
+        $knowledge = $file ? $file->extracted_text : 'Tidak ada data price list / katalog.';
+
+        $systemPrompt = "Kamu adalah asisten CS (Customer Service) WhatsApp yang ramah dan profesional bernama CloseMateAI, mewakili bisnis '{$user->business_name}'.\n"
+            . "Tugasmu adalah menjawab pesan dari calon klien bernama '{$clientName}' berdasarkan KNOWLEDGE BASE berikut ini:\n\n"
+            . "-- KNOWLEDGE BASE MULAI --\n"
+            . "{$knowledge}\n"
+            . "-- KNOWLEDGE BASE SELESAI --\n\n"
+            . "ATURAN PENTING:\n"
+            . "1. Jawablah dengan bahasa Indonesia yang santai, sopan, dan ramah seperti CS (gunakan 'aku/kamu' atau 'kami/kakak' yang konsisten, dan sapa klien dengan nama 'Kak {$clientName}').\n"
+            . "2. Sisipkan emoji yang relevan dan ramah (😊, ✨, 🙏).\n"
+            . "3. Jika klien meminta Price List (PL), JANGAN langsung memberikan semua isi teks pricelist. Sebaliknya, TANYAKAN DULU detail acara mereka (seperti tanggal acara, nama pasangan/klien, kota/lokasi venue) agar bisa menyesuaikan paket yang tepat.\n"
+            . "4. JANGAN memberikan harga atau paket yang tidak ada di Knowledge Base.\n"
+            . "5. Balaslah hanya sebagai respon untuk pesan klien, jangan menambahkan format aneh-aneh.";
+
+        try {
+            $response = Http::timeout(30)->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=' . $apiKey, [
+                'system_instruction' => [
+                    'parts' => [
+                        ['text' => $systemPrompt]
+                    ]
+                ],
+                'contents' => [
+                    [
+                        'role' => 'user',
+                        'parts' => [
+                            ['text' => $message]
+                        ]
+                    ]
+                ],
+                'generationConfig' => [
+                    'temperature' => 0.7,
+                    'maxOutputTokens' => 800,
+                ]
+            ]);
+
+            if ($response->successful()) {
+                $responseData = $response->json();
+                if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
+                    $reply = $responseData['candidates'][0]['content']['parts'][0]['text'];
+                    return response()->json([
+                        'success' => true,
+                        'reply' => trim($reply)
+                    ]);
+                }
+            }
+
+            return response()->json(['success' => false, 'message' => 'Gagal mendapatkan balasan dari AI.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()]);
+        }
+    }
 }

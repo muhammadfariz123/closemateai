@@ -701,6 +701,9 @@ BATASAN & KEAMANAN (GUARDRAILS & HUMAN TAKEOVER)
         @include('components.whatsapp-widget')
     </div>
     
+    <!-- AI Simulator Component -->
+    @include('components.ai-simulator')
+    
     <!-- Toast Container -->
     <div class="toast-container" id="toast-container"></div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

@@ -26,6 +26,7 @@ Route::post('/knowledge/upload', [KnowledgeFileController::class, 'upload']);
 Route::post('/knowledge/update-text', [KnowledgeFileController::class, 'updateText']);
 Route::post('/knowledge/delete', [KnowledgeFileController::class, 'destroy']);
 Route::post('/knowledge/re-extract', [KnowledgeFileController::class, 'reExtract']);
+Route::post('/api/simulator/chat', [KnowledgeFileController::class, 'simulateChat']);
 
 Route::get('/leads', function () {
     return view('leads');
