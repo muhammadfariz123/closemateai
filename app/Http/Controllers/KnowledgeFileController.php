@@ -351,8 +351,8 @@ class KnowledgeFileController extends Controller
                         ]
                     ],
                     'generationConfig' => [
-                        'temperature' => 0.8,
-                        'maxOutputTokens' => 800,
+                        'temperature' => 0.7, // Turunkan sedikit agar tidak terlalu banyak "berpikir" alternatif kata
+                        'maxOutputTokens' => 250, // Batasi output maksimal agar mesin AI memproses dan membalas lebih cepat
                     ]
                 ]);
 
