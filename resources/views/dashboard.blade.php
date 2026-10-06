@@ -113,11 +113,7 @@
         /* Empty State */
         .empty-state { text-align: center; color: var(--text-muted); font-size: 13px; padding: 40px 0; }
         
-        /* Floating WhatsApp */
-        .whatsapp-widget { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; z-index: 100; }
-        .chat-bubble { background-color: white; padding: 10px 16px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-size: 14px; font-weight: 500; display: flex; align-items: center; border: 1px solid var(--border-color); position: relative; }
-        .chat-bubble::after { content: ''; position: absolute; bottom: -6px; right: 20px; width: 12px; height: 12px; background-color: white; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); transform: rotate(45deg); }
-        .whatsapp-btn { width: 56px; height: 56px; background-color: var(--whatsapp-green); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4); cursor: pointer; }
+
 
         /* Responsive Mobile Layout */
         @media (max-width: 768px) {
@@ -390,12 +386,7 @@
         </div>
     </div>
 
-    <div class="whatsapp-widget">
-        <div class="chat-bubble">Chat with us</div>
-        <div class="whatsapp-btn">
-            <i class="fa-brands fa-whatsapp"></i>
-        </div>
-    </div>
+    @include('components.whatsapp-widget')
     
     <script>
         // Fitur Sidebar Collapse

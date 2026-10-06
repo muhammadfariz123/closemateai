@@ -164,11 +164,7 @@
         .btn-simulator { background: var(--primary); color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(107, 92, 216, 0.3); display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
         .btn-simulator:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(107, 92, 216, 0.4); }
         
-        .whatsapp-widget { display: flex; align-items: flex-end; gap: 12px; }
-        .chat-bubble { background-color: white; padding: 10px 16px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-size: 14px; font-weight: 500; display: flex; align-items: center; border: 1px solid var(--border-color); position: relative; }
-        .chat-bubble::after { content: ''; position: absolute; bottom: -6px; right: 20px; width: 12px; height: 12px; background-color: white; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); transform: rotate(45deg); }
-        .whatsapp-btn { width: 56px; height: 56px; background-color: var(--success); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4); cursor: pointer; }
-        .btn-close-wa { position: absolute; top: -5px; right: -5px; background: white; color: var(--text-dark); border: 1px solid var(--border-color); width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; }
+
 
         /* Responsive Mobile Layout */
         @media (max-width: 768px) {
@@ -703,15 +699,7 @@ BATASAN & KEAMANAN (GUARDRAILS & HUMAN TAKEOVER)
             <i class="fa-solid fa-wand-magic-sparkles"></i> Tes AI Simulator
         </div>
         
-        <div class="whatsapp-widget">
-            <div class="chat-bubble">Chat with us</div>
-            <div style="position: relative;">
-                <div class="btn-close-wa"><i class="fa-solid fa-xmark"></i></div>
-                <div class="whatsapp-btn">
-                    <i class="fa-brands fa-whatsapp"></i>
-                </div>
-            </div>
-        </div>
+        @include('components.whatsapp-widget')
     </div>
     
     <!-- Toast Container -->

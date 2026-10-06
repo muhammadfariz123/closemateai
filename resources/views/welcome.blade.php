@@ -490,13 +490,7 @@
         Setiap vendor punya workspace & data leads yang terpisah.
     </div>
 
-    <div class="whatsapp-widget">
-        <div class="chat-bubble">Chat with us</div>
-        <div class="whatsapp-btn">
-            <i class="fa-brands fa-whatsapp"></i>
-            <div class="close-widget"><i class="fa-solid fa-xmark"></i></div>
-        </div>
-    </div>
+    @include('components.whatsapp-widget')
 
     <!-- Toast Notification -->
     <div class="toast-notification" id="toast">
@@ -569,14 +563,6 @@
                 btnText.textContent = 'Buat Akun Vendor';
             }
         });
-        
-        const closeBtn = document.querySelector('.close-widget');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                document.querySelector('.whatsapp-widget').style.display = 'none';
-            });
-        }
     </script>
 </body>
 </html>
