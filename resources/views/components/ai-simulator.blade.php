@@ -203,10 +203,48 @@ document.addEventListener('DOMContentLoaded', function() {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'sim-ai-wrapper';
                 
-                const aiBubble = document.createElement('div');
-                aiBubble.className = 'sim-bubble sim-bubble-ai';
-                // Convert newlines to br
-                aiBubble.innerHTML = data.reply.replace(/\n/g, '<br>');
+                let rawText = data.reply;
+                const urls = [];
+                
+                // Parse URLs and Titles from text
+                // We use [^\s<]+ to match URL, but exclude trailing punctuation like . , or !
+                const urlRegex = /(?:([^\n]+?):\s*)?(https?:\/\/[^\s<]+[^.,!?;:\s<])/g;
+                rawText = rawText.replace(urlRegex, function(match, title, url) {
+                    title = title ? title.trim().replace(/^-\s*/, '').replace(/^\*\s*/, '') : 'Link Price List';
+                    urls.push({ title: title, url: url });
+                    return ''; // Remove the raw link from text
+                });
+                
+                // Clean up empty lines
+                rawText = rawText.replace(/\n\s*\n/g, '\n\n').trim();
+
+                // Append Widget Cards for each URL
+                urls.forEach(linkObj => {
+                    const card = document.createElement('div');
+                    card.style.cssText = 'border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; margin-bottom: 8px; width: 280px; background: white; align-self: flex-start; box-shadow: 0 2px 8px rgba(0,0,0,0.02);';
+                    card.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; background: rgba(107, 92, 216, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 20px; flex-shrink: 0;">
+                                <i class="fa-regular fa-file-lines"></i>
+                            </div>
+                            <div style="overflow: hidden;">
+                                <div style="font-weight: 600; font-size: 14px; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${linkObj.title}</div>
+                                <div style="font-size: 11px; color: var(--text-muted);">Lampiran dokumen</div>
+                            </div>
+                        </div>
+                        <a href="${linkObj.url}" target="_blank" style="display: block; text-align: center; background: rgba(107, 92, 216, 0.1); color: var(--primary); text-decoration: none; padding: 8px; border-radius: 6px; font-weight: 600; font-size: 13px; transition: 0.2s;">
+                            <i class="fa-solid fa-arrow-up-right-from-square" style="margin-right: 4px;"></i> Buka File
+                        </a>
+                    `;
+                    wrapper.appendChild(card);
+                });
+                
+                if (rawText) {
+                    const aiBubble = document.createElement('div');
+                    aiBubble.className = 'sim-bubble sim-bubble-ai';
+                    aiBubble.innerHTML = rawText.replace(/\n/g, '<br>');
+                    wrapper.appendChild(aiBubble);
+                }
                 
                 const meta = document.createElement('div');
                 meta.className = 'sim-meta';
