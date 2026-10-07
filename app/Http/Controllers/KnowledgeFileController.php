@@ -330,7 +330,41 @@ class KnowledgeFileController extends Controller
             . "5. JANGAN memberikan harga atau paket yang tidak ada di Knowledge Base.\n"
             . "6. Balaslah hanya sebagai respon untuk pesan klien, jangan tambahkan embel-embel format aneh.";
 
-        // Daftar model AI yang akan dicoba berurutan jika terjadi High Demand (503)
+        $groqApiKey = env('GROQ_API_KEY');
+
+        // ==== OPSI 1: JIKA MENGGUNAKAN GROQ (SUPER CEPAT & GRATIS) ====
+        if ($groqApiKey) {
+            try {
+                $response = Http::withToken($groqApiKey)
+                    ->timeout(15)
+                    ->post('https://api.groq.com/openai/v1/chat/completions', [
+                        'model' => 'llama-3.1-8b-instant',
+                        'messages' => [
+                            ['role' => 'system', 'content' => $systemPrompt],
+                            ['role' => 'user', 'content' => $message],
+                        ],
+                        'temperature' => 0.8,
+                        'max_tokens' => 800,
+                    ]);
+
+                if ($response->successful()) {
+                    $responseData = $response->json();
+                    if (isset($responseData['choices'][0]['message']['content'])) {
+                        return response()->json([
+                            'success' => true,
+                            'reply' => trim($responseData['choices'][0]['message']['content'])
+                        ]);
+                    }
+                }
+                
+                throw new \Exception("Gagal menghubungi Groq: " . $response->body());
+            } catch (\Exception $e) {
+                // Biarkan jatuh ke mekanisme catch error di bawah
+                throw $e;
+            }
+        }
+
+        // ==== OPSI 2: JIKA MENGGUNAKAN GEMINI (LAMA) ====
         $modelsToTry = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-flash-latest'];
         $lastExceptionMessage = 'Gagal mendapatkan balasan dari AI.';
 
@@ -338,7 +372,7 @@ class KnowledgeFileController extends Controller
 
         foreach ($modelsToTry as $modelName) {
             try {
-                // Gunakan timeout 15 detik. Terlalu cepat (5 detik) justru akan gagal prematur karena AI butuh waktu berpikir.
+                // Gunakan timeout 15 detik.
                 $response = Http::timeout(15)->post('https://generativelanguage.googleapis.com/v1beta/models/' . $modelName . ':generateContent?key=' . $apiKey, [
                     'contents' => [
                         [
@@ -349,8 +383,8 @@ class KnowledgeFileController extends Controller
                         ]
                     ],
                     'generationConfig' => [
-                        'temperature' => 0.8, // Kembalikan ke 0.8 agar natural
-                        'maxOutputTokens' => 800, // Kembalikan ke 800 agar pesan tidak terpotong
+                        'temperature' => 0.8,
+                        'maxOutputTokens' => 800,
                     ]
                 ]);
 
@@ -366,22 +400,18 @@ class KnowledgeFileController extends Controller
                 } else {
                     $lastExceptionMessage = $response->body();
                     
-                    // Jika error bukan 503/429 (misal error fatal dari Google API), jangan retry model lain
                     if ($response->status() !== 503 && $response->status() !== 429) {
                         break;
                     }
-                    
-                    // Jika 503/429, lanjut coba ke model berikutnya di array
                     continue; 
                 }
             } catch (\Exception $e) {
-                // Jika jaringan putus, lanjut coba
                 $lastExceptionMessage = $e->getMessage();
                 continue;
             }
         }
 
-        // JIKA SEMUA MODEL GAGAL, baru lempar error yang akan ditangkap di bawah
+        // JIKA SEMUA MODEL GAGAL
         try {
             throw new \Exception($lastExceptionMessage);
         } catch (\Exception $e) {
