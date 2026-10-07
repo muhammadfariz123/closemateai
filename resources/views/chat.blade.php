@@ -487,8 +487,7 @@
                             <div class="bubble-wrapper right">
                                 <div class="bubble bubble-right" style="background: ${bgColor};">
                                     ${badge}
-                                    ${msg.message.replace(/
-/g, '<br>')}
+                                    ${msg.message.replace(/\\n/g, '<br>')}
                                 </div>
                                 <div class="bubble-time right">${time}</div>
                             </div>
@@ -497,8 +496,7 @@
                         html += `
                             <div class="bubble-wrapper left">
                                 <div class="bubble bubble-left">
-                                    ${msg.message.replace(/
-/g, '<br>')}
+                                    ${msg.message.replace(/\\n/g, '<br>')}
                                 </div>
                                 <div class="bubble-time">${time}</div>
                             </div>
@@ -552,8 +550,7 @@
             msgBox.innerHTML += `
                 <div class="bubble-wrapper right" style="opacity: 0.7;">
                     <div class="bubble bubble-right" style="background: #4a3da8;">
-                        ${text.replace(/
-/g, '<br>')}
+                        ${text.replace(/\\n/g, '<br>')}
                     </div>
                     <div class="bubble-time right">${time} (Sending...)</div>
                 </div>
