@@ -250,7 +250,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 meta.className = 'sim-meta';
                 meta.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Dikutip dari Knowledge Base (Waktu: ${timeTaken} ms) <i class="fa-solid fa-chevron-down" style="margin-left:4px; font-size:9px;"></i>`;
                 
-                wrapper.appendChild(aiBubble);
                 wrapper.appendChild(meta);
                 
                 chatArea.insertBefore(wrapper, typingIndicator);
@@ -271,9 +270,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
         } catch (e) {
+            console.error("Simulator Error:", e);
             typingIndicator.classList.remove('active');
             btnSend.disabled = false;
-            alert('Terjadi kesalahan jaringan.');
+            alert('Terjadi kesalahan JavaScript atau Jaringan. Cek console browser (F12).');
         }
         
         scrollToBottom();
