@@ -43,10 +43,21 @@ class WebhookController extends Controller
         }
 
         // 3. Find or Create Chat
-        $chat = Chat::firstOrCreate(
-            ['user_id' => $user->id, 'client_wa_number' => $sender],
-            ['client_name' => $name, 'status' => 'Belum Dihandle', 'ai_reply_count' => 0, 'is_human_takeover' => false]
-        );
+        try {
+            $chat = Chat::firstOrCreate(
+                ['user_id' => $user->id, 'client_wa_number' => $sender],
+                ['client_name' => $name, 'status' => 'Belum Dihandle', 'ai_reply_count' => 0, 'is_human_takeover' => false]
+            );
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Jika tabel tidak ditemukan (biasanya karena migrasi belum jalan di server gratisan Render)
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            
+            // Coba lagi setelah migrasi
+            $chat = Chat::firstOrCreate(
+                ['user_id' => $user->id, 'client_wa_number' => $sender],
+                ['client_name' => $name, 'status' => 'Belum Dihandle', 'ai_reply_count' => 0, 'is_human_takeover' => false]
+            );
+        }
 
         // Update nama jika belum ada
         if ($chat->client_name === $sender && $name !== $sender) {
@@ -185,41 +196,76 @@ class WebhookController extends Controller
             $apiMessages[] = ['role' => $role, 'content' => $msg->message];
         }
 
-        // Request ke Groq
         $groqApiKey = env('GROQ_API_KEY');
-        if (!$groqApiKey) return "Maaf, API AI belum dikonfigurasi.";
-
-        try {
-            $response = Http::withToken($groqApiKey)
-                ->timeout(15)
-                ->post('https://api.groq.com/openai/v1/chat/completions', [
-                    'model' => 'qwen-2.5-32b', // Model terbaik Groq saat ini
-                    'messages' => $apiMessages,
-                    'temperature' => 0.8,
-                    'max_tokens' => 800,
-                ]);
-
-            if ($response->successful()) {
-                return $response->json()['choices'][0]['message']['content'] ?? null;
-            } else {
-                Log::error('Groq Error', $response->json());
-                // Fallback jika qwen gagal
-                $response = Http::withToken($groqApiKey)
-                    ->timeout(15)
-                    ->post('https://api.groq.com/openai/v1/chat/completions', [
-                        'model' => 'llama-3.1-8b-instant',
-                        'messages' => $apiMessages,
-                    ]);
-                return $response->json()['choices'][0]['message']['content'] ?? null;
-            }
-        } catch (\Exception $e) {
-            Log::error('AI Error: ' . $e->getMessage());
-            return null;
+        $geminiApiKey = env('GEMINI_API_KEY');
+        
+        if (!$groqApiKey && !$geminiApiKey) {
+            return "Maaf, API AI belum dikonfigurasi.";
         }
+
+        // ==== OPSI 1: JIKA MENGGUNAKAN GROQ ====
+        if ($groqApiKey) {
+            $groqModels = ['llama-3.1-8b-instant', 'llama-3.1-70b-versatile', 'mixtral-8x7b-32768'];
+            foreach ($groqModels as $model) {
+                try {
+                    $response = Http::withToken($groqApiKey)
+                        ->timeout(15)
+                        ->post('https://api.groq.com/openai/v1/chat/completions', [
+                            'model' => $model,
+                            'messages' => $apiMessages,
+                            'temperature' => 0.8,
+                            'max_tokens' => 800,
+                        ]);
+
+                    if ($response->successful() && isset($response->json()['choices'][0]['message']['content'])) {
+                        return trim($response->json()['choices'][0]['message']['content']);
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Groq Error ($model): " . $e->getMessage());
+                }
+            }
+        }
+
+        // ==== OPSI 2: JIKA MENGGUNAKAN GEMINI (LAMA) ====
+        if ($geminiApiKey) {
+            $finalPrompt = "INSTRUKSI SISTEM:\n" . $systemPrompt;
+            foreach ($apiMessages as $msg) {
+                if ($msg['role'] !== 'system') {
+                    $finalPrompt .= "\n\n" . ($msg['role'] == 'user' ? 'KLIEN' : 'AI') . ": " . $msg['content'];
+                }
+            }
+            
+            $geminiModels = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-flash-latest'];
+            foreach ($geminiModels as $model) {
+                try {
+                    $response = Http::timeout(15)->post('https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . $geminiApiKey, [
+                        'contents' => [
+                            [
+                                'role' => 'user',
+                                'parts' => [['text' => $finalPrompt]]
+                            ]
+                        ],
+                        'generationConfig' => [
+                            'temperature' => 0.8,
+                            'maxOutputTokens' => 800,
+                        ]
+                    ]);
+
+                    if ($response->successful() && isset($response->json()['candidates'][0]['content']['parts'][0]['text'])) {
+                        return trim($response->json()['candidates'][0]['content']['parts'][0]['text']);
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Gemini Error ($model): " . $e->getMessage());
+                }
+            }
+        }
+
+        return null;
     }
 
     private function sendFonnteMessage($token, $target, $message)
     {
+        $token = trim($token);
         if (!$token) return false;
 
         try {
@@ -228,7 +274,6 @@ class WebhookController extends Controller
             ])->post('https://api.fonnte.com/send', [
                 'target' => $target,
                 'message' => $message,
-                'countryCode' => '62', // Default Indonesia
             ]);
             
             Log::info('Fonnte Send Response', $response->json());
