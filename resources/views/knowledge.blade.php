@@ -551,12 +551,10 @@
                         <div style="font-size: 12px; color: var(--text-muted);">Jika nonaktif, AI membalas tanpa batas</div>
                     </div>
                     <label class="switch">
-                        <input type="checkbox" id="ai_limit_enabled" {{ ($user->ai_limit_enabled ?? false) ? 'checked' : '' }}>
+                        <input type="checkbox" id="ai_limit_enabled" {{ ($user->ai_limit_enabled ?? false) ? 'checked' : '' }} onchange="saveAiLimits()">
                         <span class="slider"></span>
                     </label>
                 </div>
-                
-                <button class="btn btn-secondary" style="margin-top: 12px;" onclick="saveAiLimits()"><i class="fa-regular fa-floppy-disk"></i> Simpan Batasan</button>
             </div>
 
             <div class="kb-card">
@@ -576,7 +574,7 @@
                         <div style="font-size: 12px; color: var(--text-muted);">Jika diaktifkan, AI dapat memecah balasan sapaan/pertanyaan menjadi 2 gelembung pesan terpisah di WhatsApp.</div>
                     </div>
                     <label class="switch">
-                        <input type="checkbox" id="ai_multi_bubble_enabled" {{ ($user->ai_multi_bubble_enabled ?? true) ? 'checked' : '' }}>
+                        <input type="checkbox" id="ai_multi_bubble_enabled" {{ ($user->ai_multi_bubble_enabled ?? true) ? 'checked' : '' }} onchange="saveAiLimits()">
                         <span class="slider"></span>
                     </label>
                 </div>
@@ -586,7 +584,7 @@
                         <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Jumlah Maksimal Gelembung</div>
                         <div style="font-size: 12px; color: var(--text-muted);">Tentukan berapa banyak gelembung pesan yang boleh dipakai AI untuk satu balasan.</div>
                     </div>
-                    <select id="ai_max_bubbles" class="form-control" style="width: 140px;">
+                    <select id="ai_max_bubbles" class="form-control" style="width: 140px;" onchange="saveAiLimits()">
                         <option value="2" {{ ($user->ai_max_bubbles ?? 3) == 2 ? 'selected' : '' }}>2 gelembung</option>
                         <option value="3" {{ ($user->ai_max_bubbles ?? 3) == 3 ? 'selected' : '' }}>3 gelembung</option>
                         <option value="4" {{ ($user->ai_max_bubbles ?? 3) == 4 ? 'selected' : '' }}>4 gelembung</option>
@@ -618,7 +616,7 @@
                         </div>
                     </div>
                     <label class="switch">
-                        <input type="checkbox" id="ai_require_data_before_price" {{ ($user->ai_require_data_before_price ?? true) ? 'checked' : '' }} onchange="toggleRequiredDataForm()">
+                        <input type="checkbox" id="ai_require_data_before_price" {{ ($user->ai_require_data_before_price ?? true) ? 'checked' : '' }} onchange="toggleRequiredDataForm(); saveAiLimits();">
                         <span class="slider"></span>
                     </label>
                 </div>
@@ -634,44 +632,44 @@
                     <div class="row" style="margin-bottom: 20px;">
                         <div class="col-md-6 mb-3">
                             <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" class="required-data-cb" value="Nama Calon Pengantin" {{ in_array('Nama Calon Pengantin', $reqData) ? 'checked' : '' }}>
+                                <input type="checkbox" class="required-data-cb" value="Nama Calon Pengantin" {{ in_array('Nama Calon Pengantin', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
                                 <span style="font-size: 13px; font-weight: 500;">Nama Calon Pengantin</span>
                             </label>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" class="required-data-cb" value="Tanggal / Bulan & Tahun Acara" {{ in_array('Tanggal / Bulan & Tahun Acara', $reqData) ? 'checked' : '' }}>
+                                <input type="checkbox" class="required-data-cb" value="Tanggal / Bulan & Tahun Acara" {{ in_array('Tanggal / Bulan & Tahun Acara', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
                                 <span style="font-size: 13px; font-weight: 500;">Tanggal / Bulan & Tahun Acara</span>
                             </label>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" class="required-data-cb" value="Kota & Lokasi Venue Acara" {{ in_array('Kota & Lokasi Venue Acara', $reqData) ? 'checked' : '' }}>
+                                <input type="checkbox" class="required-data-cb" value="Kota & Lokasi Venue Acara" {{ in_array('Kota & Lokasi Venue Acara', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
                                 <span style="font-size: 13px; font-weight: 500;">Kota & Lokasi Venue Acara</span>
                             </label>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" class="required-data-cb" value="Skala Acara / Jumlah Tamu" {{ in_array('Skala Acara / Jumlah Tamu', $reqData) ? 'checked' : '' }}>
+                                <input type="checkbox" class="required-data-cb" value="Skala Acara / Jumlah Tamu" {{ in_array('Skala Acara / Jumlah Tamu', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
                                 <span style="font-size: 13px; font-weight: 500;">Skala Acara / Jumlah Tamu</span>
                             </label>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" class="required-data-cb" value="Konsep Acara (Indoor/Outdoor)" {{ in_array('Konsep Acara (Indoor/Outdoor)', $reqData) ? 'checked' : '' }}>
+                                <input type="checkbox" class="required-data-cb" value="Konsep Acara (Indoor/Outdoor)" {{ in_array('Konsep Acara (Indoor/Outdoor)', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
                                 <span style="font-size: 13px; font-weight: 500;">Konsep Acara (Indoor/Outdoor)</span>
                             </label>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" class="required-data-cb" value="Estimasi Budget" {{ in_array('Estimasi Budget', $reqData) ? 'checked' : '' }}>
+                                <input type="checkbox" class="required-data-cb" value="Estimasi Budget" {{ in_array('Estimasi Budget', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
                                 <span style="font-size: 13px; font-weight: 500;">Estimasi Budget</span>
                             </label>
                         </div>
                     </div>
 
                     <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">Pertanyaan Custom Tambahan (Opsional)</div>
-                    <input type="text" id="ai_custom_questions" class="form-control" placeholder="Contoh: Apakah sudah punya WO / venue pilihan?" value="{{ $user->ai_custom_questions ?? '' }}">
+                    <input type="text" id="ai_custom_questions" class="form-control" placeholder="Contoh: Apakah sudah punya WO / venue pilihan?" value="{{ $user->ai_custom_questions ?? '' }}" onchange="saveAiLimits()">
                 </div>
             </div>
         </div>

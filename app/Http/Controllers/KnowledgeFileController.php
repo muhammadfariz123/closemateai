@@ -382,6 +382,7 @@ class KnowledgeFileController extends Controller
         $aiRequireData = $user->ai_require_data_before_price ?? true;
         $aiRequiredDataList = is_array($user->ai_required_data) ? $user->ai_required_data : [];
         $customQuestions = $user->ai_custom_questions ?? '';
+        $priceListLink = $file ? asset('storage/' . $file->file_path) : '[Link Price List belum diupload]';
         
         $priceListRule = "";
         if ($aiRequireData) {
@@ -398,9 +399,10 @@ class KnowledgeFileController extends Controller
                 . "   \"Halo Kak {$clientName}! 😊\n\nBoleh banget Kak, dengan senang hati. Untuk keperluan pengiriman detailnya, boleh dibantu informasikan {$requirementsText} ya Kak? Supaya aku bisa sesuaikan informasinya buat Kakak. ✨\"\n";
         } else {
             // Modus Cepat
-            $priceListRule = "4. Jika klien meminta Price List (PL), BERIKAN link atau informasi price list tersebut SECARA LANGSUNG, lalu di akhir pesan tanyakan detail acara dengan sopan.\n"
+            $priceListRule = "4. Jika klien meminta Price List (PL), BERIKAN link file price list berikut ini SECARA LANGSUNG: {$priceListLink}\n"
+                . "   Lalu di akhir pesan tanyakan detail acara dengan sopan.\n"
                 . "   Balaslah dengan gaya SEPERTI INI:\n"
-                . "   \"Halo Kak {$clientName}! Dengan senang hati, ini aku kirimkan ya link price list lengkapnya untuk dipelajari dulu.\n\n[Link Price List]\n\nBoleh bantu aku dengan info Nama, Tanggal, dan Lokasi acaranya ya Kak? Supaya aku bisa cek ketersediaan tim kami di tanggal tersebut. 😊\"\n";
+                . "   \"Halo Kak {$clientName}! Dengan senang hati, ini aku kirimkan ya link price list lengkapnya untuk dipelajari dulu:\n\n{$priceListLink}\n\nBoleh bantu aku dengan info Nama, Tanggal, dan Lokasi acaranya ya Kak? Supaya aku bisa cek ketersediaan tim kami di tanggal tersebut. 😊\"\n";
         }
 
         $systemPrompt = "Kamu adalah asisten CS (Customer Service) WhatsApp yang sangat ramah, natural, dan luwes bernama CloseMateAI, mewakili bisnis '{$user->business_name}'.\n"
