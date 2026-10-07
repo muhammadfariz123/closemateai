@@ -338,7 +338,7 @@ class KnowledgeFileController extends Controller
                 $response = Http::withToken($groqApiKey)
                     ->timeout(15)
                     ->post('https://api.groq.com/openai/v1/chat/completions', [
-                        'model' => 'llama-3.1-8b-instant',
+                        'model' => 'qwen/qwen3.8-27b',
                         'messages' => [
                             ['role' => 'system', 'content' => $systemPrompt],
                             ['role' => 'user', 'content' => $message],
