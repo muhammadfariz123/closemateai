@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Chat Inbox - CloseMateAI</title>
@@ -268,49 +269,9 @@
                     <div class="filter-pill">Unread</div>
                 </div>
                 
-                <div class="chat-list">
-                    <!-- Chat Item 1 -->
-                    <div class="chat-item active">
-                        <div class="chat-item-header">
-                            <div class="chat-item-title">Bekti</div>
-                            <div class="chat-item-time">18.55</div>
-                        </div>
-                        <div class="chat-item-subtitle">Belum ada tanggal</div>
-                        <div class="chat-item-msg">Boleh dibantu info Tanggal dan Lokasi acaranya ya Kak, biar aku cek kete...</div>
-                        <div class="chat-item-tags">
-                            <div class="tag tag-danger" id="tagTakeoverStatus">HUMAN TAKEOVER</div>
-                            <div class="tag tag-light">Belum Dihandle</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Chat Item 2 -->
-                    <div class="chat-item">
-                        <div class="chat-item-header">
-                            <div class="chat-item-title">Weddingvidgram Product</div>
-                            <div class="chat-item-time">17.20</div>
-                        </div>
-                        <div class="chat-item-subtitle">Belum ada tanggal</div>
-                        <div class="chat-item-msg">minta PL kak</div>
-                        <div class="chat-item-tags">
-                            <div class="tag tag-primary">AI Active</div>
-                            <div class="tag tag-light">Belum Dihandle</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Chat Item 3 -->
-                    <div class="chat-item">
-                        <div class="chat-item-header">
-                            <div class="chat-item-title">Bekti</div>
-                            <div class="chat-item-time">Kemarin</div>
-                        </div>
-                        <div class="chat-item-subtitle">Belum ada tanggal</div>
-                        <div class="chat-item-msg">Hallo</div>
-                        <div class="chat-item-tags">
-                            <div class="tag tag-primary">AI Active</div>
-                            <div class="tag tag-light">Belum Dihandle</div>
-                        </div>
-                    </div>
-                </div>
+                <div class="chat-list" id="chatListContainer">
+<div style="padding: 20px; text-align: center; color: #999; font-size: 13px;">Loading...</div>
+</div>
             </div>
 
             <!-- Middle Panel: Chat View -->
@@ -342,54 +303,8 @@
                 </div>
                 
                 <div class="chat-messages" id="chatMessagesBox">
-                    <div class="bubble-wrapper right">
-                        <div class="bubble bubble-right">
-                            <div class="ai-badge">AI</div>
-                            Halo Kak Bekti, boleh banget Kak.
-                        </div>
-                        <div class="bubble-time right">18.54</div>
-                    </div>
-                    
-                    <div class="bubble-wrapper right">
-                        <div class="bubble bubble-right">
-                            <div class="ai-badge">AI</div>
-                            Biar aku bisa bantu jelaskan lebih detail, boleh aku tahu nama calon pengantin serta rencana kota dan lokasi venue acaranya ya Kak? 😊
-                        </div>
-                        <div class="bubble-time right">18.54</div>
-                    </div>
-                    
-                    <div class="bubble-wrapper left">
-                        <div class="bubble bubble-left">
-                            Minta pl
-                        </div>
-                        <div class="bubble-time">18.55</div>
-                    </div>
-                    
-                    <div class="bubble-wrapper right">
-                        <div class="bubble bubble-right">
-                            <div class="ai-badge">AI</div>
-                            Halo Kak Bekti, siap Kak! Ini aku kirimkan ya detail price list lengkap dari Weddingvidgram.
-                        </div>
-                        <div class="bubble-time right">18.55</div>
-                    </div>
-                    
-                    <div class="bubble-wrapper right">
-                        <div class="bubble bubble-right">
-                            <div class="ai-badge">AI</div>
-                            Boleh dibantu info Tanggal dan Lokasi acaranya ya Kak, biar aku cek ketersediaan jadwal tim kami? 😊
-                        </div>
-                        <div class="bubble-time right">18.55</div>
-                    </div>
-                    
-                    <div class="bubble-wrapper right">
-                        <div class="bubble bubble-right" style="background: var(--primary);">
-                            <div class="ai-badge">AI</div>
-                            Ini link price list-nya ya kak 🙏<br>
-                            https://drive.google.com/file/d/12eOubbJ9ZPAKi-hI01s7ol_c5n2s6bHn/view?usp=drive_link
-                        </div>
-                        <div class="bubble-time right">18.55</div>
-                    </div>
-                </div>
+<div style="padding: 20px; text-align: center; color: #999; font-size: 13px;">Pilih chat untuk melihat pesan</div>
+</div>
                 
                 <div class="chat-input-area" style="width: 100%;">
                     <div class="chat-input-box">
@@ -398,7 +313,7 @@
                             <i class="fa-solid fa-microphone"></i>
                             <span style="font-size: 12px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-bolt"></i> Quick Reply</span>
                         </div>
-                        <input type="text" placeholder="Tulis pesan untuk klien... (Enter untuk kirim, Shift+Enter baris baru)">
+                        <input type="text" id="chatInputMessage" placeholder="Tulis pesan untuk klien... (Enter untuk kirim, Shift+Enter baris baru)">
                         <button class="btn-send"><i class="fa-regular fa-paper-plane" style="margin-right: 6px;"></i> Send Message</button>
                     </div>
                 </div>
@@ -473,59 +388,241 @@
     
     <div class="toast-container" id="toast-container"></div>
 
+    
     <script>
-        // Load state from local storage so it's "tersimpan di sistem" for this browser session
-        document.addEventListener('DOMContentLoaded', () => {
-            const isTakeover = localStorage.getItem('humanTakeover_bekti') !== 'false'; // Default true for this demo based on image 3
-            const toggle = document.getElementById('humanTakeoverToggle');
-            if(toggle) {
-                toggle.checked = isTakeover;
-                updateTakeoverUI(isTakeover, false);
+        let activeChatId = null;
+        let chatsData = [];
+
+        async function fetchChats() {
+            try {
+                let res = await fetch('/api/chats');
+                let chats = await res.json();
+                chatsData = chats;
+                renderChatList(chats);
+                if(activeChatId) {
+                    // Update active chat silently if new messages arrived
+                    let stillExists = chats.find(c => c.id === activeChatId);
+                    if(stillExists && stillExists.messages.length > 0) {
+                        // We will just re-fetch the active chat
+                        fetchActiveChatMessages(true);
+                    }
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function renderChatList(chats) {
+            const container = document.getElementById('chatListContainer');
+            if (chats.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #999; font-size: 13px;">Belum ada chat</div>';
+                return;
             }
             
-            const msgBox = document.getElementById('chatMessagesBox');
-            msgBox.scrollTop = msgBox.scrollHeight;
-        });
+            let html = '';
+            chats.forEach(chat => {
+                let lastMsg = chat.messages && chat.messages.length > 0 ? chat.messages[0].message : 'Tidak ada pesan';
+                let time = chat.updated_at ? new Date(chat.updated_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+                let isActive = chat.id === activeChatId ? 'active' : '';
+                let tagColor = chat.is_human_takeover ? 'tag-danger' : 'tag-primary';
+                let tagText = chat.is_human_takeover ? 'HUMAN TAKEOVER' : 'AI Active';
+                let name = chat.client_name || chat.client_wa_number;
 
-        function toggleHumanTakeover() {
+                html += `
+                    <div class="chat-item ${isActive}" onclick="openChat(${chat.id})">
+                        <div class="chat-item-header">
+                            <div class="chat-item-title">${name}</div>
+                            <div class="chat-item-time">${time}</div>
+                        </div>
+                        <div class="chat-item-subtitle">${chat.client_wa_number}</div>
+                        <div class="chat-item-msg">${lastMsg.substring(0, 50)}${lastMsg.length > 50 ? '...' : ''}</div>
+                        <div class="chat-item-tags">
+                            <div class="tag ${tagColor}">${tagText}</div>
+                            <div class="tag tag-light">${chat.status}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        async function openChat(id) {
+            activeChatId = id;
+            renderChatList(chatsData); // update active class
+            await fetchActiveChatMessages(false);
+        }
+
+        async function fetchActiveChatMessages(silent = false) {
+            if(!activeChatId) return;
+            try {
+                let res = await fetch(`/api/chats/${activeChatId}`);
+                let data = await res.json();
+                
+                // Update Header
+                let name = data.chat.client_name || data.chat.client_wa_number;
+                document.querySelector('.chat-header-info h3').innerText = name;
+                document.querySelector('.chat-header-avatar').innerText = name.substring(0, 2).toUpperCase();
+                
+                // Update details panel
+                document.querySelector('.client-name h3').innerText = name;
+                document.querySelector('.client-name p').innerText = `WA Name: ${name} | ${data.chat.client_wa_number}`;
+                document.querySelectorAll('.info-row .info-content p')[1].innerText = data.chat.client_wa_number;
+                
+                // Update Takeover UI
+                const toggle = document.getElementById('humanTakeoverToggle');
+                if(toggle && !silent) {
+                    toggle.checked = data.chat.is_human_takeover == 1;
+                    updateTakeoverUI(data.chat.is_human_takeover == 1, false);
+                }
+
+                // Render Messages
+                const msgBox = document.getElementById('chatMessagesBox');
+                let html = '';
+                data.messages.forEach(msg => {
+                    let isRight = msg.sender === 'admin' || msg.sender === 'ai';
+                    let time = new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    let badge = msg.sender === 'ai' ? '<div class="ai-badge">AI</div>' : '';
+                    let bgColor = msg.sender === 'admin' ? '#4a3da8' : 'var(--primary)'; // slightly different for human
+                    
+                    if (isRight) {
+                        html += `
+                            <div class="bubble-wrapper right">
+                                <div class="bubble bubble-right" style="background: ${bgColor};">
+                                    ${badge}
+                                    ${msg.message.replace(/
+/g, '<br>')}
+                                </div>
+                                <div class="bubble-time right">${time}</div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="bubble-wrapper left">
+                                <div class="bubble bubble-left">
+                                    ${msg.message.replace(/
+/g, '<br>')}
+                                </div>
+                                <div class="bubble-time">${time}</div>
+                            </div>
+                        `;
+                    }
+                });
+                msgBox.innerHTML = html;
+                
+                if(!silent) {
+                    msgBox.scrollTop = msgBox.scrollHeight;
+                } else {
+                    // Only scroll down if already near bottom
+                    if (msgBox.scrollHeight - msgBox.scrollTop - msgBox.clientHeight < 100) {
+                        msgBox.scrollTop = msgBox.scrollHeight;
+                    }
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function toggleHumanTakeover() {
+            if(!activeChatId) return;
             const toggle = document.getElementById('humanTakeoverToggle');
             const isTakeover = toggle.checked;
             
-            // Save to system (local storage for demo)
-            localStorage.setItem('humanTakeover_bekti', isTakeover);
-            
-            updateTakeoverUI(isTakeover, true);
+            try {
+                let res = await fetch(`/api/chats/${activeChatId}/takeover`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    body: JSON.stringify({ is_takeover: isTakeover })
+                });
+                let data = await res.json();
+                if(data.success) {
+                    updateTakeoverUI(isTakeover, true);
+                    fetchChats(); // refresh list
+                }
+            } catch(e) { console.error(e); }
         }
-        
+
+        async function sendAdminMessage() {
+            if(!activeChatId) return;
+            const input = document.getElementById('chatInputMessage');
+            const text = input.value.trim();
+            if(!text) return;
+            
+            input.value = '';
+            input.disabled = true;
+            
+            // Optimistic UI
+            const msgBox = document.getElementById('chatMessagesBox');
+            let time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            msgBox.innerHTML += `
+                <div class="bubble-wrapper right" style="opacity: 0.7;">
+                    <div class="bubble bubble-right" style="background: #4a3da8;">
+                        ${text.replace(/
+/g, '<br>')}
+                    </div>
+                    <div class="bubble-time right">${time} (Sending...)</div>
+                </div>
+            `;
+            msgBox.scrollTop = msgBox.scrollHeight;
+            
+            try {
+                let res = await fetch(`/api/chats/${activeChatId}/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    body: JSON.stringify({ message: text })
+                });
+                await fetchActiveChatMessages(false);
+                fetchChats();
+            } catch(e) { 
+                console.error(e); 
+                showToast('Gagal mengirim pesan', 'fa-times-circle');
+            } finally {
+                input.disabled = false;
+                input.focus();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchChats();
+            setInterval(() => {
+                fetchChats();
+            }, 5000); // refresh every 5s
+            
+            const btnSend = document.querySelector('.btn-send');
+            const input = document.getElementById('chatInputMessage');
+            if(btnSend && input) {
+                btnSend.onclick = sendAdminMessage;
+                input.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendAdminMessage();
+                    }
+                });
+            }
+        });
+    
+    <script>
         function updateTakeoverUI(isTakeover, showToastAlert = false) {
             const banner = document.getElementById('chatBanner');
             const tag = document.getElementById('tagTakeoverStatus');
             const label = document.getElementById('takeoverText');
-            
+            if(!banner || !tag || !label) return;
             if(isTakeover) {
                 banner.style.display = 'flex';
                 tag.className = 'tag tag-danger';
                 tag.innerText = 'HUMAN TAKEOVER';
                 label.style.color = 'var(--primary)';
-                
                 if(showToastAlert) showToast('Mode Human Takeover Aktif. AI dihentikan.', 'fa-user-shield');
             } else {
                 banner.style.display = 'none';
                 tag.className = 'tag tag-primary';
                 tag.innerText = 'AI Active';
                 label.style.color = 'var(--text-muted)';
-                
                 if(showToastAlert) showToast('AI kembali aktif', 'fa-robot');
             }
         }
-        
         function showToast(message, iconClass = 'fa-check-circle') {
             const container = document.getElementById('toast-container');
+            if(!container) return;
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.innerHTML = `<i class="fa-solid ${iconClass}"></i> ${message}`;
             container.appendChild(toast);
-            
             setTimeout(() => {
                 toast.style.animation = 'fadeOut 0.3s forwards';
                 setTimeout(() => toast.remove(), 300);
