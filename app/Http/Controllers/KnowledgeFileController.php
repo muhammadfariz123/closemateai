@@ -420,7 +420,8 @@ class KnowledgeFileController extends Controller
             if ($aiRequireData) {
                 $requirementsText = implode(', ', $aiRequiredDataList);
                 if ($customQuestions) {
-                    $requirementsText .= ($requirementsText ? ', dan ' : '') . "($customQuestions)";
+                    $customQuestionsStr = str_replace("\n", ", ", trim($customQuestions));
+                    $requirementsText .= ($requirementsText ? ', dan ' : '') . "($customQuestionsStr)";
                 }
                 if (empty($requirementsText)) {
                     $requirementsText = "Nama dan Detail Acara"; // Fallback

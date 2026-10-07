@@ -136,6 +136,18 @@
         /* Toggle Switch */
         .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border-color); }
         .switch-row:last-child { border-bottom: none; }
+        
+        /* Custom Circle Checkbox */
+        .custom-circle-checkbox { position: relative; }
+        .checkbox-circle { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #e1e1e4; margin-right: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; background: white; }
+        .custom-circle-checkbox input[type="checkbox"]:checked + .checkbox-circle { background-color: var(--primary); border-color: var(--primary); }
+        .custom-circle-checkbox input[type="checkbox"]:checked + .checkbox-circle i { opacity: 1 !important; }
+        .custom-circle-checkbox:has(input[type="checkbox"]:checked) { background-color: rgba(107, 92, 216, 0.02); }
+        
+        /* Dynamic Question Row */
+        .custom-question-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .custom-question-number { font-size: 13px; color: var(--text-muted); font-weight: 500; width: 16px; text-align: center; }
+        
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
@@ -642,45 +654,73 @@
 
                     <div class="row" style="margin-bottom: 20px;">
                         <div class="col-md-6 mb-3">
-                            <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" class="required-data-cb" value="Nama Calon Pengantin" {{ in_array('Nama Calon Pengantin', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                            <label class="custom-circle-checkbox d-flex align-items-center p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.2s;">
+                                <input type="checkbox" class="required-data-cb d-none" value="Nama Calon Pengantin" {{ in_array('Nama Calon Pengantin', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                                <div class="checkbox-circle">
+                                    <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
+                                </div>
                                 <span style="font-size: 13px; font-weight: 500;">Nama Calon Pengantin</span>
                             </label>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" class="required-data-cb" value="Tanggal / Bulan & Tahun Acara" {{ in_array('Tanggal / Bulan & Tahun Acara', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                            <label class="custom-circle-checkbox d-flex align-items-center p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.2s;">
+                                <input type="checkbox" class="required-data-cb d-none" value="Tanggal / Bulan & Tahun Acara" {{ in_array('Tanggal / Bulan & Tahun Acara', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                                <div class="checkbox-circle">
+                                    <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
+                                </div>
                                 <span style="font-size: 13px; font-weight: 500;">Tanggal / Bulan & Tahun Acara</span>
                             </label>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" class="required-data-cb" value="Kota & Lokasi Venue Acara" {{ in_array('Kota & Lokasi Venue Acara', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                            <label class="custom-circle-checkbox d-flex align-items-center p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.2s;">
+                                <input type="checkbox" class="required-data-cb d-none" value="Kota & Lokasi Venue Acara" {{ in_array('Kota & Lokasi Venue Acara', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                                <div class="checkbox-circle">
+                                    <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
+                                </div>
                                 <span style="font-size: 13px; font-weight: 500;">Kota & Lokasi Venue Acara</span>
                             </label>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" class="required-data-cb" value="Skala Acara / Jumlah Tamu" {{ in_array('Skala Acara / Jumlah Tamu', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                            <label class="custom-circle-checkbox d-flex align-items-center p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.2s;">
+                                <input type="checkbox" class="required-data-cb d-none" value="Skala Acara / Jumlah Tamu" {{ in_array('Skala Acara / Jumlah Tamu', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                                <div class="checkbox-circle">
+                                    <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
+                                </div>
                                 <span style="font-size: 13px; font-weight: 500;">Skala Acara / Jumlah Tamu</span>
                             </label>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" class="required-data-cb" value="Konsep Acara (Indoor/Outdoor)" {{ in_array('Konsep Acara (Indoor/Outdoor)', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                            <label class="custom-circle-checkbox d-flex align-items-center p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.2s;">
+                                <input type="checkbox" class="required-data-cb d-none" value="Konsep Acara (Indoor/Outdoor)" {{ in_array('Konsep Acara (Indoor/Outdoor)', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                                <div class="checkbox-circle">
+                                    <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
+                                </div>
                                 <span style="font-size: 13px; font-weight: 500;">Konsep Acara (Indoor/Outdoor)</span>
                             </label>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" class="required-data-cb" value="Estimasi Budget" {{ in_array('Estimasi Budget', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                            <label class="custom-circle-checkbox d-flex align-items-center p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.2s;">
+                                <input type="checkbox" class="required-data-cb d-none" value="Estimasi Budget" {{ in_array('Estimasi Budget', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                                <div class="checkbox-circle">
+                                    <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
+                                </div>
                                 <span style="font-size: 13px; font-weight: 500;">Estimasi Budget</span>
                             </label>
                         </div>
                     </div>
 
-                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">Pertanyaan Custom Tambahan (Opsional)</div>
-                    <input type="text" id="ai_custom_questions" class="form-control" placeholder="Contoh: Apakah sudah punya WO / venue pilihan?" value="{{ $user->ai_custom_questions ?? '' }}" onchange="saveAiLimits()">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div style="font-weight: 600; font-size: 14px; margin-bottom: 0;">Pertanyaan Custom Tambahan (Opsional)</div>
+                        <button type="button" class="btn btn-sm" onclick="addCustomQuestion()" style="padding: 4px 12px; font-size: 12px; border-radius: 100px; display: flex; align-items: center; gap: 6px; border: 1px solid #e1e1e4; background: white; color: var(--text-dark); transition: 0.2s;">
+                            <i class="fa-solid fa-plus"></i> Tambah Pertanyaan Lain
+                        </button>
+                    </div>
+                    
+                    <div id="custom-questions-container">
+                        <!-- Filled by JS -->
+                    </div>
+                    
+                    <textarea id="hidden_ai_custom_questions" style="display:none;">{{ $user->ai_custom_questions ?? '' }}</textarea>
                 </div>
             </div>
         </div>
@@ -1128,7 +1168,56 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
                     alert("Error: " + xhr.responseText);
                 });
             });
+            
+            // Render custom questions
+            renderCustomQuestions();
         });
+
+        function renderCustomQuestions() {
+            const container = document.getElementById('custom-questions-container');
+            const hiddenInput = document.getElementById('hidden_ai_custom_questions');
+            const questions = hiddenInput.value.split('\n').map(q => q.trim()).filter(q => q !== '');
+            
+            container.innerHTML = '';
+            
+            if (questions.length === 0) {
+                addCustomQuestion('');
+                return;
+            }
+            
+            questions.forEach(q => addCustomQuestion(q));
+        }
+        
+        function addCustomQuestion(val = '') {
+            const container = document.getElementById('custom-questions-container');
+            const index = container.querySelectorAll('.custom-question-row').length + 1;
+            
+            const row = document.createElement('div');
+            row.className = 'custom-question-row';
+            row.innerHTML = `
+                <div class="custom-question-number">${index}</div>
+                <input type="text" class="form-control custom-question-input" style="flex:1;" placeholder="Contoh: Boleh tahu saat ini Kakak bergerak di bidang vendor apa ya?" value="${val.replace(/"/g, '&quot;')}" onchange="saveAiLimits()">
+                <button type="button" class="btn" onclick="removeCustomQuestion(this)" style="padding: 10px 14px; background: transparent; color: var(--text-muted); border: none; transition: 0.2s;">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            `;
+            container.appendChild(row);
+            updateCustomQuestionNumbers();
+        }
+        
+        function removeCustomQuestion(btn) {
+            btn.closest('.custom-question-row').remove();
+            updateCustomQuestionNumbers();
+            saveAiLimits();
+        }
+        
+        function updateCustomQuestionNumbers() {
+            const container = document.getElementById('custom-questions-container');
+            const rows = container.querySelectorAll('.custom-question-row');
+            rows.forEach((row, i) => {
+                row.querySelector('.custom-question-number').textContent = i + 1;
+            });
+        }
 
         function loadPrompt(type, element) {
             // Update UI Active State
@@ -1184,6 +1273,13 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
             document.querySelectorAll('.required-data-cb:checked').forEach(cb => {
                 requiredData.push(cb.value);
             });
+            
+            const customQuestions = [];
+            document.querySelectorAll('.custom-question-input').forEach(input => {
+                const val = input.value.trim();
+                if(val) customQuestions.push(val);
+            });
+            const customQuestionsStr = customQuestions.join('\n');
 
             const data = {
                 ai_limit_enabled: document.getElementById('ai_limit_enabled').checked ? 1 : 0,
@@ -1191,7 +1287,7 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
                 ai_max_bubbles: document.getElementById('ai_max_bubbles').value,
                 ai_require_data_before_price: document.getElementById('ai_require_data_before_price').checked ? 1 : 0,
                 ai_required_data: JSON.stringify(requiredData),
-                ai_custom_questions: document.getElementById('ai_custom_questions').value
+                ai_custom_questions: customQuestionsStr
             };
 
             $.post('/knowledge/save-ai-limits', data, function(res) {
