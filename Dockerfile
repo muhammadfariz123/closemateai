@@ -12,10 +12,11 @@ RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
     libsqlite3-dev \
-    sqlite3
+    sqlite3 \
+    libpq-dev
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd pdo_sqlite
+RUN docker-php-ext-install pdo_mysql pdo_pgsql pgsql mbstring exif pcntl bcmath gd pdo_sqlite
 
 # Dapatkan Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
