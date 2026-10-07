@@ -107,6 +107,13 @@
         .align-items-center { align-items: center; }
         .justify-content-between { justify-content: space-between; }
         
+        /* Grid System */
+        .row { display: flex; flex-wrap: wrap; margin-left: -8px; margin-right: -8px; }
+        .col-md-6 { width: 50%; padding-left: 8px; padding-right: 8px; }
+        .mb-3 { margin-bottom: 16px; }
+        .mt-1 { margin-top: 4px; }
+        .mt-2 { margin-top: 8px; }
+        
         .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { opacity: 0.9; }
@@ -139,6 +146,7 @@
         
         /* Custom Circle Checkbox */
         .custom-circle-checkbox { position: relative; }
+        .custom-circle-checkbox input[type="checkbox"] { display: none !important; }
         .checkbox-circle { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #e1e1e4; margin-right: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; background: white; flex-shrink: 0; }
         .custom-circle-checkbox input[type="checkbox"]:checked + .checkbox-circle { background-color: var(--primary); border-color: var(--primary); }
         .custom-circle-checkbox input[type="checkbox"]:checked + .checkbox-circle i { opacity: 1 !important; }
@@ -180,6 +188,7 @@
 
         /* Responsive Mobile Layout */
         @media (max-width: 768px) {
+            .col-md-6 { width: 100%; }
             .sidebar {
                 width: 100% !important;
                 height: 64px !important;
