@@ -93,3 +93,8 @@ Route::get('/api/debug/logs', function() {
     $lastLines = array_slice($lines, -500);
     return response("<pre>" . implode("", $lastLines) . "</pre>");
 });
+
+Route::get('/api/debug/users', function() {
+    $users = \App\Models\User::all(['id', 'name', 'webhook_secret']);
+    return response()->json($users);
+});
