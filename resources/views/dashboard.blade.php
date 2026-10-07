@@ -343,6 +343,19 @@
                     <i class="fa-solid fa-mobile-screen" style="color: var(--text-muted);"></i>
                 </div>
 
+                @if($isWaConnected)
+                <div class="alert-box" style="background-color: rgba(80, 205, 137, 0.1); border-color: var(--success);">
+                    <div class="alert-content">
+                        <i class="fa-regular fa-circle-check alert-icon" style="color: var(--success); font-size: 24px; margin-right: 16px;"></i>
+                        <div class="alert-text">
+                            <h4 style="color: var(--text-dark); margin-bottom: 2px;">Connected • {{ $currentUser->wa_number ?? $currentUser->business_wa_number ?? 'WhatsApp' }}</h4>
+                            <p style="color: var(--text-muted); font-size: 13px;">Session aktif • terakhir sinkron {{ $currentUser->updated_at ? $currentUser->updated_at->diffForHumans() : 'baru saja' }}</p>
+                        </div>
+                    </div>
+                    <div class="alert-badge" style="background-color: var(--success); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">Connected</div>
+                </div>
+                <a href="/settings" class="btn-scan" style="text-decoration: none;"><i class="fa-solid fa-gears"></i> Kelola Koneksi</a>
+                @else
                 <div class="alert-box">
                     <div class="alert-content">
                         <i class="fa-solid fa-power-off alert-icon"></i>
@@ -354,6 +367,7 @@
                     <div class="alert-badge">Offline</div>
                 </div>
                 <a href="/settings" class="btn-scan" style="text-decoration: none;"><i class="fa-solid fa-qrcode"></i> Scan QR Code</a>
+                @endif
 
                 <div class="mini-stats-grid">
                     <div class="mini-stat">

@@ -269,14 +269,14 @@
                     <div class="filter-pill">Unread</div>
                 </div>
                 
-                <div class="chat-list" id="chatListContainer">
-<div style="padding: 20px; text-align: center; color: #999; font-size: 13px;">Loading...</div>
-</div>
+                <div class="chat-list" id="chatListContainer" style="height: 100%; display: flex; align-items: center; justify-content: center; color: #a1a5b7; font-size: 13px; font-weight: 500;">
+                    Belum ada percakapan masuk
+                </div>
             </div>
 
             <!-- Middle Panel: Chat View -->
             <div class="chat-main">
-                <div class="chat-header" style="width: 100%;">
+                <div class="chat-header" id="chatHeader" style="width: 100%; display: none;">
                     <div class="chat-header-user">
                         <div class="chat-header-avatar">Be</div>
                         <div class="chat-header-info">
@@ -298,15 +298,15 @@
                     </div>
                 </div>
                 
-                <div class="chat-banner" id="chatBanner">
+                <div class="chat-banner" id="chatBanner" style="display: none;">
                     <i class="fa-solid fa-microphone-lines-slash"></i> AI di-PAUSE untuk chat ini – matikan toggle untuk mengaktifkan AI kembali
                 </div>
                 
-                <div class="chat-messages" id="chatMessagesBox">
-<div style="padding: 20px; text-align: center; color: #999; font-size: 13px;">Pilih chat untuk melihat pesan</div>
-</div>
+                <div class="chat-messages" id="chatMessagesBox" style="display: flex; align-items: center; justify-content: center;">
+                    <div style="color: #a1a5b7; font-size: 14px; font-weight: 500;">Belum ada percakapan masuk</div>
+                </div>
                 
-                <div class="chat-input-area" style="width: 100%;">
+                <div class="chat-input-area" id="chatInputArea" style="width: 100%; display: none;">
                     <div class="chat-input-box">
                         <div class="chat-input-actions" style="gap: 16px;">
                             <i class="fa-solid fa-paperclip"></i>
@@ -413,7 +413,12 @@
         function renderChatList(chats) {
             const container = document.getElementById('chatListContainer');
             if (chats.length === 0) {
-                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #999; font-size: 13px;">Belum ada chat</div>';
+                container.innerHTML = '<div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #a1a5b7; font-size: 13px; font-weight: 500;">Belum ada percakapan masuk</div>';
+                
+                const msgBox = document.getElementById('chatMessagesBox');
+                if (msgBox) {
+                    msgBox.innerHTML = '<div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #a1a5b7; font-size: 14px; font-weight: 500;">Belum ada percakapan masuk</div>';
+                }
                 return;
             }
             
@@ -456,6 +461,11 @@
                 let res = await fetch(`/api/chats/${activeChatId}`);
                 let data = await res.json();
                 
+                // Show UI elements
+                document.getElementById('chatHeader').style.display = 'flex';
+                document.getElementById('chatInputArea').style.display = 'block';
+                document.getElementById('chatMessagesBox').style.display = 'block';
+
                 // Update Header
                 let name = data.chat.client_name || data.chat.client_wa_number;
                 document.querySelector('.chat-header-info h3').innerText = name;
@@ -592,8 +602,6 @@
                 });
             }
         });
-    
-    <script>
         function updateTakeoverUI(isTakeover, showToastAlert = false) {
             const banner = document.getElementById('chatBanner');
             const tag = document.getElementById('tagTakeoverStatus');
