@@ -330,10 +330,10 @@
                 <div class="profile-wrapper">
                     <div class="user-profile">
                         <div class="avatar">
-                            P
+                            {{ auth()->check() ? substr(auth()->user()->name, 0, 1) : 'V' }}
                         </div>
                         <div class="user-info">
-                            <h4>Penapict <i class="fa-solid fa-chevron-down" style="font-size: 10px; color: #a1a5b7; margin-left: 4px;"></i></h4>
+                            <h4>{{ auth()->check() ? auth()->user()->name : 'Vendor' }} <i class="fa-solid fa-chevron-down" style="font-size: 10px; color: #a1a5b7; margin-left: 4px;"></i></h4>
                             <p>Starter</p>
                         </div>
                     </div>
