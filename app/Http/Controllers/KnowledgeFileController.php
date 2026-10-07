@@ -252,27 +252,65 @@ class KnowledgeFileController extends Controller
             
             $prompt = "Ekstrak teks dari dokumen ini. Pertahankan tata letaknya persis seperti aslinya. Jangan ubah strukturnya, jangan ubah format barisnya. Tuliskan persis seperti yang tertulis di gambar. JANGAN ada kalimat pembuka/penutup dari AI. Berikan murni isi teks gambarnya saja.";
 
-            $response = Http::retry(4, 2000)->timeout(60)->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=' . $apiKey, [
-                'contents' => [
-                    [
-                        'parts' => [
-                            ['text' => $prompt],
+            $groqApiKey = env('GROQ_API_KEY');
+            $response = null;
+
+            if ($groqApiKey) {
+                try {
+                    $response = Http::withToken($groqApiKey)->timeout(30)->post('https://api.groq.com/openai/v1/chat/completions', [
+                        'model' => 'qwen/qwen3.8-27b',
+                        'messages' => [
                             [
-                                'inlineData' => [
-                                    'mimeType' => $mimeType,
-                                    'data' => $base64Data
+                                'role' => 'user',
+                                'content' => [
+                                    ['type' => 'text', 'text' => $prompt],
+                                    [
+                                        'type' => 'image_url',
+                                        'image_url' => [
+                                            'url' => "data:{$mimeType};base64,{$base64Data}"
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]);
+                } catch (\Exception $e) {
+                    $response = null; // Biarkan jatuh ke fallback Gemini
+                }
+            }
+
+            // Jika Groq tidak ada, tidak support (misal PDF), atau gagal, fallback ke Gemini
+            if (!$response || !$response->successful() || !isset($response->json()['choices'][0]['message']['content'])) {
+                $response = Http::retry(4, 2000)->timeout(60)->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=' . $apiKey, [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                ['text' => $prompt],
+                                [
+                                    'inlineData' => [
+                                        'mimeType' => $mimeType,
+                                        'data' => $base64Data
+                                    ]
                                 ]
                             ]
                         ]
                     ]
-                ]
-            ]);
-
-            if ($response->successful()) {
+                ]);
+            }
+            if ($response && $response->successful()) {
                 $responseData = $response->json();
-                if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
+                $extractedText = '';
+
+                // Cek format Groq
+                if (isset($responseData['choices'][0]['message']['content'])) {
+                    $extractedText = $responseData['choices'][0]['message']['content'];
+                }
+                // Cek format Gemini
+                elseif (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
                     $extractedText = $responseData['candidates'][0]['content']['parts'][0]['text'];
-                    
+                }
+
+                if (!empty($extractedText)) {
                     if (str_starts_with(trim($extractedText), '```markdown')) {
                         $extractedText = preg_replace('/^```markdown\s*/', '', trim($extractedText));
                         $extractedText = preg_replace('/\s*```$/', '', $extractedText);
