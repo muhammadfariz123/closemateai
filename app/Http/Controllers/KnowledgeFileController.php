@@ -382,163 +382,164 @@ class KnowledgeFileController extends Controller
 
     public function simulateChat(Request $request)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
-        if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
-        }
-
-        $message = $request->input('message');
-        $clientName = $request->input('client_name', 'Klien');
-        $apiKey = env('GEMINI_API_KEY');
-
-        if (!$apiKey) {
-            return response()->json(['success' => false, 'message' => 'API Key belum diatur di .env']);
-        }
-
-        $file = KnowledgeFile::where('user_id', $user->id)->latest()->first();
-        $knowledge = $file ? $file->extracted_text : 'Tidak ada data price list / katalog.';
-
-        // Dynamic Rules based on User Settings
-        $aiRequireData = $user->ai_require_data_before_price ?? true;
-        $aiRequiredDataList = is_array($user->ai_required_data) ? $user->ai_required_data : [];
-        $customQuestions = $user->ai_custom_questions ?? '';
-        
-        $links = json_decode($user->price_list_links ?? '[]', true);
-        $formattedLinks = "";
-        if (!empty($links)) {
-            foreach ($links as $link) {
-                $title = $link['title'] ?: 'Link Price List';
-                $url = $link['url'] ?: '#';
-                $formattedLinks .= "{$title}: {$url}\n";
-            }
-        } else {
-            $formattedLinks = $file ? asset('storage/' . $file->file_path) : '[Link Price List belum diatur]';
-        }
-        
-        $priceListRule = "";
-        if ($aiRequireData) {
-            $requirementsText = implode(', ', $aiRequiredDataList);
-            if ($customQuestions) {
-                $requirementsText .= ($requirementsText ? ', dan ' : '') . "($customQuestions)";
-            }
-            if (empty($requirementsText)) {
-                $requirementsText = "Nama dan Detail Acara"; // Fallback
+        try {
+            $user = auth()->user() ?? \App\Models\User::first();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
             }
 
-            $priceListRule = "4. Jika klien meminta Price List (PL), JANGAN langsung mengirim isi pricelist atau file/link-nya. Kamu HARUS menggali informasi berikut ini terlebih dahulu dari klien: [{$requirementsText}].\n"
-                . "   Balaslah dengan gaya SEPERTI INI:\n"
-                . "   \"Halo Kak {$clientName}! 😊\n\nBoleh banget Kak, dengan senang hati. Untuk keperluan pengiriman detailnya, boleh dibantu informasikan {$requirementsText} ya Kak? Supaya aku bisa sesuaikan informasinya buat Kakak. ✨\"\n";
-        } else {
-            // Modus Cepat
-            $priceListRule = "4. Jika klien meminta Price List (PL), BERIKAN link file price list berikut ini SECARA LANGSUNG:\n{$formattedLinks}\n"
-                . "   Lalu di akhir pesan tanyakan detail acara dengan sopan.\n"
-                . "   Balaslah dengan gaya SEPERTI INI:\n"
-                . "   \"Halo Kak {$clientName}! Dengan senang hati, ini aku kirimkan ya link price list lengkapnya untuk dipelajari dulu:\n\n{$formattedLinks}\n\nBoleh bantu aku dengan info Nama, Tanggal, dan Lokasi acaranya ya Kak? Supaya aku bisa cek ketersediaan tim kami di tanggal tersebut. 😊\"\n";
-        }
+            $message = $request->input('message');
+            $clientName = $request->input('client_name', 'Klien');
+            $apiKey = env('GEMINI_API_KEY');
 
-        $systemPrompt = "Kamu adalah asisten CS (Customer Service) WhatsApp yang sangat ramah, natural, dan luwes bernama CloseMateAI, mewakili bisnis '{$user->business_name}'.\n"
-            . "Tugasmu adalah menjawab pesan dari calon klien bernama '{$clientName}' berdasarkan KNOWLEDGE BASE berikut ini:\n\n"
-            . "-- KNOWLEDGE BASE MULAI --\n"
-            . "{$knowledge}\n"
-            . "-- KNOWLEDGE BASE SELESAI --\n\n"
-            . "ATURAN PENTING:\n"
-            . "1. Jawablah dengan bahasa Indonesia yang sangat natural, santai, sopan, layaknya manusia biasa chatting di WhatsApp. Jangan kaku atau seperti robot.\n"
-            . "2. Gunakan sapaan 'aku' untuk dirimu dan 'Kak {$clientName}' untuk klien.\n"
-            . "3. Selalu sisipkan 1-2 emoji yang ramah (contoh: 😊, ✨, 🙏).\n"
-            . $priceListRule
-            . "5. JANGAN memberikan harga atau paket yang tidak ada di Knowledge Base.\n"
-            . "6. Balaslah hanya sebagai respon untuk pesan klien, jangan tambahkan embel-embel format aneh.";
+            if (!$apiKey) {
+                return response()->json(['success' => false, 'message' => 'API Key belum diatur di .env']);
+            }
 
-        $groqApiKey = env('GROQ_API_KEY');
+            $file = KnowledgeFile::where('user_id', $user->id)->latest()->first();
+            $knowledge = $file ? $file->extracted_text : 'Tidak ada data price list / katalog.';
 
-        // ==== OPSI 1: JIKA MENGGUNAKAN GROQ (SUPER CEPAT & GRATIS) ====
-        if ($groqApiKey) {
-            try {
-                $response = Http::withToken($groqApiKey)
-                    ->timeout(15)
-                    ->post('https://api.groq.com/openai/v1/chat/completions', [
-                        'model' => 'qwen/qwen3.8-27b',
-                        'messages' => [
-                            ['role' => 'system', 'content' => $systemPrompt],
-                            ['role' => 'user', 'content' => $message],
+            // Dynamic Rules based on User Settings
+            $aiRequireData = $user->ai_require_data_before_price ?? true;
+            $aiRequiredDataList = is_array($user->ai_required_data) ? $user->ai_required_data : [];
+            $customQuestions = $user->ai_custom_questions ?? '';
+            
+            $links = json_decode((string)($user->price_list_links ?? '[]'), true);
+            $formattedLinks = "";
+            if (!empty($links)) {
+                foreach ($links as $link) {
+                    $title = $link['title'] ?: 'Link Price List';
+                    $url = $link['url'] ?: '#';
+                    $formattedLinks .= "{$title}: {$url}\n";
+                }
+            } else {
+                $formattedLinks = $file ? asset('storage/' . $file->file_path) : '[Link Price List belum diatur]';
+            }
+            
+            $priceListRule = "";
+            if ($aiRequireData) {
+                $requirementsText = implode(', ', $aiRequiredDataList);
+                if ($customQuestions) {
+                    $requirementsText .= ($requirementsText ? ', dan ' : '') . "($customQuestions)";
+                }
+                if (empty($requirementsText)) {
+                    $requirementsText = "Nama dan Detail Acara"; // Fallback
+                }
+
+                $priceListRule = "4. Jika klien meminta Price List (PL), JANGAN langsung mengirim isi pricelist atau file/link-nya. Kamu HARUS menggali informasi berikut ini terlebih dahulu dari klien: [{$requirementsText}].\n"
+                    . "   Balaslah dengan gaya SEPERTI INI:\n"
+                    . "   \"Halo Kak {$clientName}! 😊\n\nBoleh banget Kak, dengan senang hati. Untuk keperluan pengiriman detailnya, boleh dibantu informasikan {$requirementsText} ya Kak? Supaya aku bisa sesuaikan informasinya buat Kakak. ✨\"\n";
+            } else {
+                // Modus Cepat
+                $priceListRule = "4. Jika klien meminta Price List (PL), BERIKAN link file price list berikut ini SECARA LANGSUNG:\n{$formattedLinks}\n"
+                    . "   Lalu di akhir pesan tanyakan detail acara dengan sopan.\n"
+                    . "   Balaslah dengan gaya SEPERTI INI:\n"
+                    . "   \"Halo Kak {$clientName}! Dengan senang hati, ini aku kirimkan ya link price list lengkapnya untuk dipelajari dulu:\n\n{$formattedLinks}\n\nBoleh bantu aku dengan info Nama, Tanggal, dan Lokasi acaranya ya Kak? Supaya aku bisa cek ketersediaan tim kami di tanggal tersebut. 😊\"\n";
+            }
+
+            $systemPrompt = "Kamu adalah asisten CS (Customer Service) WhatsApp yang sangat ramah, natural, dan luwes bernama CloseMateAI, mewakili bisnis '{$user->business_name}'.\n"
+                . "Tugasmu adalah menjawab pesan dari calon klien bernama '{$clientName}' berdasarkan KNOWLEDGE BASE berikut ini:\n\n"
+                . "-- KNOWLEDGE BASE MULAI --\n"
+                . "{$knowledge}\n"
+                . "-- KNOWLEDGE BASE SELESAI --\n\n"
+                . "ATURAN PENTING:\n"
+                . "1. Jawablah dengan bahasa Indonesia yang sangat natural, santai, sopan, layaknya manusia biasa chatting di WhatsApp. Jangan kaku atau seperti robot.\n"
+                . "2. Gunakan sapaan 'aku' untuk dirimu dan 'Kak {$clientName}' untuk klien.\n"
+                . "3. Selalu sisipkan 1-2 emoji yang ramah (contoh: 😊, ✨, 🙏).\n"
+                . $priceListRule
+                . "5. JANGAN memberikan harga atau paket yang tidak ada di Knowledge Base.\n"
+                . "6. Balaslah hanya sebagai respon untuk pesan klien, jangan tambahkan embel-embel format aneh.";
+
+            $groqApiKey = env('GROQ_API_KEY');
+
+            // ==== OPSI 1: JIKA MENGGUNAKAN GROQ (SUPER CEPAT & GRATIS) ====
+            if ($groqApiKey) {
+                try {
+                    $response = Http::withToken($groqApiKey)
+                        ->timeout(15)
+                        ->post('https://api.groq.com/openai/v1/chat/completions', [
+                            'model' => 'llama3-8b-8192',
+                            'messages' => [
+                                ['role' => 'system', 'content' => $systemPrompt],
+                                ['role' => 'user', 'content' => $message],
+                            ],
+                            'temperature' => 0.8,
+                            'max_tokens' => 800,
+                        ]);
+
+                    if ($response->successful()) {
+                        $responseData = $response->json();
+                        if (isset($responseData['choices'][0]['message']['content'])) {
+                            return response()->json([
+                                'success' => true,
+                                'reply' => trim((string)$responseData['choices'][0]['message']['content'])
+                            ]);
+                        }
+                    }
+                    
+                    throw new \Exception("Gagal menghubungi Groq: " . $response->body());
+                } catch (\Throwable $e) {
+                    // Tangkap error dan kembalikan pesan JSON yang bersih agar tidak terjadi error 500
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Gagal menggunakan Groq AI: ' . $e->getMessage()
+                    ]);
+                }
+            }
+
+            // ==== OPSI 2: JIKA MENGGUNAKAN GEMINI (LAMA) ====
+            $modelsToTry = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-flash-latest'];
+            $lastExceptionMessage = 'Gagal mendapatkan balasan dari AI.';
+
+            $finalPrompt = "INSTRUKSI SISTEM:\n" . $systemPrompt . "\n\nPESAN KLIEN:\n" . $message;
+
+            foreach ($modelsToTry as $modelName) {
+                try {
+                    // Gunakan timeout 15 detik.
+                    $response = Http::timeout(15)->post('https://generativelanguage.googleapis.com/v1beta/models/' . $modelName . ':generateContent?key=' . $apiKey, [
+                        'contents' => [
+                            [
+                                'role' => 'user',
+                                'parts' => [
+                                    ['text' => $finalPrompt]
+                                ]
+                            ]
                         ],
-                        'temperature' => 0.8,
-                        'max_tokens' => 800,
+                        'generationConfig' => [
+                            'temperature' => 0.8,
+                            'maxOutputTokens' => 800,
+                        ]
                     ]);
 
-                if ($response->successful()) {
-                    $responseData = $response->json();
-                    if (isset($responseData['choices'][0]['message']['content'])) {
-                        return response()->json([
-                            'success' => true,
-                            'reply' => trim($responseData['choices'][0]['message']['content'])
-                        ]);
+                    if ($response->successful()) {
+                        $responseData = $response->json();
+                        if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
+                            $reply = $responseData['candidates'][0]['content']['parts'][0]['text'];
+                            return response()->json([
+                                'success' => true,
+                                'reply' => trim((string)$reply)
+                            ]);
+                        }
+                    } else {
+                        $lastExceptionMessage = $response->body();
+                        
+                        if ($response->status() !== 503 && $response->status() !== 429) {
+                            break;
+                        }
+                        continue; 
                     }
+                } catch (\Throwable $e) {
+                    $lastExceptionMessage = $e->getMessage();
+                    continue;
                 }
-                
-                throw new \Exception("Gagal menghubungi Groq: " . $response->body());
-            } catch (\Exception $e) {
-                // Tangkap error dan kembalikan pesan JSON yang bersih agar tidak terjadi error 500
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal menggunakan Groq AI: ' . $e->getMessage()
-                ]);
             }
-        }
 
-        // ==== OPSI 2: JIKA MENGGUNAKAN GEMINI (LAMA) ====
-        $modelsToTry = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-flash-latest'];
-        $lastExceptionMessage = 'Gagal mendapatkan balasan dari AI.';
-
-        $finalPrompt = "INSTRUKSI SISTEM:\n" . $systemPrompt . "\n\nPESAN KLIEN:\n" . $message;
-
-        foreach ($modelsToTry as $modelName) {
-            try {
-                // Gunakan timeout 15 detik.
-                $response = Http::timeout(15)->post('https://generativelanguage.googleapis.com/v1beta/models/' . $modelName . ':generateContent?key=' . $apiKey, [
-                    'contents' => [
-                        [
-                            'role' => 'user',
-                            'parts' => [
-                                ['text' => $finalPrompt]
-                            ]
-                        ]
-                    ],
-                    'generationConfig' => [
-                        'temperature' => 0.8,
-                        'maxOutputTokens' => 800,
-                    ]
-                ]);
-
-                if ($response->successful()) {
-                    $responseData = $response->json();
-                    if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
-                        $reply = $responseData['candidates'][0]['content']['parts'][0]['text'];
-                        return response()->json([
-                            'success' => true,
-                            'reply' => trim($reply)
-                        ]);
-                    }
-                } else {
-                    $lastExceptionMessage = $response->body();
-                    
-                    if ($response->status() !== 503 && $response->status() !== 429) {
-                        break;
-                    }
-                    continue; 
-                }
-            } catch (\Exception $e) {
-                $lastExceptionMessage = $e->getMessage();
-                continue;
-            }
-        }
-
-        // JIKA SEMUA MODEL GAGAL
-        try {
+            // JIKA SEMUA MODEL GAGAL
             throw new \Exception($lastExceptionMessage);
-        } catch (\Exception $e) {
+
+        } catch (\Throwable $e) {
             $msg = $e->getMessage();
-            $friendlyMsg = 'Terjadi kesalahan sistem: ' . $msg;
+            $friendlyMsg = 'Terjadi kesalahan sistem: ' . $msg . ' (' . $e->getFile() . ':' . $e->getLine() . ')';
             
             if (strpos($msg, '503') !== false || strpos($msg, 'high demand') !== false) {
                 $friendlyMsg = "Maaf Kak, server AI kami sedang sangat penuh (High Demand). Coba tunggu beberapa detik lalu kirim ulang ya! 🙏";
