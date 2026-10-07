@@ -551,12 +551,12 @@
                         <div style="font-size: 12px; color: var(--text-muted);">Jika nonaktif, AI membalas tanpa batas</div>
                     </div>
                     <label class="switch">
-                        <input type="checkbox">
+                        <input type="checkbox" id="ai_limit_enabled" {{ ($user->ai_limit_enabled ?? false) ? 'checked' : '' }}>
                         <span class="slider"></span>
                     </label>
                 </div>
                 
-                <button class="btn btn-secondary" style="margin-top: 12px;"><i class="fa-regular fa-floppy-disk"></i> Simpan Batasan</button>
+                <button class="btn btn-secondary" style="margin-top: 12px;" onclick="saveAiLimits()"><i class="fa-regular fa-floppy-disk"></i> Simpan Batasan</button>
             </div>
 
             <div class="kb-card">
@@ -570,15 +570,28 @@
                     </div>
                 </div>
                 
-                <div class="switch-row" style="padding-top: 0; padding-bottom: 0; border: none;">
+                <div class="switch-row" style="padding-top: 0; padding-bottom: 20px;">
                     <div>
                         <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Aktifkan Balasan Multi-Bubble Chat</div>
                         <div style="font-size: 12px; color: var(--text-muted);">Jika diaktifkan, AI dapat memecah balasan sapaan/pertanyaan menjadi 2 gelembung pesan terpisah di WhatsApp.</div>
                     </div>
                     <label class="switch">
-                        <input type="checkbox">
+                        <input type="checkbox" id="ai_multi_bubble_enabled" {{ ($user->ai_multi_bubble_enabled ?? true) ? 'checked' : '' }}>
                         <span class="slider"></span>
                     </label>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center" style="padding-top: 20px; border-top: 1px solid var(--border-color);">
+                    <div>
+                        <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Jumlah Maksimal Gelembung</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Tentukan berapa banyak gelembung pesan yang boleh dipakai AI untuk satu balasan.</div>
+                    </div>
+                    <select id="ai_max_bubbles" class="form-control" style="width: 140px;">
+                        <option value="2" {{ ($user->ai_max_bubbles ?? 3) == 2 ? 'selected' : '' }}>2 gelembung</option>
+                        <option value="3" {{ ($user->ai_max_bubbles ?? 3) == 3 ? 'selected' : '' }}>3 gelembung</option>
+                        <option value="4" {{ ($user->ai_max_bubbles ?? 3) == 4 ? 'selected' : '' }}>4 gelembung</option>
+                        <option value="5" {{ ($user->ai_max_bubbles ?? 3) == 5 ? 'selected' : '' }}>5 gelembung</option>
+                    </select>
                 </div>
             </div>
 
@@ -593,15 +606,72 @@
                     </div>
                 </div>
                 
-                <div class="switch-row" style="padding-top: 0; padding-bottom: 0; border: none;">
+                <div class="switch-row" style="padding-top: 0; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px;">
                     <div>
                         <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Wajibkan Data Klien Sebelum Kirim File Price List</div>
-                        <div style="font-size: 12px; color: var(--text-muted);"><i class="fa-solid fa-bolt" style="color: var(--warning);"></i> Modus Cepat (Default): AI akan langsung menyerahkan file Price List begitu diminta, lalu menanyakan detail acara di akhir pesan.</div>
+                        <div id="price_list_mode_text" style="font-size: 12px; color: var(--text-muted);">
+                            @if($user->ai_require_data_before_price ?? true)
+                                <i class="fa-solid fa-lock" style="color: var(--warning);"></i> Modus Filter Leads: AI akan menggali data wajib di bawah sebelum mengirim file Price List.
+                            @else
+                                <i class="fa-solid fa-bolt" style="color: var(--warning);"></i> Modus Cepat (Default): AI akan langsung menyerahkan file Price List begitu diminta, lalu menanyakan detail acara di akhir pesan.
+                            @endif
+                        </div>
                     </div>
                     <label class="switch">
-                        <input type="checkbox">
+                        <input type="checkbox" id="ai_require_data_before_price" {{ ($user->ai_require_data_before_price ?? true) ? 'checked' : '' }} onchange="toggleRequiredDataForm()">
                         <span class="slider"></span>
                     </label>
+                </div>
+
+                @php
+                    $reqData = is_array($user->ai_required_data) ? $user->ai_required_data : [];
+                @endphp
+
+                <div id="required_data_form" style="{{ ($user->ai_require_data_before_price ?? true) ? '' : 'opacity: 0.5; pointer-events: none;' }}">
+                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Data Wajib yang Harus Ditanyakan AI</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Centang informasi yang wajib didapat sebelum file price list dikirim.</div>
+
+                    <div class="row" style="margin-bottom: 20px;">
+                        <div class="col-md-6 mb-3">
+                            <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="required-data-cb" value="Nama Calon Pengantin" {{ in_array('Nama Calon Pengantin', $reqData) ? 'checked' : '' }}>
+                                <span style="font-size: 13px; font-weight: 500;">Nama Calon Pengantin</span>
+                            </label>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="required-data-cb" value="Tanggal / Bulan & Tahun Acara" {{ in_array('Tanggal / Bulan & Tahun Acara', $reqData) ? 'checked' : '' }}>
+                                <span style="font-size: 13px; font-weight: 500;">Tanggal / Bulan & Tahun Acara</span>
+                            </label>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="required-data-cb" value="Kota & Lokasi Venue Acara" {{ in_array('Kota & Lokasi Venue Acara', $reqData) ? 'checked' : '' }}>
+                                <span style="font-size: 13px; font-weight: 500;">Kota & Lokasi Venue Acara</span>
+                            </label>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="required-data-cb" value="Skala Acara / Jumlah Tamu" {{ in_array('Skala Acara / Jumlah Tamu', $reqData) ? 'checked' : '' }}>
+                                <span style="font-size: 13px; font-weight: 500;">Skala Acara / Jumlah Tamu</span>
+                            </label>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="required-data-cb" value="Konsep Acara (Indoor/Outdoor)" {{ in_array('Konsep Acara (Indoor/Outdoor)', $reqData) ? 'checked' : '' }}>
+                                <span style="font-size: 13px; font-weight: 500;">Konsep Acara (Indoor/Outdoor)</span>
+                            </label>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="d-flex align-items-center gap-2 p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="required-data-cb" value="Estimasi Budget" {{ in_array('Estimasi Budget', $reqData) ? 'checked' : '' }}>
+                                <span style="font-size: 13px; font-weight: 500;">Estimasi Budget</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">Pertanyaan Custom Tambahan (Opsional)</div>
+                    <input type="text" id="ai_custom_questions" class="form-control" placeholder="Contoh: Apakah sudah punya WO / venue pilihan?" value="{{ $user->ai_custom_questions ?? '' }}">
                 </div>
             </div>
         </div>
@@ -1082,6 +1152,48 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
                 toast.classList.remove('show');
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
+        }
+
+        function toggleRequiredDataForm() {
+            const isChecked = document.getElementById('ai_require_data_before_price').checked;
+            const form = document.getElementById('required_data_form');
+            const textDesc = document.getElementById('price_list_mode_text');
+            
+            if (isChecked) {
+                form.style.opacity = '1';
+                form.style.pointerEvents = 'auto';
+                textDesc.innerHTML = '<i class="fa-solid fa-lock" style="color: var(--warning);"></i> Modus Filter Leads: AI akan menggali data wajib di bawah sebelum mengirim file Price List.';
+            } else {
+                form.style.opacity = '0.5';
+                form.style.pointerEvents = 'none';
+                textDesc.innerHTML = '<i class="fa-solid fa-bolt" style="color: var(--warning);"></i> Modus Cepat (Default): AI akan langsung menyerahkan file Price List begitu diminta, lalu menanyakan detail acara di akhir pesan.';
+            }
+        }
+
+        function saveAiLimits() {
+            const requiredData = [];
+            document.querySelectorAll('.required-data-cb:checked').forEach(cb => {
+                requiredData.push(cb.value);
+            });
+
+            const data = {
+                ai_limit_enabled: document.getElementById('ai_limit_enabled').checked ? 1 : 0,
+                ai_multi_bubble_enabled: document.getElementById('ai_multi_bubble_enabled').checked ? 1 : 0,
+                ai_max_bubbles: document.getElementById('ai_max_bubbles').value,
+                ai_require_data_before_price: document.getElementById('ai_require_data_before_price').checked ? 1 : 0,
+                ai_required_data: JSON.stringify(requiredData),
+                ai_custom_questions: document.getElementById('ai_custom_questions').value
+            };
+
+            $.post('/knowledge/save-ai-limits', data, function(res) {
+                if(res.success) {
+                    showToast(res.message);
+                } else {
+                    alert(res.message);
+                }
+            }).fail(function(xhr) {
+                alert("Error: " + xhr.responseText);
+            });
         }
     </script>
 </body>

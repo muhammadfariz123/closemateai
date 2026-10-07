@@ -35,6 +35,12 @@ class User extends Authenticatable
         'owner_whatsapp',
         'notify_hot_lead',
         'notify_human_takeover',
+        'ai_limit_enabled',
+        'ai_multi_bubble_enabled',
+        'ai_max_bubbles',
+        'ai_require_data_before_price',
+        'ai_required_data',
+        'ai_custom_questions',
     ];
 
     /**
@@ -57,6 +63,10 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'ai_limit_enabled' => 'boolean',
+            'ai_multi_bubble_enabled' => 'boolean',
+            'ai_require_data_before_price' => 'boolean',
+            'ai_required_data' => 'array',
         ];
     }
 }

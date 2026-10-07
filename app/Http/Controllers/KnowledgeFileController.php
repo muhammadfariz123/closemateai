@@ -19,7 +19,31 @@ class KnowledgeFileController extends Controller
         }
         $file = KnowledgeFile::where('user_id', $user->id)->latest()->first();
         
-        return view('knowledge', compact('file'));
+        return view('knowledge', compact('file', 'user'));
+    }
+
+    public function saveAiLimits(Request $request)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+        }
+
+        $user->ai_limit_enabled = $request->boolean('ai_limit_enabled');
+        $user->ai_multi_bubble_enabled = $request->boolean('ai_multi_bubble_enabled');
+        $user->ai_max_bubbles = $request->input('ai_max_bubbles', 3);
+        $user->ai_require_data_before_price = $request->boolean('ai_require_data_before_price');
+        
+        if ($request->has('ai_required_data')) {
+            $user->ai_required_data = json_decode($request->input('ai_required_data'), true);
+        } else {
+            $user->ai_required_data = [];
+        }
+        
+        $user->ai_custom_questions = $request->input('ai_custom_questions');
+        $user->save();
+
+        return response()->json(['success' => true, 'message' => 'Batasan Balasan AI berhasil disimpan']);
     }
 
     public function upload(Request $request)
@@ -354,6 +378,31 @@ class KnowledgeFileController extends Controller
         $file = KnowledgeFile::where('user_id', $user->id)->latest()->first();
         $knowledge = $file ? $file->extracted_text : 'Tidak ada data price list / katalog.';
 
+        // Dynamic Rules based on User Settings
+        $aiRequireData = $user->ai_require_data_before_price ?? true;
+        $aiRequiredDataList = is_array($user->ai_required_data) ? $user->ai_required_data : [];
+        $customQuestions = $user->ai_custom_questions ?? '';
+        
+        $priceListRule = "";
+        if ($aiRequireData) {
+            $requirementsText = implode(', ', $aiRequiredDataList);
+            if ($customQuestions) {
+                $requirementsText .= ($requirementsText ? ', dan ' : '') . "($customQuestions)";
+            }
+            if (empty($requirementsText)) {
+                $requirementsText = "Nama dan Detail Acara"; // Fallback
+            }
+
+            $priceListRule = "4. Jika klien meminta Price List (PL), JANGAN langsung mengirim isi pricelist atau file/link-nya. Kamu HARUS menggali informasi berikut ini terlebih dahulu dari klien: [{$requirementsText}].\n"
+                . "   Balaslah dengan gaya SEPERTI INI:\n"
+                . "   \"Halo Kak {$clientName}! 😊\n\nBoleh banget Kak, dengan senang hati. Untuk keperluan pengiriman detailnya, boleh dibantu informasikan {$requirementsText} ya Kak? Supaya aku bisa sesuaikan informasinya buat Kakak. ✨\"\n";
+        } else {
+            // Modus Cepat
+            $priceListRule = "4. Jika klien meminta Price List (PL), BERIKAN link atau informasi price list tersebut SECARA LANGSUNG, lalu di akhir pesan tanyakan detail acara dengan sopan.\n"
+                . "   Balaslah dengan gaya SEPERTI INI:\n"
+                . "   \"Halo Kak {$clientName}! Dengan senang hati, ini aku kirimkan ya link price list lengkapnya untuk dipelajari dulu.\n\n[Link Price List]\n\nBoleh bantu aku dengan info Nama, Tanggal, dan Lokasi acaranya ya Kak? Supaya aku bisa cek ketersediaan tim kami di tanggal tersebut. 😊\"\n";
+        }
+
         $systemPrompt = "Kamu adalah asisten CS (Customer Service) WhatsApp yang sangat ramah, natural, dan luwes bernama CloseMateAI, mewakili bisnis '{$user->business_name}'.\n"
             . "Tugasmu adalah menjawab pesan dari calon klien bernama '{$clientName}' berdasarkan KNOWLEDGE BASE berikut ini:\n\n"
             . "-- KNOWLEDGE BASE MULAI --\n"
@@ -363,8 +412,7 @@ class KnowledgeFileController extends Controller
             . "1. Jawablah dengan bahasa Indonesia yang sangat natural, santai, sopan, layaknya manusia biasa chatting di WhatsApp. Jangan kaku atau seperti robot.\n"
             . "2. Gunakan sapaan 'aku' untuk dirimu dan 'Kak {$clientName}' untuk klien.\n"
             . "3. Selalu sisipkan 1-2 emoji yang ramah (contoh: 😊, ✨, 🙏).\n"
-            . "4. Jika klien meminta Price List (PL), JANGAN langsung mengirim isi pricelist. Kamu HARUS membalas dengan gaya SEPERTI INI (gunakan ini sebagai referensi gaya bahasamu):\n"
-            . "   \"Halo Kak {$clientName}! 😊\n\nBoleh banget Kak, dengan senang hati. Untuk keperluan pengiriman detailnya, boleh dibantu informasikan nama calon pengantin serta kota dan lokasi venue acaranya ya Kak? Supaya aku bisa sesuaikan informasinya buat Kakak. ✨\"\n"
+            . $priceListRule
             . "5. JANGAN memberikan harga atau paket yang tidak ada di Knowledge Base.\n"
             . "6. Balaslah hanya sebagai respon untuk pesan klien, jangan tambahkan embel-embel format aneh.";
 
