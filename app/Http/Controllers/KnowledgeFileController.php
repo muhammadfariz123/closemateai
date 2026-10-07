@@ -46,6 +46,26 @@ class KnowledgeFileController extends Controller
         return response()->json(['success' => true, 'message' => 'Batasan Balasan AI berhasil disimpan']);
     }
 
+    public function saveLinks(Request $request)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+        }
+
+        $links = $request->input('links', []);
+        
+        // Bersihkan data kosong
+        $filteredLinks = array_filter($links, function($link) {
+            return !empty($link['title']) || !empty($link['url']);
+        });
+
+        $user->price_list_links = json_encode(array_values($filteredLinks));
+        $user->save();
+
+        return response()->json(['success' => true, 'message' => 'Link price list berhasil disimpan']);
+    }
+
     public function upload(Request $request)
     {
         $request->validate([
@@ -382,7 +402,18 @@ class KnowledgeFileController extends Controller
         $aiRequireData = $user->ai_require_data_before_price ?? true;
         $aiRequiredDataList = is_array($user->ai_required_data) ? $user->ai_required_data : [];
         $customQuestions = $user->ai_custom_questions ?? '';
-        $priceListLink = $file ? asset('storage/' . $file->file_path) : '[Link Price List belum diupload]';
+        
+        $links = json_decode($user->price_list_links ?? '[]', true);
+        $formattedLinks = "";
+        if (!empty($links)) {
+            foreach ($links as $link) {
+                $title = $link['title'] ?: 'Link Price List';
+                $url = $link['url'] ?: '#';
+                $formattedLinks .= "{$title}: {$url}\n";
+            }
+        } else {
+            $formattedLinks = $file ? asset('storage/' . $file->file_path) : '[Link Price List belum diatur]';
+        }
         
         $priceListRule = "";
         if ($aiRequireData) {
@@ -399,10 +430,10 @@ class KnowledgeFileController extends Controller
                 . "   \"Halo Kak {$clientName}! 😊\n\nBoleh banget Kak, dengan senang hati. Untuk keperluan pengiriman detailnya, boleh dibantu informasikan {$requirementsText} ya Kak? Supaya aku bisa sesuaikan informasinya buat Kakak. ✨\"\n";
         } else {
             // Modus Cepat
-            $priceListRule = "4. Jika klien meminta Price List (PL), BERIKAN link file price list berikut ini SECARA LANGSUNG: {$priceListLink}\n"
+            $priceListRule = "4. Jika klien meminta Price List (PL), BERIKAN link file price list berikut ini SECARA LANGSUNG:\n{$formattedLinks}\n"
                 . "   Lalu di akhir pesan tanyakan detail acara dengan sopan.\n"
                 . "   Balaslah dengan gaya SEPERTI INI:\n"
-                . "   \"Halo Kak {$clientName}! Dengan senang hati, ini aku kirimkan ya link price list lengkapnya untuk dipelajari dulu:\n\n{$priceListLink}\n\nBoleh bantu aku dengan info Nama, Tanggal, dan Lokasi acaranya ya Kak? Supaya aku bisa cek ketersediaan tim kami di tanggal tersebut. 😊\"\n";
+                . "   \"Halo Kak {$clientName}! Dengan senang hati, ini aku kirimkan ya link price list lengkapnya untuk dipelajari dulu:\n\n{$formattedLinks}\n\nBoleh bantu aku dengan info Nama, Tanggal, dan Lokasi acaranya ya Kak? Supaya aku bisa cek ketersediaan tim kami di tanggal tersebut. 😊\"\n";
         }
 
         $systemPrompt = "Kamu adalah asisten CS (Customer Service) WhatsApp yang sangat ramah, natural, dan luwes bernama CloseMateAI, mewakili bisnis '{$user->business_name}'.\n"

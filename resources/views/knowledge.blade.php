@@ -367,18 +367,29 @@
                 <div style="font-weight: 500; font-size: 14px; margin-top: 16px; margin-bottom: 8px;">Link Download Price List (Dikirim ke WhatsApp)</div>
                 <div class="kb-card-desc" style="margin-bottom: 8px;">Tempel link Google Drive, Notion, atau website price list kamu. Link inilah yang dikirim AI saat calon klien meminta price list.</div>
                 
-                <div class="d-flex gap-2 align-items-center" style="margin-bottom: 12px;">
-                    <input type="text" class="form-control" style="width: 250px;" placeholder="Judul, mis. Paket Wedding 1">
-                    <div style="position: relative; flex: 1;">
-                        <i class="fa-solid fa-link" style="position: absolute; left: 14px; top: 12px; color: var(--text-muted);"></i>
-                        <input type="text" class="form-control" style="padding-left: 36px;" placeholder="https://drive.google.com/...">
+                <div id="price-list-links-container">
+                    @php
+                        $links = json_decode($user->price_list_links ?? '[]', true);
+                        if (empty($links)) {
+                            $links = [['title' => '', 'url' => '']];
+                        }
+                    @endphp
+                    
+                    @foreach($links as $index => $link)
+                    <div class="d-flex gap-2 align-items-center price-list-link-row" style="margin-bottom: 12px;">
+                        <input type="text" class="form-control link-title" style="width: 250px;" placeholder="Judul, mis. Paket Wedding 1" value="{{ $link['title'] ?? '' }}">
+                        <div style="position: relative; flex: 1;">
+                            <i class="fa-solid fa-link" style="position: absolute; left: 14px; top: 12px; color: var(--text-muted);"></i>
+                            <input type="text" class="form-control link-url" style="padding-left: 36px;" placeholder="https://drive.google.com/..." value="{{ $link['url'] ?? '' }}">
+                        </div>
+                        <button class="btn btn-danger-outline btn-remove-link" onclick="removeLinkRow(this)" style="padding: 10px 14px; color: #ef4444; border-color: transparent;"><i class="fa-regular fa-trash-can"></i></button>
                     </div>
-                    <button class="btn btn-danger-outline" style="padding: 10px 14px; color: #ef4444; border-color: transparent;"><i class="fa-regular fa-trash-can"></i></button>
+                    @endforeach
                 </div>
                 
                 <div class="d-flex gap-2">
-                    <button class="btn btn-secondary"><i class="fa-solid fa-plus"></i> Tambah Link Price List</button>
-                    <button class="btn btn-primary"><i class="fa-regular fa-floppy-disk"></i> Simpan Link</button>
+                    <button class="btn btn-secondary" onclick="addLinkRow()"><i class="fa-solid fa-plus"></i> Tambah Link Price List</button>
+                    <button class="btn btn-primary" onclick="savePriceListLinks()"><i class="fa-regular fa-floppy-disk"></i> Simpan Link</button>
                 </div>
 
                 <div style="margin-top: 32px; border-top: 1px solid var(--border-color); padding-top: 24px;">
@@ -1190,6 +1201,64 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
                     alert(res.message);
                 }
             }).fail(function(xhr) {
+                alert("Error: " + xhr.responseText);
+            });
+        }
+
+        function addLinkRow() {
+            const container = document.getElementById('price-list-links-container');
+            const row = document.createElement('div');
+            row.className = 'd-flex gap-2 align-items-center price-list-link-row';
+            row.style.marginBottom = '12px';
+            row.innerHTML = `
+                <input type="text" class="form-control link-title" style="width: 250px;" placeholder="Judul, mis. Paket Wedding 1">
+                <div style="position: relative; flex: 1;">
+                    <i class="fa-solid fa-link" style="position: absolute; left: 14px; top: 12px; color: var(--text-muted);"></i>
+                    <input type="text" class="form-control link-url" style="padding-left: 36px;" placeholder="https://drive.google.com/...">
+                </div>
+                <button class="btn btn-danger-outline btn-remove-link" onclick="removeLinkRow(this)" style="padding: 10px 14px; color: #ef4444; border-color: transparent;"><i class="fa-regular fa-trash-can"></i></button>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeLinkRow(btn) {
+            const container = document.getElementById('price-list-links-container');
+            if (container.querySelectorAll('.price-list-link-row').length > 1) {
+                btn.closest('.price-list-link-row').remove();
+            } else {
+                // if last one, just clear it
+                const row = btn.closest('.price-list-link-row');
+                row.querySelector('.link-title').value = '';
+                row.querySelector('.link-url').value = '';
+            }
+        }
+
+        function savePriceListLinks() {
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+            btn.disabled = true;
+
+            const links = [];
+            document.querySelectorAll('.price-list-link-row').forEach(row => {
+                const title = row.querySelector('.link-title').value.trim();
+                const url = row.querySelector('.link-url').value.trim();
+                if (title || url) {
+                    links.push({ title, url });
+                }
+            });
+
+            $.post('/knowledge/save-links', { links: links }, function(res) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                if(res.success) {
+                    showToast(res.message);
+                } else {
+                    alert(res.message);
+                }
+            }).fail(function(xhr) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
                 alert("Error: " + xhr.responseText);
             });
         }

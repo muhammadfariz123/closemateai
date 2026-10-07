@@ -27,6 +27,7 @@ Route::post('/knowledge/update-text', [KnowledgeFileController::class, 'updateTe
 Route::post('/knowledge/delete', [KnowledgeFileController::class, 'destroy']);
 Route::post('/knowledge/re-extract', [KnowledgeFileController::class, 'reExtract']);
 Route::post('/knowledge/save-ai-limits', [KnowledgeFileController::class, 'saveAiLimits']);
+Route::post('/knowledge/save-links', [KnowledgeFileController::class, 'saveLinks']);
 Route::post('/api/simulator/chat', [KnowledgeFileController::class, 'simulateChat']);
 
 Route::get('/leads', function () {
