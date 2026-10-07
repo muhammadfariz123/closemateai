@@ -139,7 +139,7 @@
         
         /* Custom Circle Checkbox */
         .custom-circle-checkbox { position: relative; }
-        .checkbox-circle { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #e1e1e4; margin-right: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; background: white; }
+        .checkbox-circle { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #e1e1e4; margin-right: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; background: white; flex-shrink: 0; }
         .custom-circle-checkbox input[type="checkbox"]:checked + .checkbox-circle { background-color: var(--primary); border-color: var(--primary); }
         .custom-circle-checkbox input[type="checkbox"]:checked + .checkbox-circle i { opacity: 1 !important; }
         .custom-circle-checkbox:has(input[type="checkbox"]:checked) { background-color: rgba(107, 92, 216, 0.02); }
@@ -649,7 +649,7 @@
                         $reqData = is_array($user->ai_required_data) ? $user->ai_required_data : [];
                     @endphp
 
-                    <div id="required_data_form" style="padding: 20px; background: #fafafa; {{ ($user->ai_require_data_before_price ?? true) ? '' : 'display: none;' }}">
+                    <div id="required_data_form" style="padding: 20px; background: white; {{ ($user->ai_require_data_before_price ?? true) ? '' : 'display: none;' }}">
                         <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Data Wajib yang Harus Ditanyakan AI</div>
                         <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Centang informasi yang wajib didapat sebelum file price list dikirim.</div>
 
@@ -1198,7 +1198,7 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
             row.innerHTML = `
                 <div class="custom-question-number">${index}</div>
                 <input type="text" class="form-control custom-question-input" style="flex:1; border-radius: 100px; padding: 10px 16px;" placeholder="Contoh: Boleh tahu saat ini Kakak bergerak di bidang vendor apa ya?" value="${val.replace(/"/g, '&quot;')}" onchange="saveAiLimits()">
-                <button type="button" class="btn" onclick="removeCustomQuestion(this)" style="padding: 10px 14px; background: transparent; color: var(--text-muted); border: none; transition: 0.2s;">
+                <button type="button" class="btn" onclick="removeCustomQuestion(this)" style="padding: 0 10px; background: transparent; color: #9ca3af; border: none; font-size: 16px; transition: 0.2s;">
                     <i class="fa-regular fa-trash-can"></i>
                 </button>
             `;
