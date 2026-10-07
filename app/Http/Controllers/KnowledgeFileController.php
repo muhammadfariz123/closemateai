@@ -454,37 +454,44 @@ class KnowledgeFileController extends Controller
 
             // ==== OPSI 1: JIKA MENGGUNAKAN GROQ (SUPER CEPAT & GRATIS) ====
             if ($groqApiKey) {
-                try {
-                    $response = Http::withToken($groqApiKey)
-                        ->timeout(15)
-                        ->post('https://api.groq.com/openai/v1/chat/completions', [
-                            'model' => 'llama3-8b-8192',
-                            'messages' => [
-                                ['role' => 'system', 'content' => $systemPrompt],
-                                ['role' => 'user', 'content' => $message],
-                            ],
-                            'temperature' => 0.8,
-                            'max_tokens' => 800,
-                        ]);
-
-                    if ($response->successful()) {
-                        $responseData = $response->json();
-                        if (isset($responseData['choices'][0]['message']['content'])) {
-                            return response()->json([
-                                'success' => true,
-                                'reply' => trim((string)$responseData['choices'][0]['message']['content'])
+                $groqModels = ['llama-3.1-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
+                $groqLastError = '';
+                
+                foreach ($groqModels as $groqModel) {
+                    try {
+                        $response = Http::withToken($groqApiKey)
+                            ->timeout(15)
+                            ->post('https://api.groq.com/openai/v1/chat/completions', [
+                                'model' => $groqModel,
+                                'messages' => [
+                                    ['role' => 'system', 'content' => $systemPrompt],
+                                    ['role' => 'user', 'content' => $message],
+                                ],
+                                'temperature' => 0.8,
+                                'max_tokens' => 800,
                             ]);
+
+                        if ($response->successful()) {
+                            $responseData = $response->json();
+                            if (isset($responseData['choices'][0]['message']['content'])) {
+                                return response()->json([
+                                    'success' => true,
+                                    'reply' => trim((string)$responseData['choices'][0]['message']['content'])
+                                ]);
+                            }
                         }
+                        
+                        $groqLastError = $response->body();
+                    } catch (\Throwable $e) {
+                        $groqLastError = $e->getMessage();
                     }
-                    
-                    throw new \Exception("Gagal menghubungi Groq: " . $response->body());
-                } catch (\Throwable $e) {
-                    // Tangkap error dan kembalikan pesan JSON yang bersih agar tidak terjadi error 500
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Gagal menggunakan Groq AI: ' . $e->getMessage()
-                    ]);
                 }
+
+                // Jika semua model Groq gagal
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menggunakan Groq AI (Semua model dicoba): ' . $groqLastError
+                ]);
             }
 
             // ==== OPSI 2: JIKA MENGGUNAKAN GEMINI (LAMA) ====
