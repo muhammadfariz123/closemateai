@@ -627,100 +627,101 @@
                     </div>
                 </div>
                 
-                <div class="switch-row" style="padding-top: 0; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px;">
-                    <div>
-                        <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Wajibkan Data Klien Sebelum Kirim File Price List</div>
-                        <div id="price_list_mode_text" style="font-size: 12px; color: var(--text-muted);">
-                            @if($user->ai_require_data_before_price ?? true)
-                                <i class="fa-solid fa-lock" style="color: var(--warning);"></i> Modus Filter Leads: AI akan menggali data wajib di bawah sebelum mengirim file Price List.
-                            @else
-                                <i class="fa-solid fa-bolt" style="color: var(--warning);"></i> Modus Cepat (Default): AI akan langsung menyerahkan file Price List begitu diminta, lalu menanyakan detail acara di akhir pesan.
-                            @endif
+                <div style="border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-top: 16px;">
+                    <div class="switch-row" style="padding: 16px 20px; background: white; border-bottom: 1px solid var(--border-color); margin: 0;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Wajibkan Data Klien Sebelum Kirim File Price List</div>
+                            <div id="price_list_mode_text" style="font-size: 12px; color: var(--text-muted);">
+                                @if($user->ai_require_data_before_price ?? true)
+                                    <i class="fa-solid fa-lock" style="color: var(--warning);"></i> Modus Filter Leads: AI akan menggali data wajib di bawah sebelum mengirim file Price List.
+                                @else
+                                    <i class="fa-solid fa-bolt" style="color: var(--warning);"></i> Modus Cepat (Default): AI akan langsung menyerahkan file Price List begitu diminta, lalu menanyakan detail acara di akhir pesan.
+                                @endif
+                            </div>
                         </div>
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox" id="ai_require_data_before_price" {{ ($user->ai_require_data_before_price ?? true) ? 'checked' : '' }} onchange="toggleRequiredDataForm(); saveAiLimits();">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                @php
-                    $reqData = is_array($user->ai_required_data) ? $user->ai_required_data : [];
-                @endphp
-
-                <div id="required_data_form" style="{{ ($user->ai_require_data_before_price ?? true) ? '' : 'opacity: 0.5; pointer-events: none;' }}">
-                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Data Wajib yang Harus Ditanyakan AI</div>
-                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Centang informasi yang wajib didapat sebelum file price list dikirim.</div>
-
-                    <div class="row" style="margin-bottom: 20px;">
-                        <div class="col-md-6 mb-3">
-                            <label class="custom-circle-checkbox d-flex align-items-center p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.2s;">
-                                <input type="checkbox" class="required-data-cb d-none" value="Nama Calon Pengantin" {{ in_array('Nama Calon Pengantin', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
-                                <div class="checkbox-circle">
-                                    <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
-                                </div>
-                                <span style="font-size: 13px; font-weight: 500;">Nama Calon Pengantin</span>
-                            </label>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="custom-circle-checkbox d-flex align-items-center p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.2s;">
-                                <input type="checkbox" class="required-data-cb d-none" value="Tanggal / Bulan & Tahun Acara" {{ in_array('Tanggal / Bulan & Tahun Acara', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
-                                <div class="checkbox-circle">
-                                    <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
-                                </div>
-                                <span style="font-size: 13px; font-weight: 500;">Tanggal / Bulan & Tahun Acara</span>
-                            </label>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="custom-circle-checkbox d-flex align-items-center p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.2s;">
-                                <input type="checkbox" class="required-data-cb d-none" value="Kota & Lokasi Venue Acara" {{ in_array('Kota & Lokasi Venue Acara', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
-                                <div class="checkbox-circle">
-                                    <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
-                                </div>
-                                <span style="font-size: 13px; font-weight: 500;">Kota & Lokasi Venue Acara</span>
-                            </label>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="custom-circle-checkbox d-flex align-items-center p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.2s;">
-                                <input type="checkbox" class="required-data-cb d-none" value="Skala Acara / Jumlah Tamu" {{ in_array('Skala Acara / Jumlah Tamu', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
-                                <div class="checkbox-circle">
-                                    <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
-                                </div>
-                                <span style="font-size: 13px; font-weight: 500;">Skala Acara / Jumlah Tamu</span>
-                            </label>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="custom-circle-checkbox d-flex align-items-center p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.2s;">
-                                <input type="checkbox" class="required-data-cb d-none" value="Konsep Acara (Indoor/Outdoor)" {{ in_array('Konsep Acara (Indoor/Outdoor)', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
-                                <div class="checkbox-circle">
-                                    <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
-                                </div>
-                                <span style="font-size: 13px; font-weight: 500;">Konsep Acara (Indoor/Outdoor)</span>
-                            </label>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="custom-circle-checkbox d-flex align-items-center p-2" style="border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.2s;">
-                                <input type="checkbox" class="required-data-cb d-none" value="Estimasi Budget" {{ in_array('Estimasi Budget', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
-                                <div class="checkbox-circle">
-                                    <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
-                                </div>
-                                <span style="font-size: 13px; font-weight: 500;">Estimasi Budget</span>
-                            </label>
-                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="ai_require_data_before_price" {{ ($user->ai_require_data_before_price ?? true) ? 'checked' : '' }} onchange="toggleRequiredDataForm(); saveAiLimits();">
+                            <span class="slider"></span>
+                        </label>
                     </div>
 
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <div style="font-weight: 600; font-size: 14px; margin-bottom: 0;">Pertanyaan Custom Tambahan (Opsional)</div>
-                        <button type="button" class="btn btn-sm" onclick="addCustomQuestion()" style="padding: 4px 12px; font-size: 12px; border-radius: 100px; display: flex; align-items: center; gap: 6px; border: 1px solid #e1e1e4; background: white; color: var(--text-dark); transition: 0.2s;">
+                    @php
+                        $reqData = is_array($user->ai_required_data) ? $user->ai_required_data : [];
+                    @endphp
+
+                    <div id="required_data_form" style="padding: 20px; background: #fafafa; {{ ($user->ai_require_data_before_price ?? true) ? '' : 'display: none;' }}">
+                        <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Data Wajib yang Harus Ditanyakan AI</div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Centang informasi yang wajib didapat sebelum file price list dikirim.</div>
+
+                        <div class="row" style="margin-bottom: 24px;">
+                            <div class="col-md-6 mb-3">
+                                <label class="custom-circle-checkbox d-flex align-items-center" style="border: 1px solid var(--border-color); border-radius: 100px; padding: 10px 16px; cursor: pointer; transition: 0.2s; background: white;">
+                                    <input type="checkbox" class="required-data-cb d-none" value="Nama Calon Pengantin" {{ in_array('Nama Calon Pengantin', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                                    <div class="checkbox-circle">
+                                        <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
+                                    </div>
+                                    <span style="font-size: 13px; font-weight: 500;">Nama Calon Pengantin</span>
+                                </label>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="custom-circle-checkbox d-flex align-items-center" style="border: 1px solid var(--border-color); border-radius: 100px; padding: 10px 16px; cursor: pointer; transition: 0.2s; background: white;">
+                                    <input type="checkbox" class="required-data-cb d-none" value="Tanggal / Bulan & Tahun Acara" {{ in_array('Tanggal / Bulan & Tahun Acara', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                                    <div class="checkbox-circle">
+                                        <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
+                                    </div>
+                                    <span style="font-size: 13px; font-weight: 500;">Tanggal / Bulan & Tahun Acara</span>
+                                </label>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="custom-circle-checkbox d-flex align-items-center" style="border: 1px solid var(--border-color); border-radius: 100px; padding: 10px 16px; cursor: pointer; transition: 0.2s; background: white;">
+                                    <input type="checkbox" class="required-data-cb d-none" value="Kota & Lokasi Venue Acara" {{ in_array('Kota & Lokasi Venue Acara', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                                    <div class="checkbox-circle">
+                                        <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
+                                    </div>
+                                    <span style="font-size: 13px; font-weight: 500;">Kota & Lokasi Venue Acara</span>
+                                </label>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="custom-circle-checkbox d-flex align-items-center" style="border: 1px solid var(--border-color); border-radius: 100px; padding: 10px 16px; cursor: pointer; transition: 0.2s; background: white;">
+                                    <input type="checkbox" class="required-data-cb d-none" value="Skala Acara / Jumlah Tamu" {{ in_array('Skala Acara / Jumlah Tamu', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                                    <div class="checkbox-circle">
+                                        <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
+                                    </div>
+                                    <span style="font-size: 13px; font-weight: 500;">Skala Acara / Jumlah Tamu</span>
+                                </label>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="custom-circle-checkbox d-flex align-items-center" style="border: 1px solid var(--border-color); border-radius: 100px; padding: 10px 16px; cursor: pointer; transition: 0.2s; background: white;">
+                                    <input type="checkbox" class="required-data-cb d-none" value="Konsep Acara (Indoor/Outdoor)" {{ in_array('Konsep Acara (Indoor/Outdoor)', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                                    <div class="checkbox-circle">
+                                        <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
+                                    </div>
+                                    <span style="font-size: 13px; font-weight: 500;">Konsep Acara (Indoor/Outdoor)</span>
+                                </label>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="custom-circle-checkbox d-flex align-items-center" style="border: 1px solid var(--border-color); border-radius: 100px; padding: 10px 16px; cursor: pointer; transition: 0.2s; background: white;">
+                                    <input type="checkbox" class="required-data-cb d-none" value="Estimasi Budget" {{ in_array('Estimasi Budget', $reqData) ? 'checked' : '' }} onchange="saveAiLimits()">
+                                    <div class="checkbox-circle">
+                                        <i class="fa-solid fa-check" style="color: white; font-size: 12px; opacity: 0; transition: 0.2s;"></i>
+                                    </div>
+                                    <span style="font-size: 13px; font-weight: 500;">Estimasi Budget</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="font-weight: 600; font-size: 14px; margin-bottom: 12px;">Pertanyaan Custom Tambahan (Opsional)</div>
+                        
+                        <div id="custom-questions-container">
+                            <!-- Filled by JS -->
+                        </div>
+                        
+                        <button type="button" class="btn btn-sm mt-1" onclick="addCustomQuestion()" style="padding: 6px 16px; font-size: 13px; border-radius: 100px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid #e1e1e4; background: white; color: var(--text-dark); transition: 0.2s;">
                             <i class="fa-solid fa-plus"></i> Tambah Pertanyaan Lain
                         </button>
+                        
+                        <textarea id="hidden_ai_custom_questions" style="display:none;">{{ $user->ai_custom_questions ?? '' }}</textarea>
                     </div>
-                    
-                    <div id="custom-questions-container">
-                        <!-- Filled by JS -->
-                    </div>
-                    
-                    <textarea id="hidden_ai_custom_questions" style="display:none;">{{ $user->ai_custom_questions ?? '' }}</textarea>
                 </div>
             </div>
         </div>
@@ -1196,7 +1197,7 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
             row.className = 'custom-question-row';
             row.innerHTML = `
                 <div class="custom-question-number">${index}</div>
-                <input type="text" class="form-control custom-question-input" style="flex:1;" placeholder="Contoh: Boleh tahu saat ini Kakak bergerak di bidang vendor apa ya?" value="${val.replace(/"/g, '&quot;')}" onchange="saveAiLimits()">
+                <input type="text" class="form-control custom-question-input" style="flex:1; border-radius: 100px; padding: 10px 16px;" placeholder="Contoh: Boleh tahu saat ini Kakak bergerak di bidang vendor apa ya?" value="${val.replace(/"/g, '&quot;')}" onchange="saveAiLimits()">
                 <button type="button" class="btn" onclick="removeCustomQuestion(this)" style="padding: 10px 14px; background: transparent; color: var(--text-muted); border: none; transition: 0.2s;">
                     <i class="fa-regular fa-trash-can"></i>
                 </button>
