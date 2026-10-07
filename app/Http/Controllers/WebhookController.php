@@ -129,6 +129,9 @@ class WebhookController extends Controller
             // Increment reply count
             $chat->ai_reply_count += 1;
             $chat->save();
+        } else {
+            // Jika AI gagal memberikan balasan, kirim pesan error agar tidak silent fail
+            $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, "Mohon maaf, layanan AI kami sedang mengalami gangguan koneksi. (Sistem: Gagal memproses prompt)");
         }
 
         return response()->json(['status' => true, 'message' => 'Processed successfully']);

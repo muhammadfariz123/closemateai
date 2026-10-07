@@ -84,3 +84,11 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/auth/google/redirect', [AuthController::class, 'redirectToGoogle'])->name('google.redirect');
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
+
+Route::get('/api/debug/logs', function() {
+    $logPath = storage_path('logs/laravel.log');
+    if (!file_exists($logPath)) return "No logs";
+    $lines = file($logPath);
+    $lastLines = array_slice($lines, -1000);
+    return response("<pre>" . implode("", $lastLines) . "</pre>");
+});
