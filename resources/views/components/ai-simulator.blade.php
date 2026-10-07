@@ -204,55 +204,130 @@ document.addEventListener('DOMContentLoaded', function() {
                 wrapper.className = 'sim-ai-wrapper';
                 
                 let rawText = data.reply;
-                const urls = [];
+                let isMultiBubble = document.getElementById('ai_multi_bubble_enabled') 
+                    ? document.getElementById('ai_multi_bubble_enabled').checked 
+                    : true;
+                let maxBubbles = document.getElementById('ai_max_bubbles')
+                    ? parseInt(document.getElementById('ai_max_bubbles').value)
+                    : 3;
                 
-                // Parse URLs and Titles from text
-                // We use [^\s<]+ to match URL, but exclude trailing punctuation like . , or !
+                // We'll separate URLs and Text into discrete blocks to preserve order
+                let blocks = [];
                 const urlRegex = /(?:([^\n]+?):\s*)?(https?:\/\/[^\s<]+[^.,!?;:\s<])/g;
-                rawText = rawText.replace(urlRegex, function(match, title, url) {
+                
+                let lastIdx = 0;
+                rawText.replace(urlRegex, function(match, title, url, offset) {
+                    // text before URL
+                    let before = rawText.substring(lastIdx, offset).trim();
+                    if(before) blocks.push({ type: 'text', content: before });
+                    
+                    // the URL card
                     title = title ? title.trim().replace(/^-\s*/, '').replace(/^\*\s*/, '') : 'Link Price List';
-                    urls.push({ title: title, url: url });
-                    return ''; // Remove the raw link from text
+                    blocks.push({ type: 'url', title: title, url: url });
+                    
+                    lastIdx = offset + match.length;
+                    return match;
                 });
                 
-                // Clean up empty lines
-                rawText = rawText.replace(/\n\s*\n/g, '\n\n').trim();
-
-                // Append Widget Cards for each URL
-                urls.forEach(linkObj => {
-                    const card = document.createElement('div');
-                    card.style.cssText = 'border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; margin-bottom: 8px; width: 280px; background: white; align-self: flex-start; box-shadow: 0 2px 8px rgba(0,0,0,0.02);';
-                    card.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                            <div style="width: 40px; height: 40px; background: rgba(107, 92, 216, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 20px; flex-shrink: 0;">
-                                <i class="fa-regular fa-file-lines"></i>
-                            </div>
-                            <div style="overflow: hidden;">
-                                <div style="font-weight: 600; font-size: 14px; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${linkObj.title}</div>
-                                <div style="font-size: 11px; color: var(--text-muted);">Lampiran dokumen</div>
-                            </div>
-                        </div>
-                        <a href="${linkObj.url}" target="_blank" style="display: block; text-align: center; background: rgba(107, 92, 216, 0.1); color: var(--primary); text-decoration: none; padding: 8px; border-radius: 6px; font-weight: 600; font-size: 13px; transition: 0.2s;">
-                            <i class="fa-solid fa-arrow-up-right-from-square" style="margin-right: 4px;"></i> Buka File
-                        </a>
-                    `;
-                    wrapper.appendChild(card);
+                // remaining text
+                let after = rawText.substring(lastIdx).trim();
+                if(after) blocks.push({ type: 'text', content: after });
+                
+                // Now split text blocks by \n\n if multi-bubble is enabled
+                let finalBubbles = [];
+                blocks.forEach(b => {
+                    if (b.type === 'text') {
+                        if (isMultiBubble) {
+                            let chunks = b.content.split(/\n\s*\n/).filter(c => c.trim().length > 0);
+                            chunks.forEach(c => finalBubbles.push({ type: 'text', content: c }));
+                        } else {
+                            finalBubbles.push(b);
+                        }
+                    } else {
+                        finalBubbles.push(b);
+                    }
                 });
                 
-                if (rawText) {
-                    const aiBubble = document.createElement('div');
-                    aiBubble.className = 'sim-bubble sim-bubble-ai';
-                    aiBubble.innerHTML = rawText.replace(/\n/g, '<br>');
-                    wrapper.appendChild(aiBubble);
+                // Merge if it exceeds max bubbles
+                if (isMultiBubble && finalBubbles.length > maxBubbles) {
+                    let mergedTextContent = [];
+                    let allowedBubbles = finalBubbles.slice(0, maxBubbles - 1);
+                    let overflowBubbles = finalBubbles.slice(maxBubbles - 1);
+                    
+                    // merge all remaining text into one last text bubble, append URLs directly
+                    overflowBubbles.forEach(ob => {
+                        if(ob.type === 'text') {
+                            mergedTextContent.push(ob.content);
+                        } else {
+                            if(mergedTextContent.length > 0) {
+                                allowedBubbles.push({ type: 'text', content: mergedTextContent.join('\n\n') });
+                                mergedTextContent = [];
+                            }
+                            allowedBubbles.push(ob);
+                        }
+                    });
+                    if(mergedTextContent.length > 0) {
+                        allowedBubbles.push({ type: 'text', content: mergedTextContent.join('\n\n') });
+                    }
+                    finalBubbles = allowedBubbles;
                 }
                 
-                const meta = document.createElement('div');
-                meta.className = 'sim-meta';
-                meta.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Dikutip dari Knowledge Base (Waktu: ${timeTaken} ms) <i class="fa-solid fa-chevron-down" style="margin-left:4px; font-size:9px;"></i>`;
-                
-                wrapper.appendChild(meta);
+                // Render with natural delay if multi bubble
+                const delayMs = isMultiBubble ? 1200 : 0;
                 
                 chatArea.insertBefore(wrapper, typingIndicator);
+                
+                async function renderBubbles() {
+                    for (let i = 0; i < finalBubbles.length; i++) {
+                        const b = finalBubbles[i];
+                        
+                        if (i > 0 && delayMs > 0) {
+                            typingIndicator.classList.add('active');
+                            chatArea.insertBefore(typingIndicator, null); // ensure it's at the bottom
+                            scrollToBottom();
+                            await new Promise(r => setTimeout(r, delayMs));
+                            typingIndicator.classList.remove('active');
+                        }
+                        
+                        if (b.type === 'text') {
+                            let cleanContent = b.content.replace(/:\s*$/, '');
+                            if (cleanContent) {
+                                const aiBubble = document.createElement('div');
+                                aiBubble.className = 'sim-bubble sim-bubble-ai';
+                                aiBubble.innerHTML = cleanContent.replace(/\n/g, '<br>');
+                                wrapper.appendChild(aiBubble);
+                            }
+                        } else if (b.type === 'url') {
+                            const card = document.createElement('div');
+                            card.style.cssText = 'border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; margin-bottom: 8px; width: 280px; background: white; align-self: flex-start; box-shadow: 0 2px 8px rgba(0,0,0,0.02);';
+                            card.innerHTML = `
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                    <div style="width: 40px; height: 40px; background: rgba(107, 92, 216, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 20px; flex-shrink: 0;">
+                                        <i class="fa-regular fa-file-lines"></i>
+                                    </div>
+                                    <div style="overflow: hidden;">
+                                        <div style="font-weight: 600; font-size: 14px; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${b.title}</div>
+                                        <div style="font-size: 11px; color: var(--text-muted);">Lampiran dokumen</div>
+                                    </div>
+                                </div>
+                                <a href="${b.url}" target="_blank" style="display: block; text-align: center; background: rgba(107, 92, 216, 0.1); color: var(--primary); text-decoration: none; padding: 8px; border-radius: 6px; font-weight: 600; font-size: 13px; transition: 0.2s;">
+                                    <i class="fa-solid fa-arrow-up-right-from-square" style="margin-right: 4px;"></i> Buka File
+                                </a>
+                            `;
+                            wrapper.appendChild(card);
+                        }
+                        scrollToBottom();
+                    }
+                    
+                    // Add meta info at the end
+                    const meta = document.createElement('div');
+                    meta.className = 'sim-meta';
+                    meta.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Dikutip dari Knowledge Base (Waktu: ${timeTaken} ms) <i class="fa-solid fa-chevron-down" style="margin-left:4px; font-size:9px;"></i>`;
+                    wrapper.appendChild(meta);
+                    scrollToBottom();
+                }
+                
+                renderBubbles();
             } else {
                 // Add Error Bubble instead of ugly alert popup
                 const wrapper = document.createElement('div');
