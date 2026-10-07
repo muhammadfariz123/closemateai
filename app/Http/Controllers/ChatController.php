@@ -58,7 +58,7 @@ class ChatController extends Controller
             try {
                 Http::withHeaders([
                     'Authorization' => $user->fonnte_token,
-                ])->post('https://api.fonnte.com/send', [
+                ])->asForm()->post('https://api.fonnte.com/send', [
                     'target' => $chat->client_wa_number,
                     'message' => $messageText,
                     'countryCode' => '62',
