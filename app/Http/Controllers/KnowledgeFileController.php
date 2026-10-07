@@ -30,6 +30,7 @@ class KnowledgeFileController extends Controller
         }
 
         $user->ai_limit_enabled = $request->boolean('ai_limit_enabled');
+        $user->ai_max_replies = $request->input('ai_max_replies', 3);
         $user->ai_multi_bubble_enabled = $request->boolean('ai_multi_bubble_enabled');
         $user->ai_max_bubbles = $request->input('ai_max_bubbles', 3);
         $user->ai_require_data_before_price = $request->boolean('ai_require_data_before_price');

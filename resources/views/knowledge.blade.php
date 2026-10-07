@@ -577,15 +577,25 @@
                     </div>
                 </div>
                 
-                <div class="switch-row" style="padding-top: 0; padding-bottom: 20px;">
+                <div class="switch-row" style="padding-top: 0; padding-bottom: 20px; border-bottom: {{ ($user->ai_limit_enabled ?? false) ? '1px solid var(--border-color)' : 'none' }}; margin: 0;" id="ai_limit_switch_row">
                     <div>
                         <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Aktifkan Batasan</div>
                         <div style="font-size: 12px; color: var(--text-muted);">Jika nonaktif, AI membalas tanpa batas</div>
                     </div>
                     <label class="switch">
-                        <input type="checkbox" id="ai_limit_enabled" {{ ($user->ai_limit_enabled ?? false) ? 'checked' : '' }} onchange="saveAiLimits()">
+                        <input type="checkbox" id="ai_limit_enabled" {{ ($user->ai_limit_enabled ?? false) ? 'checked' : '' }} onchange="toggleAiLimitForm()">
                         <span class="slider"></span>
                     </label>
+                </div>
+                
+                <div id="ai_limit_details_form" style="padding-top: 20px; display: {{ ($user->ai_limit_enabled ?? false) ? 'block' : 'none' }};">
+                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">Jumlah balasan AI di awal chat</div>
+                    <input type="number" id="ai_max_replies" class="form-control" value="{{ $user->ai_max_replies ?? 3 }}" min="1" max="50" oninput="document.getElementById('lbl_ai_max_replies').innerText = this.value || 0;">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 12px; margin-bottom: 16px;">Setelah AI membalas <span id="lbl_ai_max_replies">{{ $user->ai_max_replies ?? 3 }}</span>x pada satu percakapan, chat otomatis dialihkan ke admin (human takeover) dan Anda mendapat notifikasi WhatsApp.</div>
+                    
+                    <button class="btn btn-secondary" style="border: 1px solid var(--border-color); font-weight: 600;" onclick="saveAiLimits('Batasan Balasan AI berhasil disimpan')">
+                        <i class="fa-regular fa-floppy-disk"></i> Simpan Batasan
+                    </button>
                 </div>
             </div>
 
@@ -1285,6 +1295,22 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
             return msg;
         }
 
+        function toggleAiLimitForm() {
+            const isChecked = document.getElementById('ai_limit_enabled').checked;
+            const form = document.getElementById('ai_limit_details_form');
+            const switchRow = document.getElementById('ai_limit_switch_row');
+            
+            if (isChecked) {
+                form.style.display = 'block';
+                switchRow.style.borderBottom = '1px solid var(--border-color)';
+                saveAiLimits('Fitur Batasan AI diaktifkan');
+            } else {
+                form.style.display = 'none';
+                switchRow.style.borderBottom = 'none';
+                saveAiLimits('Fitur Batasan AI dinonaktifkan');
+            }
+        }
+
         function saveAiLimits(customToastMsg = null) {
             const requiredData = [];
             document.querySelectorAll('.required-data-cb:checked').forEach(cb => {
@@ -1300,6 +1326,7 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
 
             const data = {
                 ai_limit_enabled: document.getElementById('ai_limit_enabled').checked ? 1 : 0,
+                ai_max_replies: document.getElementById('ai_max_replies') ? document.getElementById('ai_max_replies').value : 3,
                 ai_multi_bubble_enabled: document.getElementById('ai_multi_bubble_enabled').checked ? 1 : 0,
                 ai_max_bubbles: document.getElementById('ai_max_bubbles').value,
                 ai_require_data_before_price: document.getElementById('ai_require_data_before_price').checked ? 1 : 0,
