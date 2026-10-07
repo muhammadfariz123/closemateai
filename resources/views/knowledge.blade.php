@@ -637,7 +637,7 @@
                 </div>
                 
                 <div style="border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-top: 16px;">
-                    <div class="switch-row" style="padding: 16px 20px; background: white; border-bottom: 1px solid var(--border-color); margin: 0;">
+                    <div class="switch-row" style="padding: 16px 20px; background: white; border-bottom: {{ ($user->ai_require_data_before_price ?? true) ? '1px solid var(--border-color)' : 'none' }}; margin: 0;">
                         <div>
                             <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Wajibkan Data Klien Sebelum Kirim File Price List</div>
                             <div id="price_list_mode_text" style="font-size: 12px; color: var(--text-muted);">
@@ -649,7 +649,7 @@
                             </div>
                         </div>
                         <label class="switch">
-                            <input type="checkbox" id="ai_require_data_before_price" {{ ($user->ai_require_data_before_price ?? true) ? 'checked' : '' }} onchange="toggleRequiredDataForm(); saveAiLimits();">
+                            <input type="checkbox" id="ai_require_data_before_price" {{ ($user->ai_require_data_before_price ?? true) ? 'checked' : '' }} onchange="const msg = toggleRequiredDataForm(); saveAiLimits(msg);">
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -1266,19 +1266,26 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
             const isChecked = document.getElementById('ai_require_data_before_price').checked;
             const form = document.getElementById('required_data_form');
             const textDesc = document.getElementById('price_list_mode_text');
+            const switchRow = form.previousElementSibling;
+            
+            let msg = '';
             
             if (isChecked) {
-                form.style.opacity = '1';
-                form.style.pointerEvents = 'auto';
+                form.style.display = 'block';
+                switchRow.style.borderBottom = '1px solid var(--border-color)';
                 textDesc.innerHTML = '<i class="fa-solid fa-lock" style="color: var(--warning);"></i> Modus Filter Leads: AI akan menggali data wajib di bawah sebelum mengirim file Price List.';
+                msg = 'Modus Filter Leads aktif';
             } else {
-                form.style.opacity = '0.5';
-                form.style.pointerEvents = 'none';
+                form.style.display = 'none';
+                switchRow.style.borderBottom = 'none';
                 textDesc.innerHTML = '<i class="fa-solid fa-bolt" style="color: var(--warning);"></i> Modus Cepat (Default): AI akan langsung menyerahkan file Price List begitu diminta, lalu menanyakan detail acara di akhir pesan.';
+                msg = 'Modus Cepat aktif';
             }
+            
+            return msg;
         }
 
-        function saveAiLimits() {
+        function saveAiLimits(customToastMsg = null) {
             const requiredData = [];
             document.querySelectorAll('.required-data-cb:checked').forEach(cb => {
                 requiredData.push(cb.value);
@@ -1302,7 +1309,7 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
 
             $.post('/knowledge/save-ai-limits', data, function(res) {
                 if(res.success) {
-                    showToast(res.message);
+                    showToast(customToastMsg ? customToastMsg : res.message);
                 } else {
                     alert(res.message);
                 }
