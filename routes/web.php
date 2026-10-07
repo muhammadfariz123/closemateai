@@ -30,6 +30,12 @@ Route::post('/knowledge/save-ai-limits', [KnowledgeFileController::class, 'saveA
 Route::post('/knowledge/save-links', [KnowledgeFileController::class, 'saveLinks']);
 Route::post('/api/simulator/chat', [KnowledgeFileController::class, 'simulateChat']);
 
+use App\Http\Controllers\ChatController;
+Route::get('/api/chats', [ChatController::class, 'getChats']);
+Route::get('/api/chats/{id}', [ChatController::class, 'getMessages']);
+Route::post('/api/chats/{id}/send', [ChatController::class, 'sendMessage']);
+Route::post('/api/chats/{id}/takeover', [ChatController::class, 'toggleTakeover']);
+
 Route::get('/leads', function () {
     return view('leads');
 });
