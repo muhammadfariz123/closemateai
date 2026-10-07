@@ -271,7 +271,7 @@ class WebhookController extends Controller
         try {
             $response = Http::withHeaders([
                 'Authorization' => $token,
-            ])->post('https://api.fonnte.com/send', [
+            ])->asForm()->post('https://api.fonnte.com/send', [
                 'target' => $target,
                 'message' => $message,
             ]);
