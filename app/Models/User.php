@@ -41,6 +41,8 @@ class User extends Authenticatable
         'ai_require_data_before_price',
         'ai_required_data',
         'ai_custom_questions',
+        'ai_max_replies',
+        'price_list_links',
     ];
 
     /**

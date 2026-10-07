@@ -503,8 +503,8 @@
                         <div class="form-group">
                             <label class="form-label">Webhook URL</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" readonly value="{{ url('/api/public/wa/' . ($user->webhook_secret ?? '')) }}" style="background: #fafafa; color: var(--text-dark);">
-                                <button class="btn btn-outline" onclick="navigator.clipboard.writeText('{{ url('/api/public/wa/' . ($user->webhook_secret ?? '')) }}'); alert('Disalin!');" style="padding: 10px 14px;"><i class="fa-regular fa-copy"></i></button>
+                                <input type="text" class="form-control" readonly value="{{ secure_url('/api/public/wa/' . ($user->webhook_secret ?? '')) }}" style="background: #fafafa; color: var(--text-dark);">
+                                <button class="btn btn-outline" onclick="navigator.clipboard.writeText('{{ secure_url('/api/public/wa/' . ($user->webhook_secret ?? '')) }}'); alert('Disalin!');" style="padding: 10px 14px;"><i class="fa-regular fa-copy"></i></button>
                             </div>
                             <div class="form-text">Tempel URL ini di dashboard Fonnte -> Device -> Webhook.</div>
                         </div>

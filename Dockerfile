@@ -53,4 +53,4 @@ RUN php artisan migrate --force
 RUN chmod -R 775 storage bootstrap/cache database
 
 # Eksekusi server untuk produksi/Render
-CMD php artisan migrate --force && php artisan storage:link && php -S 0.0.0.0:${PORT:-8000} -t public
+CMD touch database/database.sqlite && php artisan migrate --force && php artisan storage:link && php -S 0.0.0.0:${PORT:-8000} -t public
