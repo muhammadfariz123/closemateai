@@ -497,7 +497,7 @@ class KnowledgeFileController extends Controller
             }
 
             // ==== OPSI 2: JIKA MENGGUNAKAN GEMINI (LAMA) ====
-            $modelsToTry = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-flash-latest'];
+            $modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-pro', 'gemini-3.8-flash', 'gemini-3.7-flash'];
             $lastExceptionMessage = 'Gagal mendapatkan balasan dari AI.';
 
             $finalPrompt = "INSTRUKSI SISTEM:\n" . $systemPrompt . "\n\nPESAN KLIEN:\n" . $message;

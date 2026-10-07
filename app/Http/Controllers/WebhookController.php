@@ -235,7 +235,7 @@ class WebhookController extends Controller
                 }
             }
             
-            $geminiModels = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-flash-latest'];
+            $geminiModels = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-pro', 'gemini-3.8-flash', 'gemini-3.7-flash'];
             foreach ($geminiModels as $model) {
                 try {
                     $response = Http::timeout(15)->post('https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . $geminiApiKey, [
