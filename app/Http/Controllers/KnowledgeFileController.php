@@ -359,8 +359,11 @@ class KnowledgeFileController extends Controller
                 
                 throw new \Exception("Gagal menghubungi Groq: " . $response->body());
             } catch (\Exception $e) {
-                // Biarkan jatuh ke mekanisme catch error di bawah
-                throw $e;
+                // Tangkap error dan kembalikan pesan JSON yang bersih agar tidak terjadi error 500
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menggunakan Groq AI: ' . $e->getMessage()
+                ]);
             }
         }
 
