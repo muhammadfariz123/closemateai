@@ -264,24 +264,24 @@
                 <div class="chat-search">
                     <div class="search-box">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" placeholder="Cari nama atau pesan...">
+                        <input type="text" id="chatSearchInput" placeholder="Cari nama atau pesan...">
                     </div>
-                    <div class="btn-icon">
+                    <div class="btn-icon" id="btnRefreshChats" title="Sinkronkan Riwayat WhatsApp">
                         <i class="fa-solid fa-arrows-rotate"></i>
                     </div>
                 </div>
                 
                 <div class="chat-tabs-wrapper">
-                    <div class="chat-tab">Semua Chat</div>
-                    <div class="chat-tab">Chat Saya</div>
-                    <div class="chat-tab active">Belum<br>Dihandle</div>
+                    <div class="chat-tab active" data-tab="semua">Semua Chat</div>
+                    <div class="chat-tab" data-tab="saya">Chat Saya</div>
+                    <div class="chat-tab" data-tab="belum">Belum<br>Dihandle</div>
                 </div>
                 
                 <div class="chat-filters">
-                    <div class="filter-pill active">All</div>
-                    <div class="filter-pill">AI Active</div>
-                    <div class="filter-pill">Human Takeover</div>
-                    <div class="filter-pill">Unread</div>
+                    <div class="filter-pill active" data-filter="all">All</div>
+                    <div class="filter-pill" data-filter="ai">AI Active</div>
+                    <div class="filter-pill" data-filter="human">Human Takeover</div>
+                    <div class="filter-pill" data-filter="unread">Unread</div>
                 </div>
                 
                 <div class="chat-list" id="chatListContainer">
@@ -298,7 +298,7 @@
                         <div class="chat-header-avatar">Be</div>
                         <div class="chat-header-info">
                             <h3>Bekti</h3>
-                            <p style="color: #6b5cd8; font-weight: 500; background: rgba(107, 92, 216, 0.1); display: inline-block; padding: 2px 8px; border-radius: 12px; margin-top: 2px;">Belum Dihandle</p>
+                            <p id="tagTakeoverStatus" style="color: #6b5cd8; font-weight: 500; background: rgba(107, 92, 216, 0.1); display: inline-block; padding: 2px 8px; border-radius: 12px; margin-top: 2px;">Belum Dihandle</p>
                         </div>
                     </div>
                     <div class="chat-header-actions">
@@ -316,8 +316,14 @@
                     </div>
                 </div>
                 
+                <div class="chat-banner active" id="chatBannerActive" style="display: none; background: rgba(107, 92, 216, 0.1); color: var(--primary); border: 1px solid rgba(107, 92, 216, 0.2);">
+                    <i class="fa-solid fa-robot"></i> AI Assistant sedang menangani percakapan ini
+                </div>
                 <div class="chat-banner" id="chatBanner" style="display: none;">
                     <i class="fa-solid fa-microphone-lines-slash"></i> AI di-PAUSE untuk chat ini – matikan toggle untuk mengaktifkan AI kembali
+                </div>
+                <div id="aiActivityLabel" class="chat-banner" style="background: rgba(107, 92, 216, 0.1); color: var(--primary); border-bottom: 1px solid rgba(107, 92, 216, 0.2); display: none;">
+                    <i class="fa-solid fa-robot"></i> AI Assistant sedang menangani percakapan ini
                 </div>
                 
                 <div class="chat-messages" id="chatMessagesBox" style="display: flex; align-items: center; justify-content: center;">
@@ -328,7 +334,7 @@
                     <div class="chat-input-box">
                         <div class="chat-input-actions" style="gap: 16px;">
                             <i class="fa-solid fa-paperclip"></i>
-                            <i class="fa-solid fa-microphone"></i>
+                            <i class="fa-solid fa-volume-high" id="btnToggleSound" title="Suara Notifikasi" style="cursor:pointer;"></i>
                             <span style="font-size: 12px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-bolt"></i> Quick Reply</span>
                         </div>
                         <input type="text" id="chatInputMessage" placeholder="Tulis pesan untuk klien... (Enter untuk kirim, Shift+Enter baris baru)">
@@ -350,7 +356,7 @@
                             <h3>Bekti</h3>
                             <p>WA Name: Bekti | 62895367938408</p>
                         </div>
-                        <i class="fa-solid fa-pen" style="color: var(--text-muted); cursor: pointer; font-size: 14px;"></i>
+                        <i class="fa-solid fa-pen" style="color: var(--text-muted); cursor: pointer; font-size: 14px;" onclick="openEditModal()"></i>
                     </div>
                     
                     <div class="info-row">
@@ -404,28 +410,112 @@
         </div>
     </div>
     
+    
+    <!-- Edit Modal -->
+    <div id="editContactModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; width: 400px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 16px; align-items: center;">
+                <h3 style="font-size: 16px; font-weight: 600;">Edit Kontak Klien</h3>
+                <i class="fa-solid fa-xmark" style="cursor: pointer; color: var(--text-muted);" onclick="closeEditModal()"></i>
+            </div>
+            <p id="editModalWaName" style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">WA Name: - | -</p>
+            
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Nama Klien</label>
+                <input type="text" id="editModalClientName" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 13px;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Catatan Ringkas / Tag (opsional)</label>
+                <textarea id="editModalQuickNotes" style="width: 100%; height: 80px; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; resize: none; font-size: 13px;" placeholder="Contoh: Gedung Balai Kartini"></textarea>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button onclick="closeEditModal()" style="padding: 8px 16px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; cursor: pointer;">Batal</button>
+                <button onclick="saveEditContact()" style="padding: 8px 16px; border: none; background: var(--primary); color: white; border-radius: 8px; font-weight: 600; cursor: pointer;">Simpan</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container" id="toast-container"></div>
 
+    
     
     <script>
         let activeChatId = null;
         let chatsData = [];
+        let soundEnabled = true;
+        let activeTab = 'semua';
+        let activeFilter = 'all';
+        let searchQuery = '';
+        
+        // Dummy Audio for notification (short tick)
+        const notifSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
         async function fetchChats() {
             try {
                 let res = await fetch('/api/chats');
                 let chats = await res.json();
+                
+                // Cek new messages to play sound
+                if(chatsData.length > 0 && soundEnabled) {
+                    let newMsgs = false;
+                    for(let c of chats) {
+                        let old = chatsData.find(o => o.id === c.id);
+                        if(old && c.messages && old.messages && c.messages.length > old.messages.length) {
+                            if(c.messages[0].sender !== 'admin') newMsgs = true;
+                        } else if (!old && c.messages && c.messages.length > 0) {
+                            newMsgs = true; // completely new chat
+                        }
+                    }
+                    if(newMsgs) {
+                        notifSound.play().catch(e=>console.log(e));
+                    }
+                }
+                
                 chatsData = chats;
-                renderChatList(chats);
+                applyFiltersAndSearch();
+                
                 if(activeChatId) {
-                    // Update active chat silently if new messages arrived
                     let stillExists = chats.find(c => c.id === activeChatId);
                     if(stillExists && stillExists.messages.length > 0) {
-                        // We will just re-fetch the active chat
                         fetchActiveChatMessages(true);
                     }
                 }
             } catch (e) { console.error(e); }
+        }
+
+        function applyFiltersAndSearch() {
+            let filtered = chatsData;
+            
+            // Search
+            if(searchQuery) {
+                let q = searchQuery.toLowerCase();
+                filtered = filtered.filter(c => 
+                    (c.client_name && c.client_name.toLowerCase().includes(q)) || 
+                    (c.client_wa_number && c.client_wa_number.includes(q)) ||
+                    (c.messages && c.messages.length > 0 && c.messages[0].message && c.messages[0].message.toLowerCase().includes(q))
+                );
+            }
+            
+            // Tabs: semua, saya, belum
+            if(activeTab === 'saya') {
+                filtered = filtered.filter(c => c.is_human_takeover);
+            } else if(activeTab === 'belum') {
+                filtered = filtered.filter(c => !c.is_human_takeover); // simplified logic
+            }
+            
+            // Pills: all, ai, human, unread
+            if(activeFilter === 'ai') {
+                filtered = filtered.filter(c => !c.is_human_takeover);
+            } else if(activeFilter === 'human') {
+                filtered = filtered.filter(c => c.is_human_takeover);
+            } else if(activeFilter === 'unread') {
+                // Dummy unread logic: ai replies == 0
+                filtered = filtered.filter(c => c.ai_reply_count == 0);
+            }
+            
+            renderChatList(filtered);
         }
 
         function renderChatList(chats) {
@@ -434,7 +524,7 @@
                 container.innerHTML = '<div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #a1a5b7; font-size: 13px; font-weight: 500;">Belum ada percakapan masuk</div>';
                 
                 const msgBox = document.getElementById('chatMessagesBox');
-                if (msgBox) {
+                if (msgBox && !activeChatId) {
                     msgBox.innerHTML = '<div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #a1a5b7; font-size: 14px; font-weight: 500;">Belum ada percakapan masuk</div>';
                 }
                 return;
@@ -469,7 +559,7 @@
 
         async function openChat(id) {
             activeChatId = id;
-            renderChatList(chatsData); // update active class
+            applyFiltersAndSearch(); // update active class
             await fetchActiveChatMessages(false);
         }
 
@@ -494,11 +584,19 @@
                 document.querySelector('.client-name p').innerText = `WA Name: ${name} | ${data.chat.client_wa_number}`;
                 document.querySelectorAll('.info-row .info-content p')[1].innerText = data.chat.client_wa_number;
                 
-                // Update Takeover UI
+                // Quick Notes UI update
+                let qn = document.querySelector('.quick-notes textarea');
+                if(qn && document.activeElement !== qn) qn.value = data.chat.quick_notes || '';
+                
+                // Update Takeover UI & AI Label
                 const toggle = document.getElementById('humanTakeoverToggle');
+                const aiLabel = document.getElementById('aiActivityLabel');
                 if(toggle && !silent) {
                     toggle.checked = data.chat.is_human_takeover == 1;
                     updateTakeoverUI(data.chat.is_human_takeover == 1, false);
+                }
+                if(aiLabel) {
+                    aiLabel.style.display = data.chat.is_human_takeover == 1 ? 'none' : 'flex';
                 }
 
                 // Render Messages
@@ -515,7 +613,8 @@
                             <div class="bubble-wrapper right">
                                 <div class="bubble bubble-right" style="background: ${bgColor};">
                                     ${badge}
-                                    ${msg.message.replace(/\\n/g, '<br>')}
+                                    ${msg.message.replace(/
+/g, '<br>')}
                                 </div>
                                 <div class="bubble-time right">${time}</div>
                             </div>
@@ -524,7 +623,8 @@
                         html += `
                             <div class="bubble-wrapper left">
                                 <div class="bubble bubble-left">
-                                    ${msg.message.replace(/\\n/g, '<br>')}
+                                    ${msg.message.replace(/
+/g, '<br>')}
                                 </div>
                                 <div class="bubble-time">${time}</div>
                             </div>
@@ -558,6 +658,8 @@
                 let data = await res.json();
                 if(data.success) {
                     updateTakeoverUI(isTakeover, true);
+                    const aiLabel = document.getElementById('aiActivityLabel');
+                    if(aiLabel) aiLabel.style.display = isTakeover ? 'none' : 'flex';
                     fetchChats(); // refresh list
                 }
             } catch(e) { console.error(e); }
@@ -596,7 +698,8 @@
             msgBox.innerHTML += `
                 <div class="bubble-wrapper right" style="opacity: 0.7;">
                     <div class="bubble bubble-right" style="background: #4a3da8;">
-                        ${text.replace(/\\n/g, '<br>')}
+                        ${text.replace(/
+/g, '<br>')}
                     </div>
                     <div class="bubble-time right">${time} (Sending...)</div>
                 </div>
@@ -620,6 +723,81 @@
             }
         }
 
+        // EDIT MODAL LOGIC
+        function openEditModal() {
+            if(!activeChatId) return;
+            let chat = chatsData.find(c => c.id === activeChatId);
+            if(!chat) return;
+            
+            document.getElementById('editModalWaName').innerText = `WA Name: ${chat.client_wa_number} | ${chat.client_wa_number}`;
+            document.getElementById('editModalClientName').value = chat.client_name || '';
+            document.getElementById('editModalQuickNotes').value = chat.quick_notes || '';
+            document.getElementById('editContactModal').style.display = 'flex';
+        }
+        function closeEditModal() {
+            document.getElementById('editContactModal').style.display = 'none';
+        }
+        async function saveEditContact() {
+            if(!activeChatId) return;
+            const name = document.getElementById('editModalClientName').value;
+            const notes = document.getElementById('editModalQuickNotes').value;
+            
+            try {
+                let res = await fetch(`/api/chats/${activeChatId}/edit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    body: JSON.stringify({ client_name: name, quick_notes: notes })
+                });
+                let data = await res.json();
+                if(data.success) {
+                    showToast('Kontak klien berhasil diperbarui', 'fa-check-circle');
+                    closeEditModal();
+                    fetchActiveChatMessages(false);
+                    fetchChats();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
+        function openEditModal() {
+            if(!activeChatId) return;
+            let chat = chatsData.find(c => c.id === activeChatId);
+            if(!chat) return;
+            
+            document.getElementById('editModalWaName').innerText = `WA Name: ${chat.client_name || '-'} | ${chat.client_wa_number}`;
+            document.getElementById('editModalClientName').value = chat.client_name || '';
+            document.getElementById('editModalQuickNotes').value = chat.quick_notes || '';
+            
+            document.getElementById('editContactModal').style.display = 'flex';
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editContactModal').style.display = 'none';
+        }
+        
+        async function saveEditContact() {
+            if(!activeChatId) return;
+            let name = document.getElementById('editModalClientName').value;
+            let notes = document.getElementById('editModalQuickNotes').value;
+            
+            try {
+                let res = await fetch(`/api/chats/${activeChatId}/edit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    body: JSON.stringify({ client_name: name, quick_notes: notes })
+                });
+                if(res.ok) {
+                    showToast('Kontak berhasil diperbarui', 'fa-check-circle');
+                    closeEditModal();
+                    fetchChats();
+                }
+            } catch(e) {
+                console.error(e);
+                showToast('Gagal menyimpan', 'fa-times-circle');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             fetchChats();
             setInterval(() => {
@@ -637,23 +815,112 @@
                     }
                 });
             }
+            
+            // Search Event
+            const searchInput = document.getElementById('chatSearchInput');
+            if(searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    searchQuery = e.target.value;
+                    applyFiltersAndSearch();
+                });
+            }
+            
+            // Refresh Event
+            const btnRefresh = document.getElementById('btnRefreshChats');
+            if(btnRefresh) {
+                btnRefresh.addEventListener('click', async () => {
+                    btnRefresh.style.opacity = '0.5';
+                    await fetchChats();
+                    btnRefresh.style.opacity = '1';
+                    showToast('Sinkronisasi riwayat WhatsApp berhasil', 'fa-check-circle');
+                });
+            }
+            
+            // Sound Event
+            const btnSound = document.getElementById('btnToggleSound');
+            if(btnSound) {
+                btnSound.setAttribute('title', 'Suara Notifikasi: Aktif');
+                btnSound.addEventListener('click', () => {
+                    soundEnabled = !soundEnabled;
+                    const icon = btnSound.querySelector('i');
+                    if(soundEnabled) {
+                        icon.classList.replace('fa-volume-xmark', 'fa-volume-high');
+                        btnSound.style.color = '';
+                        btnSound.setAttribute('title', 'Suara Notifikasi: Aktif');
+                        showToast('Suara notifikasi: Aktif', 'fa-volume-high');
+                    } else {
+                        icon.classList.replace('fa-volume-high', 'fa-volume-xmark');
+                        btnSound.style.color = 'var(--danger)';
+                        btnSound.setAttribute('title', 'Suara Notifikasi: Tidak Aktif');
+                        showToast('Suara notifikasi: Tidak Aktif', 'fa-volume-xmark');
+                    }
+                });
+            }
+            
+            // Tabs Event
+            document.querySelectorAll('.chat-tab').forEach(el => {
+                el.addEventListener('click', () => {
+                    document.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));
+                    el.classList.add('active');
+                    activeTab = el.getAttribute('data-tab');
+                    applyFiltersAndSearch();
+                });
+            });
+            
+            // Pills Event
+            document.querySelectorAll('.filter-pill').forEach(el => {
+                el.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                    el.classList.add('active');
+                    activeFilter = el.getAttribute('data-filter');
+                    applyFiltersAndSearch();
+                });
+            });
+            
+            // Quick Notes auto save on blur
+            const qn = document.querySelector('.quick-notes textarea');
+            if(qn) {
+                qn.addEventListener('blur', async () => {
+                    if(!activeChatId) return;
+                    let val = qn.value;
+                    try {
+                        let chat = chatsData.find(c => c.id === activeChatId);
+                        let name = chat ? chat.client_name : '';
+                        await fetch(`/api/chats/${activeChatId}/edit`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                            body: JSON.stringify({ quick_notes: val, client_name: name })
+                        });
+                        showToast('Catatan disimpan', 'fa-check-circle');
+                        fetchChats();
+                    } catch(e) {}
+                });
+            }
         });
+        
         function updateTakeoverUI(isTakeover, showToastAlert = false) {
             const banner = document.getElementById('chatBanner');
+            const bannerActive = document.getElementById('chatBannerActive');
             const tag = document.getElementById('tagTakeoverStatus');
             const label = document.getElementById('takeoverText');
-            if(!banner || !tag || !label) return;
+            
             if(isTakeover) {
-                banner.style.display = 'flex';
-                tag.className = 'tag tag-danger';
-                tag.innerText = 'HUMAN TAKEOVER';
-                label.style.color = 'var(--primary)';
+                if(banner) banner.style.display = 'flex';
+                if(bannerActive) bannerActive.style.display = 'none';
+                if(tag) {
+                    tag.className = 'tag tag-danger';
+                    tag.innerText = 'HUMAN TAKEOVER';
+                }
+                if(label) label.style.color = 'var(--danger)';
                 if(showToastAlert) showToast('Mode Human Takeover Aktif. AI dihentikan.', 'fa-user-shield');
             } else {
-                banner.style.display = 'none';
-                tag.className = 'tag tag-primary';
-                tag.innerText = 'AI Active';
-                label.style.color = 'var(--text-muted)';
+                if(banner) banner.style.display = 'none';
+                if(bannerActive) bannerActive.style.display = 'flex';
+                if(tag) {
+                    tag.className = 'tag tag-primary';
+                    tag.innerText = 'AI Active';
+                }
+                if(label) label.style.color = 'var(--text-muted)';
                 if(showToastAlert) showToast('AI kembali aktif', 'fa-robot');
             }
         }
@@ -670,5 +937,6 @@
             }, 3000);
         }
     </script>
+
 </body>
 </html>
