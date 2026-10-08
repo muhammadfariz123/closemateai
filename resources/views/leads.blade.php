@@ -500,7 +500,7 @@
             try {
                 let res = await fetch('/api/chats');
                 let data = await res.json();
-                allLeads = data.chats || [];
+                allLeads = Array.isArray(data) ? data : [];
                 renderLeads();
             } catch(e) {
                 console.error('Error fetching leads:', e);
