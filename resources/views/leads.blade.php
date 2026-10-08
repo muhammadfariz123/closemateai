@@ -627,7 +627,7 @@
             currentFilteredLeads.forEach(function(rowArray) {
                 let row = [
                     `"${rowArray.client_name || ''}"`,
-                    `"${rowArray.client_wa_number || ''}"`,
+                    `"'${rowArray.client_wa_number || ''}"`,
                     `"${rowArray.event_date || ''}"`,
                     `"${rowArray.location || ''}"`,
                     `"${rowArray.package || ''}"`,
