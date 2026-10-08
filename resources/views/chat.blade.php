@@ -601,7 +601,10 @@
                 // Show UI elements
                 document.getElementById('chatHeader').style.display = 'flex';
                 document.getElementById('chatInputArea').style.display = 'block';
-                document.getElementById('chatMessagesBox').style.display = 'block';
+                let msgBoxElem = document.getElementById('chatMessagesBox');
+                msgBoxElem.style.display = 'flex';
+                msgBoxElem.style.alignItems = 'stretch';
+                msgBoxElem.style.justifyContent = 'flex-start';
                 document.getElementById('leadDetailsEmpty').style.display = 'none';
                 document.getElementById('leadDetailsContent').style.display = 'block';
 
