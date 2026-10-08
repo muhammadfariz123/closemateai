@@ -694,34 +694,40 @@
         }
         
         async function saveEditLead() {
-            const payload = {
-                client_name: document.getElementById('editLeadName').value,
-                client_wa_number: document.getElementById('editLeadWa').value,
-                event_date: document.getElementById('editLeadEventDate').value,
-                location: document.getElementById('editLeadVenue').value,
-                package: document.getElementById('editLeadPackage').value,
-                lead_score: document.getElementById('editLeadScore').value,
-                status: document.getElementById('editLeadStatus').value
-            };
-            
-            let url = '/api/chats';
-            if (editingLeadId) {
-                url = `/api/chats/${editingLeadId}/edit`;
-            }
-            
             try {
+                const payload = {
+                    client_name: document.getElementById('editLeadName').value,
+                    client_wa_number: document.getElementById('editLeadWa').value,
+                    event_date: document.getElementById('editLeadEventDate').value,
+                    location: document.getElementById('editLeadVenue').value,
+                    package: document.getElementById('editLeadPackage').value,
+                    lead_score: document.getElementById('editLeadScore').value,
+                    status: document.getElementById('editLeadStatus').value
+                };
+                
+                let url = '/api/chats';
+                if (editingLeadId) {
+                    url = `/api/chats/${editingLeadId}/edit`;
+                }
+                
                 let res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                     body: JSON.stringify(payload)
                 });
+                
                 if(res.ok) {
                     showToast(editingLeadId ? 'Data lead disimpan' : 'Lead berhasil ditambahkan');
                     closeEditModal();
                     fetchLeads();
+                } else {
+                    let errText = await res.text();
+                    console.error("Server error:", res.status, errText);
+                    showToast('Gagal menyimpan: Error ' + res.status, 'fa-xmark');
                 }
             } catch(e) {
-                console.error(e);
+                console.error("Network or JS error:", e);
+                showToast('Terjadi kesalahan pada sistem', 'fa-xmark');
             }
         }
         
