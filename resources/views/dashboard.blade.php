@@ -304,7 +304,7 @@
                     TOTAL CONVERSATIONS TODAY
                     <i class="fa-regular fa-comment stat-icon"></i>
                 </div>
-                <div class="stat-value">0</div>
+                <div class="stat-value" id="stat-conversations">0</div>
                 <div class="stat-desc">Belum ada data kemarin</div>
             </div>
             <div class="stat-card">
@@ -312,7 +312,7 @@
                     ACTIVE HOT LEADS
                     <i class="fa-solid fa-fire stat-icon" style="color: #a1a5b7;"></i>
                 </div>
-                <div class="stat-value">0</div>
+                <div class="stat-value" id="stat-hot-leads">0</div>
                 <div class="stat-desc">0 baru minggu ini</div>
             </div>
             <div class="stat-card">
@@ -320,15 +320,15 @@
                     AI RESOLUTION RATE
                     <i class="fa-solid fa-robot stat-icon"></i>
                 </div>
-                <div class="stat-value">0%</div>
-                <div class="stat-desc">AI menangani 0 dari 0 chat</div>
+                <div class="stat-value" id="stat-ai-resolution">0%</div>
+                <div class="stat-desc" id="stat-ai-desc">AI menangani 0 dari 0 chat</div>
             </div>
             <div class="stat-card warning-card">
                 <div class="stat-header">
                     PENDING HUMAN TAKEOVERS
                     <i class="fa-solid fa-hand-holding-hand stat-icon" style="color: #64553b;"></i>
                 </div>
-                <div class="stat-value">0</div>
+                <div class="stat-value" id="stat-takeovers">0</div>
                 <div class="stat-desc" style="color: #8f8574;">Menunggu balasan admin</div>
             </div>
         </div>
@@ -372,15 +372,15 @@
                 <div class="mini-stats-grid">
                     <div class="mini-stat">
                         <p>Balasan terkirim hari ini</p>
-                        <h4>0</h4>
+                        <h4 id="stat-msg-sent">0</h4>
                     </div>
                     <div class="mini-stat">
                         <p>Percakapan hari ini</p>
-                        <h4>0</h4>
+                        <h4 id="stat-convo-today">0</h4>
                     </div>
                     <div class="mini-stat">
                         <p>Perlu admin</p>
-                        <h4>0</h4>
+                        <h4 id="stat-pending-admin">0</h4>
                     </div>
                 </div>
             </div>
@@ -393,8 +393,10 @@
                     <i class="fa-solid fa-arrow-up-right-from-square" style="color: var(--text-muted); font-size: 14px;"></i>
                 </div>
                 
-                <div class="empty-state">
-                    Belum ada aktivitas. Aktivitas muncul otomatis saat ada chat masuk.
+                <div id="activity-feed-container" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div class="empty-state">
+                        Mengambil aktivitas...
+                    </div>
                 </div>
             </div>
         </div>
@@ -422,6 +424,61 @@
             if (profileDropdown.classList.contains('show')) {
                 profileDropdown.classList.remove('show');
             }
+        });
+        
+        // Fetch Realtime Dashboard Stats
+        async function fetchDashboardStats() {
+            try {
+                let res = await fetch('/api/dashboard/stats');
+                if(!res.ok) return;
+                let data = await res.json();
+                
+                // Update stats
+                document.getElementById('stat-conversations').innerText = data.total_conversations;
+                document.getElementById('stat-hot-leads').innerText = data.active_hot_leads;
+                document.getElementById('stat-ai-resolution').innerText = data.resolution_rate + '%';
+                document.getElementById('stat-ai-desc').innerText = `AI menangani ${data.ai_resolved_chats} dari ${data.total_chats_all} chat`;
+                document.getElementById('stat-takeovers').innerText = data.pending_takeovers;
+                
+                document.getElementById('stat-msg-sent').innerText = data.messages_sent_today;
+                document.getElementById('stat-convo-today').innerText = data.total_conversations;
+                document.getElementById('stat-pending-admin').innerText = data.pending_takeovers;
+                
+                // Update Feed
+                const feedContainer = document.getElementById('activity-feed-container');
+                if (data.feed && data.feed.length > 0) {
+                    let html = '';
+                    data.feed.forEach(item => {
+                        html += `
+                        <div style="display: flex; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+                            <div style="min-width: 32px; width: 32px; height: 32px; border-radius: 50%; background-color: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; color: ${item.color}; font-size: 14px;">
+                                <i class="${item.icon}"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                    <h4 style="font-size: 13px; font-weight: 600; color: var(--text-dark);">${item.title}</h4>
+                                    <span style="font-size: 11px; color: var(--text-muted);">${item.time}</span>
+                                </div>
+                                <p style="font-size: 12px; color: var(--text-muted); margin: 0;">${item.desc}</p>
+                            </div>
+                        </div>`;
+                    });
+                    feedContainer.innerHTML = html;
+                } else {
+                    feedContainer.innerHTML = `
+                    <div class="empty-state">
+                        Belum ada aktivitas. Aktivitas muncul otomatis saat ada chat masuk.
+                    </div>`;
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        
+        // Initial fetch and interval
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchDashboardStats();
+            setInterval(fetchDashboardStats, 5000);
         });
     </script>
 </body>

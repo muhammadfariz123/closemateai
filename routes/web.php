@@ -15,6 +15,9 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 });
 
+use App\Http\Controllers\DashboardController;
+Route::get('/api/dashboard/stats', [DashboardController::class, 'stats']);
+
 Route::get('/chat', function () {
     return view('chat');
 });
