@@ -132,18 +132,29 @@ class ChatController extends Controller
 
         $chat = Chat::where('id', $chatId)->where('user_id', $user->id)->firstOrFail();
         
-        if ($request->has('client_name')) {
-            $chat->client_name = $request->input('client_name');
-        }
-        if ($request->has('quick_notes')) {
-            $chat->quick_notes = $request->input('quick_notes');
-        }
-        if ($request->has('status')) {
-            $chat->status = $request->input('status');
+        $fields = ['client_name', 'quick_notes', 'status', 'event_date', 'location', 'package', 'lead_score', 'client_wa_number'];
+        foreach ($fields as $field) {
+            if ($request->has($field)) {
+                $chat->{$field} = $request->input($field);
+            }
         }
         
         $chat->save();
 
         return response()->json(['success' => true, 'chat' => $chat]);
+    }
+    
+    public function deleteChat(Request $request, $chatId)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) return response()->json(['success' => false]);
+        
+        $chat = Chat::where('id', $chatId)->where('user_id', $user->id)->firstOrFail();
+        
+        // Messages will be deleted via cascade or we can delete manually
+        \App\Models\Message::where('chat_id', $chat->id)->delete();
+        $chat->delete();
+        
+        return response()->json(['success' => true, 'message' => 'Lead dihapus']);
     }
 }

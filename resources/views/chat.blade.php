@@ -821,6 +821,15 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Check for id in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const chatIdParam = urlParams.get('id');
+            if(chatIdParam) {
+                openChat(parseInt(chatIdParam));
+                // Optionally remove it from URL so refreshing doesn't keep it forever
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
             fetchChats();
             setInterval(() => {
                 fetchChats();

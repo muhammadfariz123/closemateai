@@ -366,7 +366,92 @@
         </div>
     </div>
 
+    <!-- Edit Lead Modal -->
+    <div id="editLeadModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; width: 500px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px; align-items: flex-start;">
+                <div>
+                    <h3 style="font-size: 18px; font-weight: 600;">Edit Lead</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Data lead ini juga dipakai AI untuk konteks follow-up klien.</p>
+                </div>
+                <i class="fa-solid fa-xmark" style="cursor: pointer; color: var(--text-muted);" onclick="closeEditModal()"></i>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px;">
+                <div class="form-group">
+                    <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Nama Klien</label>
+                    <input type="text" id="editLeadName" class="form-control" style="width: 100%;">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Nomor WhatsApp</label>
+                    <input type="text" id="editLeadWa" class="form-control" style="width: 100%; background: #f8f9fa;" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Tanggal Acara</label>
+                    <input type="text" id="editLeadEventDate" class="form-control" style="width: 100%;">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Venue</label>
+                    <input type="text" id="editLeadVenue" class="form-control" style="width: 100%;">
+                </div>
+                
+                <div class="form-group">
+                    <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Paket</label>
+                    <input type="text" id="editLeadPackage" class="form-control" style="width: 100%;">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Lead Score</label>
+                    <select id="editLeadScore" class="form-control" style="width: 100%;">
+                        <option value="Hot">Hot</option>
+                        <option value="Warm">Warm</option>
+                        <option value="Cold">Cold</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Status</label>
+                    <select id="editLeadStatus" class="form-control" style="width: 100%;">
+                        <option value="New Inquiry">New Inquiry</option>
+                        <option value="Hot Lead">Hot Lead</option>
+                        <option value="Warm Lead">Warm Lead</option>
+                        <option value="Proposal Sent">Proposal Sent</option>
+                        <option value="Follow Up">Follow Up</option>
+                        <option value="Done Follow-up 1">Done Follow-up 1</option>
+                        <option value="Done Follow-up 2">Done Follow-up 2</option>
+                        <option value="Booked">Booked</option>
+                        <option value="Lost">Lost</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                <button onclick="closeEditModal()" class="btn btn-secondary">Batal</button>
+                <button onclick="saveEditLead()" class="btn btn-primary">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; width: 400px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center;">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: var(--danger); margin-bottom: 16px;"></i>
+            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Hapus Lead</h3>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">Apakah Anda yakin ingin menghapus lead ini? Data percakapan juga akan ikut terhapus.</p>
+            <div style="display: flex; justify-content: center; gap: 12px;">
+                <button onclick="closeDeleteModal()" class="btn btn-secondary">Batal</button>
+                <button onclick="confirmDeleteLead()" class="btn" style="background: var(--danger); color: white;">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;"></div>
+
     <script>
+        let allLeads = [];
+        let editingLeadId = null;
+        let deletingLeadId = null;
+
         // Fitur Sidebar Collapse
         const btnCollapse = document.getElementById('btn-collapse');
         btnCollapse.addEventListener('click', () => {
@@ -386,6 +471,204 @@
             if (profileDropdown.classList.contains('show')) {
                 profileDropdown.classList.remove('show');
             }
+        });
+
+        function showToast(message, iconClass = 'fa-check-circle') {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+            const toast = document.createElement('div');
+            toast.style.background = '#333';
+            toast.style.color = 'white';
+            toast.style.padding = '12px 20px';
+            toast.style.borderRadius = '8px';
+            toast.style.marginBottom = '10px';
+            toast.style.fontSize = '14px';
+            toast.style.display = 'flex';
+            toast.style.alignItems = 'center';
+            toast.style.gap = '8px';
+            toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            toast.innerHTML = `<i class="fa-solid ${iconClass}"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        async function fetchLeads() {
+            try {
+                let res = await fetch('/api/chats');
+                let data = await res.json();
+                allLeads = data.chats || [];
+                renderLeads();
+            } catch(e) {
+                console.error('Error fetching leads:', e);
+            }
+        }
+
+        function getTemperatureBadge(score) {
+            if(score === 'Hot') return `<span style="background: rgba(241, 65, 108, 0.1); color: var(--danger); padding: 4px 10px; border-radius: 12px; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-fire" style="font-size:10px;"></i> Hot</span>`;
+            if(score === 'Cold') return `<span style="background: rgba(161, 165, 183, 0.1); color: var(--text-muted); padding: 4px 10px; border-radius: 12px; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-snowflake" style="font-size:10px;"></i> Cold</span>`;
+            // Default warm
+            return `<span style="background: rgba(255, 199, 0, 0.1); color: var(--warning); padding: 4px 10px; border-radius: 12px; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-circle" style="font-size:8px;"></i> Warm</span>`;
+        }
+
+        function getTimeAgo(dateString) {
+            if(!dateString) return '-';
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.round(diffMs / 60000);
+            if (diffMins < 60) return diffMins <= 1 ? 'baru saja' : `${diffMins} mnt lalu`;
+            const diffHours = Math.round(diffMins / 60);
+            if (diffHours < 24) return `${diffHours} jam lalu`;
+            const diffDays = Math.round(diffHours / 24);
+            return `${diffDays} hari lalu`;
+        }
+
+        function renderLeads() {
+            const tbody = document.querySelector('.table tbody');
+            const emptyState = document.querySelector('.empty-state');
+            
+            if(allLeads.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            let html = '';
+            
+            allLeads.forEach(lead => {
+                let lastContacted = getTimeAgo(lead.updated_at);
+                let scoreBadge = getTemperatureBadge(lead.lead_score);
+                let name = lead.client_name || '-';
+                let venue = lead.location ? lead.location : '-';
+                let event_date = lead.event_date ? lead.event_date : '-';
+                let package_name = lead.package || '-';
+                let status = lead.status || 'New Inquiry';
+                
+                html += `
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-dark);">${name}</div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">${lead.client_wa_number}</div>
+                        </td>
+                        <td>
+                            <div style="color: var(--text-dark);">${event_date}</div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">${venue}</div>
+                        </td>
+                        <td>${package_name}</td>
+                        <td>${scoreBadge}</td>
+                        <td>
+                            <div style="display: inline-flex; align-items: center; padding: 6px 12px; background: rgba(107, 92, 216, 0.1); color: var(--primary); border-radius: 20px; font-size: 12px; font-weight: 600;">
+                                ${status}
+                            </div>
+                        </td>
+                        <td>${lastContacted}</td>
+                        <td>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <a href="/chat?id=${lead.id}" style="color: var(--text-muted); cursor: pointer; transition: 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'" title="Buka Chat">
+                                    <i class="fa-regular fa-comment"></i>
+                                </a>
+                                <span style="color: var(--text-muted); cursor: pointer; transition: 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'" onclick="openEditModal(${lead.id})" title="Edit Lead">
+                                    <i class="fa-solid fa-pen"></i>
+                                </span>
+                                <span style="color: var(--danger); cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'" onclick="openDeleteModal(${lead.id})" title="Hapus Lead">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+            
+            // Update counter
+            document.querySelector('.panel-footer div:first-child').innerText = `Menampilkan 1 dari ${allLeads.length} lead`;
+        }
+        
+        function openEditModal(id) {
+            editingLeadId = id;
+            let lead = allLeads.find(l => l.id === id);
+            if(!lead) return;
+            
+            document.getElementById('editLeadName').value = lead.client_name || '';
+            document.getElementById('editLeadWa').value = lead.client_wa_number || '';
+            document.getElementById('editLeadEventDate').value = lead.event_date || '';
+            document.getElementById('editLeadVenue').value = lead.location || '';
+            document.getElementById('editLeadPackage').value = lead.package || '';
+            document.getElementById('editLeadScore').value = lead.lead_score || 'Warm';
+            document.getElementById('editLeadStatus').value = lead.status || 'New Inquiry';
+            
+            document.getElementById('editLeadModal').style.display = 'flex';
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editLeadModal').style.display = 'none';
+            editingLeadId = null;
+        }
+        
+        async function saveEditLead() {
+            if(!editingLeadId) return;
+            
+            const payload = {
+                client_name: document.getElementById('editLeadName').value,
+                event_date: document.getElementById('editLeadEventDate').value,
+                location: document.getElementById('editLeadVenue').value,
+                package: document.getElementById('editLeadPackage').value,
+                lead_score: document.getElementById('editLeadScore').value,
+                status: document.getElementById('editLeadStatus').value
+            };
+            
+            try {
+                let res = await fetch(`/api/chats/${editingLeadId}/edit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: JSON.stringify(payload)
+                });
+                if(res.ok) {
+                    showToast('Data lead disimpan');
+                    closeEditModal();
+                    fetchLeads();
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        
+        function openDeleteModal(id) {
+            deletingLeadId = id;
+            document.getElementById('deleteConfirmModal').style.display = 'flex';
+        }
+        
+        function closeDeleteModal() {
+            document.getElementById('deleteConfirmModal').style.display = 'none';
+            deletingLeadId = null;
+        }
+        
+        async function confirmDeleteLead() {
+            if(!deletingLeadId) return;
+            try {
+                let res = await fetch(`/api/chats/${deletingLeadId}`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                });
+                if(res.ok) {
+                    showToast('Lead dihapus', 'fa-trash-can');
+                    closeDeleteModal();
+                    fetchLeads();
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        // INIT
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchLeads();
         });
     </script>
 </body>
