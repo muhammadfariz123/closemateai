@@ -208,7 +208,7 @@ class WebhookController extends Controller
 
         // ==== OPSI 1: JIKA MENGGUNAKAN GROQ ====
         if ($groqApiKey) {
-            $groqModels = ['llama-3.1-8b-instant', 'llama-3.1-70b-versatile', 'mixtral-8x7b-32768'];
+            $groqModels = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'allam-2-7b'];
             foreach ($groqModels as $model) {
                 try {
                     $response = Http::withToken($groqApiKey)
