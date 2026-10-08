@@ -6,6 +6,7 @@
     <title>Leads CRM - CloseMateAI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         :root {
             --sidebar-bg: #1e1e2d;
@@ -318,7 +319,7 @@
                 
                 <div class="date-picker">
                     <i class="fa-regular fa-calendar"></i>
-                    <input type="text" class="form-control" value="01 Aug - 31 Aug 2026" readonly>
+                    <input type="text" id="dateFilter" class="form-control" placeholder="Pilih Rentang Tanggal..." readonly style="width: 200px;">
                 </div>
                 
                 <select id="statusSelect" class="form-control status-select">
@@ -334,6 +335,7 @@
                     <option value="Lost">Lost</option>
                 </select>
                 
+                <button id="btnDeleteSelected" onclick="confirmDeleteSelected()" class="btn" style="background: var(--danger); color: white; border-radius: 8px; display: none;"><i class="fa-solid fa-trash-can"></i> Hapus</button>
                 <button onclick="openAddModal()" class="btn btn-secondary" style="border-radius: 20px; padding-left: 16px; padding-right: 16px;"><i class="fa-solid fa-plus"></i> Tambah Lead</button>
                 <button onclick="exportCSV()" class="btn btn-primary" style="border-radius: 8px;"><i class="fa-solid fa-download"></i> Export to CSV</button>
             </div>
@@ -342,6 +344,7 @@
                 <table class="table">
                     <thead>
                         <tr>
+                            <th style="width: 40px;"><input type="checkbox" id="selectAllLeads" onchange="toggleAllLeads(this)"></th>
                             <th>Client</th>
                             <th>Event & Venue</th>
                             <th>Package</th>
@@ -450,8 +453,22 @@
         </div>
     </div>
 
+    <!-- Delete Multiple Confirmation Modal -->
+    <div id="deleteMultipleConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; width: 400px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center;">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: var(--danger); margin-bottom: 16px;"></i>
+            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Hapus Lead Terpilih</h3>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">Apakah Anda yakin ingin menghapus <span id="deleteMultipleCount"></span> lead ini? Data percakapan juga akan ikut terhapus.</p>
+            <div style="display: flex; justify-content: center; gap: 12px;">
+                <button onclick="closeDeleteMultipleModal()" class="btn btn-secondary">Batal</button>
+                <button onclick="executeDeleteMultiple()" class="btn" style="background: var(--danger); color: white;">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container" id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         let allLeads = [];
         let currentFilteredLeads = [];
@@ -555,10 +572,28 @@
                 currentFilteredLeads = currentFilteredLeads.filter(l => l.status === st);
             }
             
+            // Date filter
+            const dateRange = document.getElementById('dateFilter') ? document.getElementById('dateFilter').value : '';
+            if(dateRange && dateRange.includes(' to ')) {
+                const [startStr, endStr] = dateRange.split(' to ');
+                const startDate = new Date(startStr);
+                startDate.setHours(0,0,0,0);
+                const endDate = new Date(endStr);
+                endDate.setHours(23,59,59,999);
+                
+                currentFilteredLeads = currentFilteredLeads.filter(l => {
+                    if(!l.updated_at) return false;
+                    const d = new Date(l.updated_at);
+                    return d >= startDate && d <= endDate;
+                });
+            }
+            
             if(currentFilteredLeads.length === 0) {
                 tbody.innerHTML = '';
                 emptyState.style.display = 'block';
                 document.querySelector('.panel-footer div:first-child').innerText = `Menampilkan 0 dari 0 lead`;
+                document.getElementById('selectAllLeads').checked = false;
+                toggleDeleteSelectedButton();
                 return;
             }
             
@@ -576,6 +611,7 @@
                 
                 html += `
                     <tr>
+                        <td><input type="checkbox" class="lead-checkbox" value="${lead.id}" onchange="toggleDeleteSelectedButton()"></td>
                         <td>
                             <div style="font-weight: 600; color: var(--text-dark);">${name}</div>
                             <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">${lead.client_wa_number}</div>
@@ -613,10 +649,71 @@
             
             // Update counter
             document.querySelector('.panel-footer div:first-child').innerText = `Menampilkan ${currentFilteredLeads.length} dari ${allLeads.length} lead`;
+            
+            document.getElementById('selectAllLeads').checked = false;
+            toggleDeleteSelectedButton();
+        }
+        
+        function toggleAllLeads(source) {
+            const checkboxes = document.querySelectorAll('.lead-checkbox');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+            toggleDeleteSelectedButton();
+        }
+        
+        function toggleDeleteSelectedButton() {
+            const checkboxes = document.querySelectorAll('.lead-checkbox:checked');
+            const btn = document.getElementById('btnDeleteSelected');
+            if(checkboxes.length > 0) {
+                btn.style.display = 'inline-flex';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+        
+        function confirmDeleteSelected() {
+            const checkboxes = document.querySelectorAll('.lead-checkbox:checked');
+            if(checkboxes.length === 0) return;
+            document.getElementById('deleteMultipleCount').innerText = checkboxes.length;
+            document.getElementById('deleteMultipleConfirmModal').style.display = 'flex';
+        }
+        
+        function closeDeleteMultipleModal() {
+            document.getElementById('deleteMultipleConfirmModal').style.display = 'none';
+        }
+        
+        async function executeDeleteMultiple() {
+            const checkboxes = document.querySelectorAll('.lead-checkbox:checked');
+            if(checkboxes.length === 0) return;
+            
+            showToast('Menghapus data...', 'fa-spinner fa-spin');
+            
+            for(let cb of checkboxes) {
+                try {
+                    await fetch(`/api/chats/${cb.value}`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                    });
+                } catch(e) {
+                    console.error(e);
+                }
+            }
+            
+            closeDeleteMultipleModal();
+            showToast(checkboxes.length + ' Lead berhasil dihapus', 'fa-check');
+            fetchLeads();
         }
         
         function exportCSV() {
-            if(currentFilteredLeads.length === 0) {
+            let dataToExport = currentFilteredLeads;
+            
+            // Check if any specific rows are selected
+            const selectedCheckboxes = document.querySelectorAll('.lead-checkbox:checked');
+            if (selectedCheckboxes.length > 0) {
+                const selectedIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
+                dataToExport = currentFilteredLeads.filter(l => selectedIds.includes(l.id));
+            }
+            
+            if(dataToExport.length === 0) {
                 showToast('Tidak ada lead untuk diexport', 'fa-triangle-exclamation');
                 return;
             }
@@ -624,7 +721,7 @@
             let csvContent = "data:text/csv;charset=utf-8,";
             csvContent += "Client Name,WhatsApp Number,Event Date,Location,Package,Lead Score,Status,Last Contacted\n";
             
-            currentFilteredLeads.forEach(function(rowArray) {
+            dataToExport.forEach(function(rowArray) {
                 let row = [
                     `"${rowArray.client_name || ''}"`,
                     `"'${rowArray.client_wa_number || ''}"`,
@@ -761,6 +858,14 @@
         // INIT
         document.addEventListener('DOMContentLoaded', () => {
             fetchLeads();
+            
+            flatpickr("#dateFilter", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                onChange: function(selectedDates, dateStr, instance) {
+                    renderLeads();
+                }
+            });
             
             // Bind search and filter events
             const searchInput = document.getElementById('searchInput');
