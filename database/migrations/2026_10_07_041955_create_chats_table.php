@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('client_name')->nullable();
             $table->integer('ai_reply_count')->default(0);
             $table->boolean('is_human_takeover')->default(false);
-            $table->string('status')->default('Belum Dihandle'); // e.g. Belum Dihandle, Hot Lead, Closed
+            $table->string('status')->default('New Inquiry'); // e.g. New Inquiry, Hot Lead, Closed
             $table->text('quick_notes')->nullable();
             $table->string('event_date')->nullable();
             $table->string('location')->nullable();

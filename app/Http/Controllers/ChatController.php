@@ -124,4 +124,26 @@ class ChatController extends Controller
 
         return response()->json(['success' => true, 'chat' => $chat]);
     }
+
+    public function editChat(Request $request, $chatId)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) return response()->json(['success' => false]);
+
+        $chat = Chat::where('id', $chatId)->where('user_id', $user->id)->firstOrFail();
+        
+        if ($request->has('client_name')) {
+            $chat->client_name = $request->input('client_name');
+        }
+        if ($request->has('quick_notes')) {
+            $chat->quick_notes = $request->input('quick_notes');
+        }
+        if ($request->has('status')) {
+            $chat->status = $request->input('status');
+        }
+        
+        $chat->save();
+
+        return response()->json(['success' => true, 'chat' => $chat]);
+    }
 }

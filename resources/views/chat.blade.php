@@ -302,14 +302,17 @@
                         </div>
                     </div>
                     <div class="chat-header-actions">
-                        <button class="btn-action btn-outline" id="btnAmbilChat" onclick="takeChat()"><i class="fa-regular fa-user"></i> Ambil Chat Ini</button>
+                        <button class="btn-action" id="btnAmbilChat" onclick="takeChat()" style="background: var(--primary); color: white;"><i class="fa-regular fa-user"></i> Ambil Chat Ini</button>
                         
                         <div style="position: relative; display: inline-block;" id="handlerDropdownContainer">
-                            <button class="btn-action btn-outline" id="btnCurrentHandler" onclick="toggleHandlerDropdown()" style="display: none; background: rgba(107, 92, 216, 0.1); color: var(--primary); border-color: rgba(107, 92, 216, 0.2);"><div style="width:8px; height:8px; border-radius:50%; background:var(--primary); display:inline-block; margin-right:6px;"></div> <span id="handlerNameText">Nama</span></button>
-                            <div id="handlerDropdown" style="display: none; position: absolute; top: 100%; left: 0; margin-top: 8px; background: white; border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 220px; z-index: 100; padding: 8px 0;">
+                            <button class="btn-action btn-outline" id="btnPindahkanHandler" onclick="toggleHandlerDropdown()"><i class="fa-solid fa-share-nodes"></i> Pindahkan Handler</button>
+                            <div id="handlerDropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 220px; z-index: 100; padding: 8px 0;">
+                                <div onclick="takeChat()" style="padding: 8px 16px; font-size: 13px; color: var(--text-color); cursor: pointer; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">
+                                    Ambil untuk saya
+                                </div>
+                                <div style="height: 1px; background: var(--border-color); margin: 4px 0;"></div>
                                 <div style="padding: 8px 16px; font-size: 13px; color: var(--text-color); display: flex; justify-content: space-between; align-items: center; background: rgba(243, 244, 246, 0.5);">
-                                    <span><i class="fa-regular fa-user" style="margin-right:8px; color:var(--primary);"></i> <span id="handlerDropdownName">Nama</span> (Owner)</span>
-                                    <i class="fa-solid fa-check" style="color:var(--primary); font-size:12px;"></i>
+                                    <span id="handlerDropdownName">{{ auth()->check() ? auth()->user()->business_name : 'Admin' }} (Owner)</span>
                                 </div>
                                 <div style="height: 1px; background: var(--border-color); margin: 4px 0;"></div>
                                 <div onclick="releaseHandler()" style="padding: 8px 16px; font-size: 13px; color: var(--text-color); cursor: pointer; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">
@@ -319,7 +322,6 @@
                         </div>
 
                         <button class="btn-action btn-outline" style="color: #dc3545; border-color: rgba(220, 53, 69, 0.2);" onclick="clearChatHistory()"><i class="fa-solid fa-trash"></i> Reset & Hapus Chat</button>
-                        <button class="btn-action btn-outline" id="btnPindahkanHandler"><i class="fa-solid fa-share-nodes"></i> Pindahkan Handler</button>
                         
                         <div class="takeover-toggle-container">
                             <span class="takeover-label" id="takeoverText">Human Takeover</span>
@@ -408,15 +410,20 @@
                     
                     <div class="form-group">
                         <label class="form-label">Lead Status</label>
-                        <select class="form-select">
-                            <option>Hot Lead</option>
-                            <option>Warm Lead</option>
-                            <option>Cold Lead</option>
-                            <option>Closed</option>
+                        <select class="form-select" id="leadStatusSelect" onchange="updateLeadStatus(this.value)">
+                            <option value="New Inquiry">New Inquiry</option>
+                            <option value="Hot Lead">Hot Lead</option>
+                            <option value="Warm Lead">Warm Lead</option>
+                            <option value="Proposal Sent">Proposal Sent</option>
+                            <option value="Follow Up">Follow Up</option>
+                            <option value="Done Follow-up 1">Done Follow-up 1</option>
+                            <option value="Done Follow-up 2">Done Follow-up 2</option>
+                            <option value="Booked">Booked</option>
+                            <option value="Lost">Lost</option>
                         </select>
                     </div>
                     
-                    <div class="tag-box">Hot Lead</div>
+                    <div class="tag-box" id="leadStatusBadge">New Inquiry</div>
                     
                     <div class="form-group quick-notes">
                         <label class="form-label">Quick Notes</label>
@@ -631,21 +638,25 @@
                 
                 // Update Handler UI
                 let btnAmbil = document.getElementById('btnAmbilChat');
-                let handlerDropdown = document.getElementById('btnCurrentHandler');
+                let tagTakeoverStatus = document.getElementById('tagTakeoverStatus');
+                let handlerDropdownName = document.getElementById('handlerDropdownName');
                 
                 if (data.chat.handled_by) {
                     btnAmbil.style.display = 'none';
-                    handlerDropdown.style.display = 'inline-flex';
-                    document.getElementById('handlerNameText').innerText = data.chat.handled_by;
-                    document.getElementById('handlerDropdownName').innerText = data.chat.handled_by;
-                    
-                    // Show Pindahkan Handler only if it's handled
-                    document.getElementById('btnPindahkanHandler').style.display = 'inline-flex';
+                    tagTakeoverStatus.innerHTML = `<div style="width:6px; height:6px; border-radius:50%; background:var(--primary); display:inline-block; margin-right:4px;"></div> ${data.chat.handled_by}`;
+                    handlerDropdownName.innerHTML = `${data.chat.handled_by} <span style="color:var(--primary); font-size:12px; float:right;"><i class="fa-solid fa-check"></i></span>`;
                 } else {
                     btnAmbil.style.display = 'inline-flex';
-                    handlerDropdown.style.display = 'none';
-                    document.getElementById('btnPindahkanHandler').style.display = 'none';
+                    tagTakeoverStatus.innerText = data.chat.status || 'New Inquiry';
+                    const bname = "{{ auth()->check() ? auth()->user()->business_name : 'Admin' }}";
+                    handlerDropdownName.innerHTML = `${bname} (Owner)`;
                 }
+
+                // Update Status UI
+                let statusSelect = document.getElementById('leadStatusSelect');
+                let statusBadge = document.getElementById('leadStatusBadge');
+                if (statusSelect && !silent) statusSelect.value = data.chat.status || 'New Inquiry';
+                if (statusBadge) statusBadge.innerText = data.chat.status || 'New Inquiry';
 
                 // Render Messages
                 const msgBox = document.getElementById('chatMessagesBox');
@@ -884,18 +895,31 @@
             // Sound Event
             const btnSound = document.getElementById('btnToggleSound');
             if(btnSound) {
-                btnSound.setAttribute('title', 'Suara Notifikasi: Aktif');
+                const isSoundEnabled = localStorage.getItem('closemate_sound_enabled') !== 'false';
+                if (!isSoundEnabled) {
+                    btnSound.classList.remove('fa-volume-high');
+                    btnSound.classList.add('fa-volume-xmark');
+                    btnSound.style.color = 'var(--text-muted)';
+                    btnSound.setAttribute('title', 'Suara Notifikasi: Tidak Aktif');
+                    soundEnabled = false;
+                } else {
+                    btnSound.setAttribute('title', 'Suara Notifikasi: Aktif');
+                    soundEnabled = true;
+                }
+
                 btnSound.addEventListener('click', () => {
                     soundEnabled = !soundEnabled;
-                    const icon = btnSound.querySelector('i');
+                    localStorage.setItem('closemate_sound_enabled', soundEnabled ? 'true' : 'false');
+                    
                     if(soundEnabled) {
-                        icon.classList.replace('fa-volume-xmark', 'fa-volume-high');
+                        btnSound.classList.replace('fa-volume-xmark', 'fa-volume-high');
                         btnSound.style.color = '';
                         btnSound.setAttribute('title', 'Suara Notifikasi: Aktif');
+                        playNotificationSound();
                         showToast('Suara notifikasi: Aktif', 'fa-volume-high');
                     } else {
-                        icon.classList.replace('fa-volume-high', 'fa-volume-xmark');
-                        btnSound.style.color = 'var(--danger)';
+                        btnSound.classList.replace('fa-volume-high', 'fa-volume-xmark');
+                        btnSound.style.color = 'var(--text-muted)';
                         btnSound.setAttribute('title', 'Suara Notifikasi: Tidak Aktif');
                         showToast('Suara notifikasi: Tidak Aktif', 'fa-volume-xmark');
                     }
@@ -1035,6 +1059,62 @@
                 }
             }
         });
+
+        async function updateLeadStatus(status) {
+            if(!activeChatId) return;
+            try {
+                let res = await fetch(`/api/chats/${activeChatId}/edit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    body: JSON.stringify({ status: status })
+                });
+                document.getElementById('leadStatusBadge').innerText = status;
+                showToast('Status disimpan', 'fa-check-circle');
+                fetchChats();
+            } catch(e) {}
+        }
+        
+        function openEditModal() {
+            if(!activeChatId) return;
+            let chat = chatsData.find(c => c.id === activeChatId);
+            if(!chat) return;
+            document.getElementById('editModalWaName').innerText = `WA Name: ${chat.client_name || '-'} | ${chat.client_wa_number || '-'}`;
+            document.getElementById('editClientName').value = chat.client_name || '';
+            document.getElementById('editQuickNotes').value = chat.quick_notes || '';
+            document.getElementById('editContactModal').style.display = 'flex';
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editContactModal').style.display = 'none';
+        }
+        
+        async function saveEditModal() {
+            if(!activeChatId) return;
+            let newName = document.getElementById('editClientName').value;
+            let newNotes = document.getElementById('editQuickNotes').value;
+            
+            try {
+                let res = await fetch(`/api/chats/${activeChatId}/edit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    body: JSON.stringify({ client_name: newName, quick_notes: newNotes })
+                });
+                
+                // update UI
+                let qn = document.querySelector('.quick-notes textarea');
+                if(qn) qn.value = newNotes;
+                
+                document.querySelector('.chat-header-info h3').innerText = newName;
+                document.querySelector('.chat-header-avatar').innerText = newName.substring(0, 2).toUpperCase();
+                document.querySelector('.client-name h3').innerText = newName;
+                
+                closeEditModal();
+                showToast('Perubahan disimpan', 'fa-check-circle');
+                fetchChats();
+            } catch (e) {
+                console.error(e);
+            }
+        }
     </script>
 
 </body>

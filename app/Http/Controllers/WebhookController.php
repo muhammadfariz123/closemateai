@@ -46,7 +46,7 @@ class WebhookController extends Controller
         try {
             $chat = Chat::firstOrCreate(
                 ['user_id' => $user->id, 'client_wa_number' => $sender],
-                ['client_name' => $name, 'status' => 'Belum Dihandle', 'ai_reply_count' => 0, 'is_human_takeover' => false]
+                ['client_name' => $name, 'status' => 'New Inquiry', 'ai_reply_count' => 0, 'is_human_takeover' => false]
             );
         } catch (\Illuminate\Database\QueryException $e) {
             // Jika tabel tidak ditemukan (biasanya karena migrasi belum jalan di server gratisan Render)
@@ -55,7 +55,7 @@ class WebhookController extends Controller
             // Coba lagi setelah migrasi
             $chat = Chat::firstOrCreate(
                 ['user_id' => $user->id, 'client_wa_number' => $sender],
-                ['client_name' => $name, 'status' => 'Belum Dihandle', 'ai_reply_count' => 0, 'is_human_takeover' => false]
+                ['client_name' => $name, 'status' => 'New Inquiry', 'ai_reply_count' => 0, 'is_human_takeover' => false]
             );
         }
 
