@@ -456,7 +456,7 @@ class KnowledgeFileController extends Controller
 
             // ==== OPSI 1: JIKA MENGGUNAKAN GROQ (SUPER CEPAT & GRATIS) ====
             if ($groqApiKey) {
-                $groqModels = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'allam-2-7b'];
+                $groqModels = ['llama-3.1-8b-instant', 'llama-3.1-70b-versatile', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
                 $groqLastError = '';
                 
                 foreach ($groqModels as $groqModel) {
