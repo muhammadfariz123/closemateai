@@ -98,3 +98,8 @@ Route::get('/api/debug/users', function() {
     $users = \App\Models\User::all(['id', 'name', 'webhook_secret']);
     return response()->json($users);
 });
+
+Route::get('/api/debug/chats', function() {
+    $chats = \App\Models\Chat::with('messages')->get();
+    return response()->json($chats);
+});
