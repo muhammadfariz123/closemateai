@@ -128,7 +128,7 @@
         .bubble-wrapper.right { align-self: flex-end; align-items: flex-end; }
         .bubble-wrapper.left { align-self: flex-start; align-items: flex-start; }
         
-        .bubble { padding: 12px 16px; border-radius: 12px; font-size: 13px; line-height: 1.5; position: relative; }
+        .bubble { padding: 12px 16px; border-radius: 12px; font-size: 13px; line-height: 1.5; position: relative; word-break: break-word; overflow-wrap: break-word; }
         .bubble-right { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
         .bubble-left { background: white; color: var(--text-dark); border: 1px solid var(--border-color); border-bottom-left-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         
