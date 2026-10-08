@@ -313,7 +313,7 @@
             <div class="panel-header">
                 <div class="search-wrapper">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" class="form-control" placeholder="Cari nama, nomor, atau venue...">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Cari nama, nomor, atau venue...">
                 </div>
                 
                 <div class="date-picker">
@@ -321,16 +321,21 @@
                     <input type="text" class="form-control" value="01 Aug - 31 Aug 2026" readonly>
                 </div>
                 
-                <select class="form-control status-select">
-                    <option>All Status</option>
-                    <option>Hot Lead</option>
-                    <option>Warm Lead</option>
-                    <option>Cold Lead</option>
-                    <option>Closing</option>
+                <select id="statusSelect" class="form-control status-select">
+                    <option value="All Status">All Status</option>
+                    <option value="New Inquiry">New Inquiry</option>
+                    <option value="Hot Lead">Hot Lead</option>
+                    <option value="Warm Lead">Warm Lead</option>
+                    <option value="Proposal Sent">Proposal Sent</option>
+                    <option value="Follow Up">Follow Up</option>
+                    <option value="Done Follow-up 1">Done Follow-up 1</option>
+                    <option value="Done Follow-up 2">Done Follow-up 2</option>
+                    <option value="Booked">Booked</option>
+                    <option value="Lost">Lost</option>
                 </select>
                 
-                <button class="btn btn-secondary" style="border-radius: 20px; padding-left: 16px; padding-right: 16px;"><i class="fa-solid fa-plus"></i> Tambah Lead</button>
-                <button class="btn btn-primary" style="border-radius: 8px;"><i class="fa-solid fa-download"></i> Export to CSV</button>
+                <button onclick="openAddModal()" class="btn btn-secondary" style="border-radius: 20px; padding-left: 16px; padding-right: 16px;"><i class="fa-solid fa-plus"></i> Tambah Lead</button>
+                <button onclick="exportCSV()" class="btn btn-primary" style="border-radius: 8px;"><i class="fa-solid fa-download"></i> Export to CSV</button>
             </div>
             
             <div style="overflow-x: auto;">
@@ -366,12 +371,12 @@
         </div>
     </div>
 
-    <!-- Edit Lead Modal -->
+    <!-- Edit/Add Lead Modal -->
     <div id="editLeadModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
         <div style="background: white; width: 500px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
             <div style="display: flex; justify-content: space-between; margin-bottom: 4px; align-items: flex-start;">
                 <div>
-                    <h3 style="font-size: 18px; font-weight: 600;">Edit Lead</h3>
+                    <h3 id="modalLeadTitle" style="font-size: 18px; font-weight: 600;">Edit Lead</h3>
                     <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Data lead ini juga dipakai AI untuk konteks follow-up klien.</p>
                 </div>
                 <i class="fa-solid fa-xmark" style="cursor: pointer; color: var(--text-muted);" onclick="closeEditModal()"></i>
@@ -380,25 +385,25 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px;">
                 <div class="form-group">
                     <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Nama Klien</label>
-                    <input type="text" id="editLeadName" class="form-control" style="width: 100%;">
+                    <input type="text" id="editLeadName" class="form-control" style="width: 100%;" placeholder="Contoh: Nisa & Rian">
                 </div>
                 <div class="form-group">
                     <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Nomor WhatsApp</label>
-                    <input type="text" id="editLeadWa" class="form-control" style="width: 100%; background: #f8f9fa;" readonly>
+                    <input type="text" id="editLeadWa" class="form-control" style="width: 100%;" placeholder="Contoh: +62 812-0000-0000">
                 </div>
                 
                 <div class="form-group">
                     <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Tanggal Acara</label>
-                    <input type="text" id="editLeadEventDate" class="form-control" style="width: 100%;">
+                    <input type="text" id="editLeadEventDate" class="form-control" style="width: 100%;" placeholder="Contoh: 12 Dec 2026">
                 </div>
                 <div class="form-group">
                     <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Venue</label>
-                    <input type="text" id="editLeadVenue" class="form-control" style="width: 100%;">
+                    <input type="text" id="editLeadVenue" class="form-control" style="width: 100%;" placeholder="Contoh: Hotel Padma, Bandung">
                 </div>
                 
                 <div class="form-group">
                     <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Paket</label>
-                    <input type="text" id="editLeadPackage" class="form-control" style="width: 100%;">
+                    <input type="text" id="editLeadPackage" class="form-control" style="width: 100%;" placeholder="Contoh: Gold Package">
                 </div>
                 <div class="form-group">
                     <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Lead Score</label>
@@ -531,16 +536,35 @@
             const tbody = document.querySelector('.table tbody');
             const emptyState = document.querySelector('.empty-state');
             
-            if(allLeads.length === 0) {
+            let filteredLeads = allLeads;
+            
+            // Search filter
+            const sq = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
+            if(sq) {
+                filteredLeads = filteredLeads.filter(l => 
+                    (l.client_name && l.client_name.toLowerCase().includes(sq)) || 
+                    (l.client_wa_number && l.client_wa_number.toLowerCase().includes(sq)) ||
+                    (l.location && l.location.toLowerCase().includes(sq))
+                );
+            }
+            
+            // Status filter
+            const st = document.getElementById('statusSelect') ? document.getElementById('statusSelect').value : 'All Status';
+            if(st !== 'All Status') {
+                filteredLeads = filteredLeads.filter(l => l.status === st);
+            }
+            
+            if(filteredLeads.length === 0) {
                 tbody.innerHTML = '';
                 emptyState.style.display = 'block';
+                document.querySelector('.panel-footer div:first-child').innerText = `Menampilkan 0 dari 0 lead`;
                 return;
             }
             
             emptyState.style.display = 'none';
             let html = '';
             
-            allLeads.forEach(lead => {
+            filteredLeads.forEach(lead => {
                 let lastContacted = getTimeAgo(lead.updated_at);
                 let scoreBadge = getTemperatureBadge(lead.lead_score);
                 let name = lead.client_name || '-';
@@ -587,16 +611,49 @@
             tbody.innerHTML = html;
             
             // Update counter
-            document.querySelector('.panel-footer div:first-child').innerText = `Menampilkan 1 dari ${allLeads.length} lead`;
+            document.querySelector('.panel-footer div:first-child').innerText = `Menampilkan ${filteredLeads.length} dari ${filteredLeads.length} lead`;
+        }
+        
+        function exportCSV() {
+            const tbody = document.querySelector('.table tbody');
+            if(tbody.innerHTML.trim() === '') {
+                showToast('Tidak ada lead untuk diexport', 'fa-triangle-exclamation');
+                return;
+            }
+            // Dummy logic for export
+            showToast('Mengekspor data ke CSV...', 'fa-download');
+        }
+        
+        function openAddModal() {
+            editingLeadId = null;
+            document.getElementById('modalLeadTitle').innerText = 'Tambah Lead';
+            
+            document.getElementById('editLeadName').value = '';
+            document.getElementById('editLeadWa').value = '';
+            document.getElementById('editLeadWa').readOnly = false;
+            document.getElementById('editLeadWa').style.background = 'white';
+            
+            document.getElementById('editLeadEventDate').value = '';
+            document.getElementById('editLeadVenue').value = '';
+            document.getElementById('editLeadPackage').value = '';
+            document.getElementById('editLeadScore').value = 'Warm';
+            document.getElementById('editLeadStatus').value = 'New Inquiry';
+            
+            document.getElementById('editLeadModal').style.display = 'flex';
         }
         
         function openEditModal(id) {
             editingLeadId = id;
+            document.getElementById('modalLeadTitle').innerText = 'Edit Lead';
+            
             let lead = allLeads.find(l => l.id === id);
             if(!lead) return;
             
             document.getElementById('editLeadName').value = lead.client_name || '';
             document.getElementById('editLeadWa').value = lead.client_wa_number || '';
+            document.getElementById('editLeadWa').readOnly = true;
+            document.getElementById('editLeadWa').style.background = '#f8f9fa';
+            
             document.getElementById('editLeadEventDate').value = lead.event_date || '';
             document.getElementById('editLeadVenue').value = lead.location || '';
             document.getElementById('editLeadPackage').value = lead.package || '';
@@ -612,10 +669,9 @@
         }
         
         async function saveEditLead() {
-            if(!editingLeadId) return;
-            
             const payload = {
                 client_name: document.getElementById('editLeadName').value,
+                client_wa_number: document.getElementById('editLeadWa').value,
                 event_date: document.getElementById('editLeadEventDate').value,
                 location: document.getElementById('editLeadVenue').value,
                 package: document.getElementById('editLeadPackage').value,
@@ -623,14 +679,19 @@
                 status: document.getElementById('editLeadStatus').value
             };
             
+            let url = '/api/chats';
+            if (editingLeadId) {
+                url = `/api/chats/${editingLeadId}/edit`;
+            }
+            
             try {
-                let res = await fetch(`/api/chats/${editingLeadId}/edit`, {
+                let res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                     body: JSON.stringify(payload)
                 });
                 if(res.ok) {
-                    showToast('Data lead disimpan');
+                    showToast(editingLeadId ? 'Data lead disimpan' : 'Lead berhasil ditambahkan');
                     closeEditModal();
                     fetchLeads();
                 }
@@ -669,6 +730,16 @@
         // INIT
         document.addEventListener('DOMContentLoaded', () => {
             fetchLeads();
+            
+            // Bind search and filter events
+            const searchInput = document.getElementById('searchInput');
+            if(searchInput) {
+                searchInput.addEventListener('input', renderLeads);
+            }
+            const statusSelect = document.getElementById('statusSelect');
+            if(statusSelect) {
+                statusSelect.addEventListener('change', renderLeads);
+            }
         });
     </script>
 </body>

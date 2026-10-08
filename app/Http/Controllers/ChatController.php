@@ -157,4 +157,28 @@ class ChatController extends Controller
         
         return response()->json(['success' => true, 'message' => 'Lead dihapus']);
     }
+
+    public function addChat(Request $request)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) return response()->json(['success' => false]);
+
+        $chat = new Chat();
+        $chat->user_id = $user->id;
+        
+        $fields = ['client_wa_number', 'client_name', 'status', 'event_date', 'location', 'package', 'lead_score'];
+        foreach ($fields as $field) {
+            if ($request->has($field)) {
+                $chat->{$field} = $request->input($field);
+            }
+        }
+        // If client_wa_number is missing, set a default to satisfy DB schema
+        if (!$chat->client_wa_number) {
+            $chat->client_wa_number = '';
+        }
+        
+        $chat->save();
+
+        return response()->json(['success' => true, 'chat' => $chat]);
+    }
 }
