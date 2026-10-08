@@ -121,10 +121,17 @@ Route::get('/api/debug/ai', function() {
     ]);
 });
 
-Route::get('/api/debug/reset-chats', function() {
-    \Illuminate\Support\Facades\DB::table('messages')->truncate();
-    \Illuminate\Support\Facades\DB::table('chats')->truncate();
-    return "Chats reset!";
+Route::get('/api/debug/users', function() {
+    $dbHost = env('DB_HOST');
+    $dbDatabase = env('DB_DATABASE');
+    $users = \Illuminate\Support\Facades\DB::table('users')->get();
+    return response()->json(['host' => $dbHost, 'db' => $dbDatabase, 'users' => $users]);
+});
+
+Route::get('/api/debug/auto-login', function() {
+    $user = \App\Models\User::first();
+    auth()->login($user);
+    return redirect('/chat');
 });
 
 Route::get('/api/debug/chats', function() {
