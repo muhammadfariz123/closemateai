@@ -337,9 +337,6 @@
                 <div class="chat-banner" id="chatBanner" style="display: none;">
                     <i class="fa-solid fa-microphone-lines-slash"></i> AI di-PAUSE untuk chat ini – matikan toggle untuk mengaktifkan AI kembali
                 </div>
-                <div id="aiActivityLabel" class="chat-banner" style="background: rgba(107, 92, 216, 0.1); color: var(--primary); border-bottom: 1px solid rgba(107, 92, 216, 0.2); display: none;">
-                    <i class="fa-solid fa-robot"></i> AI Assistant sedang menangani percakapan ini
-                </div>
                 
                 <div class="chat-messages" id="chatMessagesBox" style="display: flex; align-items: center; justify-content: center;">
                     <div style="color: #a1a5b7; font-size: 14px; font-weight: 500;">Belum ada percakapan masuk</div>
@@ -624,13 +621,9 @@
                 
                 // Update Takeover UI & AI Label
                 const toggle = document.getElementById('humanTakeoverToggle');
-                const aiLabel = document.getElementById('aiActivityLabel');
                 if(toggle && !silent) {
                     toggle.checked = data.chat.is_human_takeover == 1;
                     updateTakeoverUI(data.chat.is_human_takeover == 1, false);
-                }
-                if(aiLabel) {
-                    aiLabel.style.display = data.chat.is_human_takeover == 1 ? 'none' : 'flex';
                 }
                 
                 // Update Handler UI
