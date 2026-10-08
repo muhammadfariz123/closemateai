@@ -644,12 +644,16 @@
                 if (data.chat.handled_by) {
                     btnAmbil.style.display = 'none';
                     tagTakeoverStatus.innerHTML = `<div style="width:6px; height:6px; border-radius:50%; background:var(--primary); display:inline-block; margin-right:4px;"></div> ${data.chat.handled_by}`;
-                    handlerDropdownName.innerHTML = `${data.chat.handled_by} <span style="color:var(--primary); font-size:12px; float:right;"><i class="fa-solid fa-check"></i></span>`;
+                    if(handlerDropdownName) {
+                        handlerDropdownName.innerHTML = `${data.chat.handled_by} <span style="color:var(--primary); font-size:12px; float:right;"><i class="fa-solid fa-check"></i></span>`;
+                    }
                 } else {
                     btnAmbil.style.display = 'inline-flex';
                     tagTakeoverStatus.innerText = data.chat.status || 'New Inquiry';
                     const bname = "{{ auth()->check() ? auth()->user()->business_name : 'Admin' }}";
-                    handlerDropdownName.innerHTML = `${bname} (Owner)`;
+                    if(handlerDropdownName) {
+                        handlerDropdownName.innerHTML = `${bname} (Owner)`;
+                    }
                 }
 
                 // Update Status UI
@@ -785,7 +789,7 @@
             let chat = chatsData.find(c => c.id === activeChatId);
             if(!chat) return;
             
-            document.getElementById('editModalWaName').innerText = `WA Name: ${chat.client_wa_number} | ${chat.client_wa_number}`;
+            document.getElementById('editModalWaName').innerText = `WA Name: ${chat.client_name || '-'} | ${chat.client_wa_number}`;
             document.getElementById('editModalClientName').value = chat.client_name || '';
             document.getElementById('editModalQuickNotes').value = chat.quick_notes || '';
             document.getElementById('editContactModal').style.display = 'flex';
@@ -813,44 +817,6 @@
                 }
             } catch (e) {
                 console.error(e);
-            }
-        }
-        
-        function openEditModal() {
-            if(!activeChatId) return;
-            let chat = chatsData.find(c => c.id === activeChatId);
-            if(!chat) return;
-            
-            document.getElementById('editModalWaName').innerText = `WA Name: ${chat.client_name || '-'} | ${chat.client_wa_number}`;
-            document.getElementById('editModalClientName').value = chat.client_name || '';
-            document.getElementById('editModalQuickNotes').value = chat.quick_notes || '';
-            
-            document.getElementById('editContactModal').style.display = 'flex';
-        }
-        
-        function closeEditModal() {
-            document.getElementById('editContactModal').style.display = 'none';
-        }
-        
-        async function saveEditContact() {
-            if(!activeChatId) return;
-            let name = document.getElementById('editModalClientName').value;
-            let notes = document.getElementById('editModalQuickNotes').value;
-            
-            try {
-                let res = await fetch(`/api/chats/${activeChatId}/edit`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-                    body: JSON.stringify({ client_name: name, quick_notes: notes })
-                });
-                if(res.ok) {
-                    showToast('Kontak berhasil diperbarui', 'fa-check-circle');
-                    closeEditModal();
-                    fetchChats();
-                }
-            } catch(e) {
-                console.error(e);
-                showToast('Gagal menyimpan', 'fa-times-circle');
             }
         }
 
@@ -1072,48 +1038,6 @@
                 showToast('Status disimpan', 'fa-check-circle');
                 fetchChats();
             } catch(e) {}
-        }
-        
-        function openEditModal() {
-            if(!activeChatId) return;
-            let chat = chatsData.find(c => c.id === activeChatId);
-            if(!chat) return;
-            document.getElementById('editModalWaName').innerText = `WA Name: ${chat.client_name || '-'} | ${chat.client_wa_number || '-'}`;
-            document.getElementById('editClientName').value = chat.client_name || '';
-            document.getElementById('editQuickNotes').value = chat.quick_notes || '';
-            document.getElementById('editContactModal').style.display = 'flex';
-        }
-        
-        function closeEditModal() {
-            document.getElementById('editContactModal').style.display = 'none';
-        }
-        
-        async function saveEditModal() {
-            if(!activeChatId) return;
-            let newName = document.getElementById('editClientName').value;
-            let newNotes = document.getElementById('editQuickNotes').value;
-            
-            try {
-                let res = await fetch(`/api/chats/${activeChatId}/edit`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-                    body: JSON.stringify({ client_name: newName, quick_notes: newNotes })
-                });
-                
-                // update UI
-                let qn = document.querySelector('.quick-notes textarea');
-                if(qn) qn.value = newNotes;
-                
-                document.querySelector('.chat-header-info h3').innerText = newName;
-                document.querySelector('.chat-header-avatar').innerText = newName.substring(0, 2).toUpperCase();
-                document.querySelector('.client-name h3').innerText = newName;
-                
-                closeEditModal();
-                showToast('Perubahan disimpan', 'fa-check-circle');
-                fetchChats();
-            } catch (e) {
-                console.error(e);
-            }
         }
         function playNotificationSound() {
             try {
