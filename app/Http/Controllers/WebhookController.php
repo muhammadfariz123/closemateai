@@ -82,8 +82,13 @@ class WebhookController extends Controller
             $chat->is_human_takeover = true;
             $chat->save();
 
-            // Kirim notifikasi ke nomor bisnis User (Admin)
-            $this->sendFonnteMessage($user->fonnte_token, $user->business_wa_number ?? $user->wa_number, "🚨 *HUMAN TAKEOVER AKTIF*\nAda calon klien baru yang butuh di-handle langsung oleh admin!\n\nNama: {$chat->client_name}\nNomor: {$chat->client_wa_number}\nStatus: Chat AI sudah mencapai batas maksimal ({$user->ai_max_replies} balasan). Silakan buka menu Live Chat Inbox.");
+            // Kirim notifikasi ke nomor bisnis User (Admin) jika toggle aktif
+            if ($user->notify_human_takeover) {
+                $targetNumber = $user->notification_number ?: ($user->owner_whatsapp ?: ($user->business_wa_number ?: $user->wa_number));
+                if ($targetNumber) {
+                    $this->sendFonnteMessage($user->fonnte_token, $targetNumber, "🚨 *HUMAN TAKEOVER AKTIF*\nAda calon klien baru yang butuh di-handle langsung oleh admin!\n\nNama: {$chat->client_name}\nNomor: {$chat->client_wa_number}\nStatus: Chat AI sudah mencapai batas maksimal ({$user->ai_max_replies} balasan). Silakan buka menu Live Chat Inbox.");
+                }
+            }
             
             return response()->json(['status' => true, 'message' => 'AI Limit reached. Handed over to human.']);
         }
