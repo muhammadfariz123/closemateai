@@ -704,8 +704,7 @@
             msgBox.innerHTML += `
                 <div class="bubble-wrapper right" style="opacity: 0.7;">
                     <div class="bubble bubble-right" style="background: #4a3da8;">
-                        ${text.replace(/
-/g, '<br>')}
+                        ${text.replace(/\\n/g, '<br>')}
                     </div>
                     <div class="bubble-time right">${time} (Sending...)</div>
                 </div>
