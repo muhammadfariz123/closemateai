@@ -37,11 +37,12 @@
         .sidebar-title h2 { color: white; font-size: 16px; font-weight: 600; margin-bottom: 4px; }
         .sidebar-title p { color: var(--sidebar-text); font-size: 12px; }
         
-        .nav-menu { flex: 1; overflow-y: auto; padding: 12px; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--sidebar-text); text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; margin-bottom: 4px; transition: 0.2s; white-space: nowrap; cursor: pointer; }
+        .nav-menu { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--sidebar-text); text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; margin-bottom: 4px; transition: 0.2s; white-space: nowrap; cursor: pointer; overflow: hidden; text-overflow: ellipsis; }
         .nav-item:hover { color: white; background-color: rgba(255,255,255,0.05); }
         .nav-item.active { background-color: var(--sidebar-active-bg); color: var(--sidebar-active-text); }
-        .nav-item i { font-size: 16px; width: 20px; text-align: center; }
+        .nav-item i { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+        .nav-item span { overflow: hidden; text-overflow: ellipsis; }
 
         /* Main Content */
         .main-content { margin-left: 260px; flex: 1; display: flex; flex-direction: column; transition: margin-left 0.3s ease; height: 100vh; }
