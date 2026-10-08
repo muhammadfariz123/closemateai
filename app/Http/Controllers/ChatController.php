@@ -112,4 +112,16 @@ class ChatController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Riwayat chat berhasil dihapus. AI akan menganggap ini sebagai percakapan baru.']);
     }
+
+    public function setHandler(Request $request, $chatId)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) return response()->json(['success' => false]);
+
+        $chat = Chat::where('id', $chatId)->where('user_id', $user->id)->firstOrFail();
+        $chat->handled_by = $request->input('handler', null);
+        $chat->save();
+
+        return response()->json(['success' => true, 'chat' => $chat]);
+    }
 }

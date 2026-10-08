@@ -302,9 +302,24 @@
                         </div>
                     </div>
                     <div class="chat-header-actions">
-                        <button class="btn-action btn-outline"><i class="fa-regular fa-user"></i> Ambil Chat Ini</button>
+                        <button class="btn-action btn-outline" id="btnAmbilChat" onclick="takeChat()"><i class="fa-regular fa-user"></i> Ambil Chat Ini</button>
+                        
+                        <div style="position: relative; display: inline-block;" id="handlerDropdownContainer">
+                            <button class="btn-action btn-outline" id="btnCurrentHandler" onclick="toggleHandlerDropdown()" style="display: none; background: rgba(107, 92, 216, 0.1); color: var(--primary); border-color: rgba(107, 92, 216, 0.2);"><div style="width:8px; height:8px; border-radius:50%; background:var(--primary); display:inline-block; margin-right:6px;"></div> <span id="handlerNameText">Nama</span></button>
+                            <div id="handlerDropdown" style="display: none; position: absolute; top: 100%; left: 0; margin-top: 8px; background: white; border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 220px; z-index: 100; padding: 8px 0;">
+                                <div style="padding: 8px 16px; font-size: 13px; color: var(--text-color); display: flex; justify-content: space-between; align-items: center; background: rgba(243, 244, 246, 0.5);">
+                                    <span><i class="fa-regular fa-user" style="margin-right:8px; color:var(--primary);"></i> <span id="handlerDropdownName">Nama</span> (Owner)</span>
+                                    <i class="fa-solid fa-check" style="color:var(--primary); font-size:12px;"></i>
+                                </div>
+                                <div style="height: 1px; background: var(--border-color); margin: 4px 0;"></div>
+                                <div onclick="releaseHandler()" style="padding: 8px 16px; font-size: 13px; color: var(--text-color); cursor: pointer; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">
+                                    Lepas handler
+                                </div>
+                            </div>
+                        </div>
+
                         <button class="btn-action btn-outline" style="color: #dc3545; border-color: rgba(220, 53, 69, 0.2);" onclick="clearChatHistory()"><i class="fa-solid fa-trash"></i> Reset & Hapus Chat</button>
-                        <button class="btn-action btn-outline"><i class="fa-solid fa-share-nodes"></i> Pindahkan Handler</button>
+                        <button class="btn-action btn-outline" id="btnPindahkanHandler"><i class="fa-solid fa-share-nodes"></i> Pindahkan Handler</button>
                         
                         <div class="takeover-toggle-container">
                             <span class="takeover-label" id="takeoverText">Human Takeover</span>
@@ -468,8 +483,11 @@
                     let newMsgs = false;
                     for(let c of chats) {
                         let old = chatsData.find(o => o.id === c.id);
-                        if(old && c.messages && old.messages && c.messages.length > old.messages.length) {
-                            if(c.messages[0].sender !== 'admin') newMsgs = true;
+                        if(old && c.messages && c.messages.length > 0) {
+                            let oldMsgId = (old.messages && old.messages.length > 0) ? old.messages[0].id : null;
+                            if (c.messages[0].id !== oldMsgId && c.messages[0].sender !== 'admin') {
+                                newMsgs = true;
+                            }
                         } else if (!old && c.messages && c.messages.length > 0) {
                             newMsgs = true; // completely new chat
                         }
@@ -493,6 +511,7 @@
 
         function applyFiltersAndSearch() {
             let filtered = chatsData;
+            const businessName = "{{ auth()->check() ? auth()->user()->business_name : 'Admin' }}";
             
             // Search
             if(searchQuery) {
@@ -506,9 +525,9 @@
             
             // Tabs: semua, saya, belum
             if(activeTab === 'saya') {
-                filtered = filtered.filter(c => c.is_human_takeover);
+                filtered = filtered.filter(c => c.handled_by === businessName);
             } else if(activeTab === 'belum') {
-                filtered = filtered.filter(c => !c.is_human_takeover); // simplified logic
+                filtered = filtered.filter(c => !c.handled_by);
             }
             
             // Pills: all, ai, human, unread
@@ -544,6 +563,13 @@
                 let tagColor = chat.is_human_takeover ? 'tag-danger' : 'tag-primary';
                 let tagText = chat.is_human_takeover ? 'HUMAN TAKEOVER' : 'AI Active';
                 let name = chat.client_name || chat.client_wa_number;
+                
+                let statusTag = '';
+                if (chat.handled_by) {
+                    statusTag = `<div class="tag" style="background: rgba(107, 92, 216, 0.1); color: var(--primary); border: 1px solid rgba(107, 92, 216, 0.2);"><div style="width:6px; height:6px; border-radius:50%; background:var(--primary); display:inline-block; margin-right:4px;"></div> ${chat.handled_by}</div>`;
+                } else {
+                    statusTag = `<div class="tag tag-light">${chat.status || 'Belum Dihandle'}</div>`;
+                }
 
                 html += `
                     <div class="chat-item ${isActive}" onclick="openChat(${chat.id})">
@@ -555,7 +581,7 @@
                         <div class="chat-item-msg">${lastMsg.substring(0, 50)}${lastMsg.length > 50 ? '...' : ''}</div>
                         <div class="chat-item-tags">
                             <div class="tag ${tagColor}">${tagText}</div>
-                            <div class="tag tag-light">${chat.status}</div>
+                            ${statusTag}
                         </div>
                     </div>
                 `;
@@ -605,6 +631,24 @@
                 }
                 if(aiLabel) {
                     aiLabel.style.display = data.chat.is_human_takeover == 1 ? 'none' : 'flex';
+                }
+                
+                // Update Handler UI
+                let btnAmbil = document.getElementById('btnAmbilChat');
+                let handlerDropdown = document.getElementById('btnCurrentHandler');
+                
+                if (data.chat.handled_by) {
+                    btnAmbil.style.display = 'none';
+                    handlerDropdown.style.display = 'inline-flex';
+                    document.getElementById('handlerNameText').innerText = data.chat.handled_by;
+                    document.getElementById('handlerDropdownName').innerText = data.chat.handled_by;
+                    
+                    // Show Pindahkan Handler only if it's handled
+                    document.getElementById('btnPindahkanHandler').style.display = 'inline-flex';
+                } else {
+                    btnAmbil.style.display = 'inline-flex';
+                    handlerDropdown.style.display = 'none';
+                    document.getElementById('btnPindahkanHandler').style.display = 'none';
                 }
 
                 // Render Messages
@@ -941,6 +985,60 @@
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
         }
+
+        async function takeChat() {
+            if(!activeChatId) return;
+            const businessName = "{{ auth()->check() ? auth()->user()->business_name : 'Admin' }}";
+            try {
+                let res = await fetch(`/api/chats/${activeChatId}/handler`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    body: JSON.stringify({ handler: businessName })
+                });
+                showToast(`Chat dihandle oleh ${businessName}`, 'fa-check-circle');
+                await fetchActiveChatMessages(true);
+                fetchChats();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function toggleHandlerDropdown() {
+            let dropdown = document.getElementById('handlerDropdown');
+            if (dropdown.style.display === 'none') {
+                dropdown.style.display = 'block';
+            } else {
+                dropdown.style.display = 'none';
+            }
+        }
+
+        async function releaseHandler() {
+            if(!activeChatId) return;
+            document.getElementById('handlerDropdown').style.display = 'none';
+            try {
+                let res = await fetch(`/api/chats/${activeChatId}/handler`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    body: JSON.stringify({ handler: null })
+                });
+                showToast('Chat dilepas', 'fa-check-circle');
+                await fetchActiveChatMessages(true);
+                fetchChats();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            let container = document.getElementById('handlerDropdownContainer');
+            let dropdown = document.getElementById('handlerDropdown');
+            if (container && dropdown && dropdown.style.display === 'block') {
+                if (!container.contains(event.target)) {
+                    dropdown.style.display = 'none';
+                }
+            }
+        });
     </script>
 
 </body>

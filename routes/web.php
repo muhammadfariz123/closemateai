@@ -36,6 +36,7 @@ Route::get('/api/chats/{id}', [ChatController::class, 'getMessages']);
 Route::post('/api/chats/{id}/send', [ChatController::class, 'sendMessage']);
 Route::post('/api/chats/{id}/takeover', [ChatController::class, 'toggleTakeover']);
 Route::post('/api/chats/{id}/clear-history', [ChatController::class, 'clearChatHistory']);
+Route::post('/api/chats/{id}/handler', [ChatController::class, 'setHandler']);
 
 Route::get('/leads', function () {
     return view('leads');
