@@ -1,4 +1,4 @@
-FROM php:8.2-cli
+FROM php:8.2-apache
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -18,20 +18,25 @@ RUN apt-get update && apt-get install -y \
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql pdo_pgsql pgsql mbstring exif pcntl bcmath gd pdo_sqlite
 
-# Dapatkan Composer
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
+
+# Update Apache DocumentRoot to public folder
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# Get Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /app
+WORKDIR /var/www/html
 
-# 1. Install Node modules and build frontend FIRST
+# 1. Install Node modules and build frontend
 COPY package.json package-lock.json* ./
 RUN npm install
 
 COPY vite.config.js ./
 COPY resources/ resources/
-# We also need public/ for vite build sometimes, but usually just resources/ is enough.
-# Let's run build now. If it fails due to missing files, we might need tailwind.config.js etc if they exist.
-# Wait, let's just copy everything that might be needed for frontend.
 COPY tailwind.config.js* postcss.config.js* ./
 RUN npm run build
 
@@ -39,19 +44,28 @@ RUN npm run build
 COPY composer.json composer.lock* ./
 RUN composer install --no-scripts --no-autoloader
 
-# 3. Copy the rest of the project (PHP files, etc)
+# 3. Copy the rest of the project
 COPY . .
 
 # Generate optimized autoload files
 RUN composer dump-autoload --optimize
 
-# Setup Database SQLite (Khusus untuk Demo)
-RUN mkdir -p database
-RUN touch database/database.sqlite
-RUN php artisan migrate --force
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Set permission
-RUN chmod -R 775 storage bootstrap/cache database
+# Create a startup script
+RUN echo '#!/bin/bash\n\
+# Update Apache to listen on Render PORT\n\
+sed -i "s/80/${PORT:-8000}/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf\n\
+\n\
+# Run migrations\n\
+php artisan migrate --force\n\
+php artisan storage:link || true\n\
+\n\
+# Start apache in foreground\n\
+apache2-foreground' > /usr/local/bin/start.sh
 
-# Eksekusi server untuk produksi/Render
-CMD touch database/database.sqlite && php artisan migrate --force && php artisan storage:link && php -S 0.0.0.0:${PORT:-8000} -t public
+RUN chmod +x /usr/local/bin/start.sh
+
+CMD ["/usr/local/bin/start.sh"]
