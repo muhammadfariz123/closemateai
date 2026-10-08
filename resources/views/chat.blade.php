@@ -621,8 +621,7 @@
                             <div class="bubble-wrapper right">
                                 <div class="bubble bubble-right" style="background: ${bgColor};">
                                     ${badge}
-                                    ${msg.message.replace(/
-/g, '<br>')}
+                                    ${msg.message.replace(/\\n/g, '<br>')}
                                 </div>
                                 <div class="bubble-time right">${time}</div>
                             </div>
@@ -631,8 +630,7 @@
                         html += `
                             <div class="bubble-wrapper left">
                                 <div class="bubble bubble-left">
-                                    ${msg.message.replace(/
-/g, '<br>')}
+                                    ${msg.message.replace(/\\n/g, '<br>')}
                                 </div>
                                 <div class="bubble-time">${time}</div>
                             </div>
