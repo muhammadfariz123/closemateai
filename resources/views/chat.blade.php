@@ -350,61 +350,67 @@
                     <p>Informasi klien & catatan internal</p>
                 </div>
                 
-                <div class="client-card">
-                    <div class="client-card-header">
-                        <div class="client-name">
-                            <h3>Bekti</h3>
-                            <p>WA Name: Bekti | 62895367938408</p>
+                <div id="leadDetailsEmpty" style="height: 70%; display: flex; align-items: center; justify-content: center; color: #a1a5b7; font-size: 13px; font-weight: 500; text-align: center;">
+                    Belum ada chat yang dipilih
+                </div>
+                
+                <div id="leadDetailsContent" style="display: none;">
+                    <div class="client-card">
+                        <div class="client-card-header">
+                            <div class="client-name">
+                                <h3>Bekti</h3>
+                                <p>WA Name: Bekti | 62895367938408</p>
+                            </div>
+                            <i class="fa-solid fa-pen" style="color: var(--text-muted); cursor: pointer; font-size: 14px;" onclick="openEditModal()"></i>
                         </div>
-                        <i class="fa-solid fa-pen" style="color: var(--text-muted); cursor: pointer; font-size: 14px;" onclick="openEditModal()"></i>
+                        
+                        <div class="info-row">
+                            <div class="info-icon"><i class="fa-regular fa-calendar"></i></div>
+                            <div class="info-content">
+                                <h4>Event Date</h4>
+                                <p>—</p>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-icon"><i class="fa-solid fa-phone"></i></div>
+                            <div class="info-content">
+                                <h4>Phone</h4>
+                                <p>62895367938408</p>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-icon"><i class="fa-solid fa-wallet"></i></div>
+                            <div class="info-content">
+                                <h4>Estimated Budget</h4>
+                                <p>—</p>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-icon"><i class="fa-solid fa-location-dot"></i></div>
+                            <div class="info-content">
+                                <h4>Location</h4>
+                                <p>—</p>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="info-row">
-                        <div class="info-icon"><i class="fa-regular fa-calendar"></i></div>
-                        <div class="info-content">
-                            <h4>Event Date</h4>
-                            <p>—</p>
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">Lead Status</label>
+                        <select class="form-select">
+                            <option>Hot Lead</option>
+                            <option>Warm Lead</option>
+                            <option>Cold Lead</option>
+                            <option>Closed</option>
+                        </select>
                     </div>
-                    <div class="info-row">
-                        <div class="info-icon"><i class="fa-solid fa-phone"></i></div>
-                        <div class="info-content">
-                            <h4>Phone</h4>
-                            <p>62895367938408</p>
-                        </div>
+                    
+                    <div class="tag-box">Hot Lead</div>
+                    
+                    <div class="form-group quick-notes">
+                        <label class="form-label">Quick Notes</label>
+                        <textarea placeholder=""></textarea>
+                        <div class="note-hint">Tersimpan saat kamu klik di luar kotak catatan</div>
                     </div>
-                    <div class="info-row">
-                        <div class="info-icon"><i class="fa-solid fa-wallet"></i></div>
-                        <div class="info-content">
-                            <h4>Estimated Budget</h4>
-                            <p>—</p>
-                        </div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-icon"><i class="fa-solid fa-location-dot"></i></div>
-                        <div class="info-content">
-                            <h4>Location</h4>
-                            <p>—</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Lead Status</label>
-                    <select class="form-select">
-                        <option>Hot Lead</option>
-                        <option>Warm Lead</option>
-                        <option>Cold Lead</option>
-                        <option>Closed</option>
-                    </select>
-                </div>
-                
-                <div class="tag-box">Hot Lead</div>
-                
-                <div class="form-group quick-notes">
-                    <label class="form-label">Quick Notes</label>
-                    <textarea placeholder=""></textarea>
-                    <div class="note-hint">Tersimpan saat kamu klik di luar kotak catatan</div>
                 </div>
             </div>
         </div>
@@ -573,6 +579,8 @@
                 document.getElementById('chatHeader').style.display = 'flex';
                 document.getElementById('chatInputArea').style.display = 'block';
                 document.getElementById('chatMessagesBox').style.display = 'block';
+                document.getElementById('leadDetailsEmpty').style.display = 'none';
+                document.getElementById('leadDetailsContent').style.display = 'block';
 
                 // Update Header
                 let name = data.chat.client_name || data.chat.client_wa_number;
