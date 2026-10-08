@@ -118,6 +118,9 @@ Route::get('/api/debug/ai', function() {
         'status' => $response->status(),
         'json' => $response->json(),
         'old_models' => ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b']
+    ]);
+});
+
 Route::get('/api/debug/reset-chats', function() {
     \Illuminate\Support\Facades\DB::table('messages')->truncate();
     \Illuminate\Support\Facades\DB::table('chats')->truncate();
