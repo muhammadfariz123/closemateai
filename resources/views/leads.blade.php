@@ -454,6 +454,7 @@
 
     <script>
         let allLeads = [];
+        let currentFilteredLeads = [];
         let editingLeadId = null;
         let deletingLeadId = null;
 
@@ -536,12 +537,12 @@
             const tbody = document.querySelector('.table tbody');
             const emptyState = document.querySelector('.empty-state');
             
-            let filteredLeads = allLeads;
+            currentFilteredLeads = allLeads;
             
             // Search filter
             const sq = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
             if(sq) {
-                filteredLeads = filteredLeads.filter(l => 
+                currentFilteredLeads = currentFilteredLeads.filter(l => 
                     (l.client_name && l.client_name.toLowerCase().includes(sq)) || 
                     (l.client_wa_number && l.client_wa_number.toLowerCase().includes(sq)) ||
                     (l.location && l.location.toLowerCase().includes(sq))
@@ -551,10 +552,10 @@
             // Status filter
             const st = document.getElementById('statusSelect') ? document.getElementById('statusSelect').value : 'All Status';
             if(st !== 'All Status') {
-                filteredLeads = filteredLeads.filter(l => l.status === st);
+                currentFilteredLeads = currentFilteredLeads.filter(l => l.status === st);
             }
             
-            if(filteredLeads.length === 0) {
+            if(currentFilteredLeads.length === 0) {
                 tbody.innerHTML = '';
                 emptyState.style.display = 'block';
                 document.querySelector('.panel-footer div:first-child').innerText = `Menampilkan 0 dari 0 lead`;
@@ -564,7 +565,7 @@
             emptyState.style.display = 'none';
             let html = '';
             
-            filteredLeads.forEach(lead => {
+            currentFilteredLeads.forEach(lead => {
                 let lastContacted = getTimeAgo(lead.updated_at);
                 let scoreBadge = getTemperatureBadge(lead.lead_score);
                 let name = lead.client_name || '-';
@@ -611,16 +612,40 @@
             tbody.innerHTML = html;
             
             // Update counter
-            document.querySelector('.panel-footer div:first-child').innerText = `Menampilkan ${filteredLeads.length} dari ${filteredLeads.length} lead`;
+            document.querySelector('.panel-footer div:first-child').innerText = `Menampilkan ${currentFilteredLeads.length} dari ${allLeads.length} lead`;
         }
         
         function exportCSV() {
-            const tbody = document.querySelector('.table tbody');
-            if(tbody.innerHTML.trim() === '') {
+            if(currentFilteredLeads.length === 0) {
                 showToast('Tidak ada lead untuk diexport', 'fa-triangle-exclamation');
                 return;
             }
-            // Dummy logic for export
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Client Name,WhatsApp Number,Event Date,Location,Package,Lead Score,Status,Last Contacted\n";
+            
+            currentFilteredLeads.forEach(function(rowArray) {
+                let row = [
+                    `"${rowArray.client_name || ''}"`,
+                    `"${rowArray.client_wa_number || ''}"`,
+                    `"${rowArray.event_date || ''}"`,
+                    `"${rowArray.location || ''}"`,
+                    `"${rowArray.package || ''}"`,
+                    `"${rowArray.lead_score || ''}"`,
+                    `"${rowArray.status || ''}"`,
+                    `"${rowArray.updated_at ? new Date(rowArray.updated_at).toLocaleString() : ''}"`
+                ];
+                csvContent += row.join(",") + "\n";
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "leads_export.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
             showToast('Mengekspor data ke CSV...', 'fa-download');
         }
         
