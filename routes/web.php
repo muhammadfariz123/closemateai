@@ -96,8 +96,10 @@ Route::get('/api/debug/logs', function() {
 });
 
 Route::get('/api/debug/users', function() {
-    $users = \App\Models\User::all(['id', 'name', 'webhook_secret']);
-    return response()->json($users);
+    $dbHost = env('DB_HOST');
+    $dbDatabase = env('DB_DATABASE');
+    $users = \App\Models\User::all(['id', 'email', 'webhook_secret']);
+    return response()->json(['host' => $dbHost, 'db' => $dbDatabase, 'users' => $users]);
 });
 
 Route::get('/api/debug/chats', function() {

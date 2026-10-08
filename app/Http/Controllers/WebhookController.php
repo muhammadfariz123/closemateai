@@ -17,7 +17,7 @@ class WebhookController extends Controller
         // 1. Cari user berdasarkan webhook_secret
         $user = User::where('webhook_secret', $secret)->first();
         if (!$user) {
-            return response()->json(['status' => false, 'message' => 'Invalid webhook secret'], 404);
+            return response()->json(['status' => false, 'message' => 'Invalid webhook secret: ' . $secret], 404);
         }
 
         if ($request->isMethod('get')) {
