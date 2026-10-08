@@ -292,8 +292,10 @@
                     <div class="filter-pill">Unread</div>
                 </div>
                 
-                <div class="chat-list" id="chatListContainer" style="height: 100%; display: flex; align-items: center; justify-content: center; color: #a1a5b7; font-size: 13px; font-weight: 500;">
-                    Belum ada percakapan masuk
+                <div class="chat-list" id="chatListContainer">
+                    <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #a1a5b7; font-size: 13px; font-weight: 500;">
+                        Belum ada percakapan masuk
+                    </div>
                 </div>
             </div>
 
