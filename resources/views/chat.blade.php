@@ -65,7 +65,7 @@
         .chat-container { display: flex; flex: 1; overflow: hidden; }
         
         /* Sidebar Chat */
-        .chat-sidebar { width: 280px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; background: white; flex-shrink: 0; }
+        .chat-sidebar { width: 280px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; background: white; flex-shrink: 0; overflow-x: hidden; }
         .chat-search { padding: 16px; display: flex; gap: 8px; align-items: center; }
         .search-box { position: relative; flex: 1; }
         .search-box input { width: 100%; padding: 10px 10px 10px 36px; border: 1px solid var(--border-color); border-radius: 20px; font-size: 13px; outline: none; background: var(--bg-light); transition: 0.2s; }
@@ -91,7 +91,7 @@
         .chat-item-time { font-size: 11px; color: var(--text-muted); }
         .chat-item-subtitle { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
         .chat-item-msg { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .chat-item-tags { display: flex; gap: 6px; }
+        .chat-item-tags { display: flex; gap: 6px; flex-wrap: wrap; }
         .tag { padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
         .tag-danger { background: var(--danger-bg); color: var(--danger); }
         .tag-primary { background: rgba(107, 92, 216, 0.1); color: var(--primary); }
