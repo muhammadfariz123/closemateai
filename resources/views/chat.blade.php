@@ -27,7 +27,7 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--card-bg); display: flex; min-height: 100vh; color: var(--text-dark); }
+        body { background-color: var(--card-bg); display: flex; min-height: 100vh; color: var(--text-dark); overflow: hidden; }
 
         /* Sidebar */
         .sidebar { width: 260px; background-color: var(--sidebar-bg); display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; transition: width 0.3s ease; overflow-x: hidden; z-index: 200; }

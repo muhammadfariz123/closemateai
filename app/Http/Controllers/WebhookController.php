@@ -195,7 +195,8 @@ class WebhookController extends Controller
             . "4. Gunakan emoji secukupnya agar chat terlihat hidup. 😊\n"
             . $priceListRule
             . "6. JANGAN mengarang harga/paket yang tidak ada di Knowledge Base.\n"
-            . "7. Berikan respon yang singkat dan padat (1-2 paragraf saja) layaknya chatting biasa, jangan membuat artikel panjang.";
+            . "7. Berikan respon yang singkat dan padat (1-2 paragraf saja) layaknya chatting biasa, jangan membuat artikel panjang.\n"
+            . "8. Jika klien memberikan informasi acara (seperti tanggal, lokasi, dll), hargai itu dan JANGAN mengomentari tanggalnya ('wah masih lama ya' dll). Cukup balas secara profesional tapi ramah seperti: 'Oiya Kak, sudah aku catat ya detailnya! ✨' lalu berikan apa yang mereka butuhkan.";
 
         // Ambil history chat agar AI mengerti konteks
         $messages = Message::where('chat_id', $chat->id)->orderBy('created_at', 'asc')->take(10)->get();
