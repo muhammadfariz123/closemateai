@@ -219,6 +219,8 @@
             .toast { background: white; color: var(--text-dark); padding: 16px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 4px solid var(--success); animation: slideIn 0.3s forwards; }
             @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
             @keyframes fadeOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+            
+            .package-dropdown-item:hover { background: rgba(255,255,255,0.1); }
         }
     </style>
 </head>
@@ -482,7 +484,7 @@
         }
 
         function addBookingAddon() {
-            addonsData.push({ name: '', price: 0 });
+            addonsData.push({ name: '', qty: 1, price: 0 });
             renderAddons();
             calculateBooking();
         }
@@ -504,6 +506,7 @@
                 html += `
                 <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center;">
                     <input type="text" class="form-control" placeholder="Nama Add-on" value="${item.name}" onchange="addonsData[${index}].name = this.value">
+                    <input type="number" class="form-control" placeholder="Qty" value="${item.qty}" min="1" oninput="addonsData[${index}].qty = parseFloat(this.value) || 1; calculateBooking();" style="width: 80px;">
                     <input type="number" class="form-control" placeholder="Harga" value="${item.price}" oninput="addonsData[${index}].price = parseFloat(this.value) || 0; calculateBooking();" style="width: 150px;">
                     <button onclick="removeBookingAddon(${index})" style="background: none; border: none; color: var(--danger); cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
                 </div>
@@ -582,7 +585,7 @@
             const discount = parseFloat(document.getElementById('b_discount').value) || 0;
             
             const totalPackage = packagePrice * packageQty;
-            const totalAddon = addonsData.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+            const totalAddon = addonsData.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1)), 0);
             const totalIncome = totalPackage + totalAddon - discount;
             
             const totalCost = costsData.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
@@ -606,7 +609,7 @@
             const packageQty = parseFloat(document.getElementById('b_package_qty').value) || 1;
             const discount = parseFloat(document.getElementById('b_discount').value) || 0;
             const totalPackage = packagePrice * packageQty;
-            const totalAddon = addonsData.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+            const totalAddon = addonsData.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1)), 0);
             const totalIncome = totalPackage + totalAddon - discount;
             const totalCost = costsData.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
             const profit = totalIncome - totalCost;
@@ -657,6 +660,98 @@
             btn.innerHTML = 'Simpan Booking';
             btn.disabled = false;
         }
+
+        // --- PACKAGE AUTOCOMPLETE & LOCAL STORAGE LOGIC ---
+        const packageInput = document.getElementById('b_package_name');
+        const packageDropdown = document.getElementById('package_dropdown');
+        const packagePriceInput = document.getElementById('b_package_price');
+        
+        function getSavedPackages() {
+            try {
+                return JSON.parse(localStorage.getItem('savedPackages')) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+        
+        function savePackageToLocal() {
+            const name = packageInput.value.trim();
+            const price = parseFloat(packagePriceInput.value) || 0;
+            if (!name) return;
+            
+            let packages = getSavedPackages();
+            const existingIndex = packages.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+            
+            if (existingIndex >= 0) {
+                packages[existingIndex].price = price; // Update price
+            } else {
+                packages.push({ name, price });
+            }
+            
+            localStorage.setItem('savedPackages', JSON.stringify(packages));
+            showToast('Paket & harga disimpan');
+            packageDropdown.style.display = 'none'; // Hide dropdown
+        }
+        
+        function checkPackagePrice() {
+            const name = packageInput.value.trim().toLowerCase();
+            const packages = getSavedPackages();
+            
+            // Auto fill exact match
+            const exactMatch = packages.find(p => p.name.toLowerCase() === name);
+            if (exactMatch) {
+                packagePriceInput.value = exactMatch.price;
+                calculateBooking();
+            }
+            
+            // Show suggestions
+            if (packages.length > 0) {
+                renderPackageDropdown(packages.filter(p => p.name.toLowerCase().includes(name)));
+            } else {
+                packageDropdown.style.display = 'none';
+            }
+        }
+        
+        function renderPackageDropdown(filteredPackages) {
+            if (filteredPackages.length === 0) {
+                packageDropdown.style.display = 'none';
+                return;
+            }
+            
+            let html = '';
+            filteredPackages.forEach(pkg => {
+                html += `
+                <div class="package-dropdown-item" onclick="selectPackage('${pkg.name}', ${pkg.price})" style="padding: 10px 16px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size: 13px; font-weight: 600;">${pkg.name}</div>
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.7);">${formatRupiah(pkg.price)}</div>
+                </div>`;
+            });
+            
+            packageDropdown.innerHTML = html;
+            packageDropdown.style.display = 'block';
+        }
+        
+        function selectPackage(name, price) {
+            packageInput.value = name;
+            packagePriceInput.value = price;
+            packageDropdown.style.display = 'none';
+            calculateBooking();
+        }
+        
+        // Show all on focus if empty
+        packageInput.addEventListener('focus', () => {
+            if (!packageInput.value.trim()) {
+                const packages = getSavedPackages();
+                if (packages.length > 0) renderPackageDropdown(packages);
+            }
+        });
+        
+        // Hide dropdown on click outside
+        document.addEventListener('click', (e) => {
+            if (e.target !== packageInput && e.target !== packageDropdown && !packageDropdown.contains(e.target)) {
+                packageDropdown.style.display = 'none';
+            }
+        });
 
     </script>
 </body>

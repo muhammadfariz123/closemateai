@@ -41,14 +41,23 @@
                     </div>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start;">
                     <div>
                         <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Nama Paket</label>
-                        <input type="text" id="b_package_name" class="form-control" placeholder="Ketik nama paket">
+                        <div style="position: relative;">
+                            <input type="text" id="b_package_name" class="form-control" placeholder="Pilih dari pricelist atau ketik manual" oninput="checkPackagePrice()" autocomplete="off">
+                            <i class="fa-solid fa-caret-down" style="position: absolute; right: 12px; top: 12px; color: var(--text-muted); pointer-events: none;"></i>
+                            <div id="package_dropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: #232328; color: white; border-radius: 8px; margin-top: 4px; z-index: 10; max-height: 200px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                                <!-- Dropdown items -->
+                            </div>
+                        </div>
+                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Saran diambil dari paket tersimpan.</p>
                     </div>
                     <div>
                         <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Harga Paket (Rp)</label>
                         <input type="number" id="b_package_price" class="form-control" placeholder="0" oninput="calculateBooking()">
+                        <button onclick="savePackageToLocal()" class="btn btn-secondary" style="margin-top: 8px; width: 100%; font-size: 13px; padding: 6px 12px;"><i class="fa-regular fa-floppy-disk"></i> Simpan Paket & Harga</button>
+                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Tersimpan di perangkat ini dan bisa dipakai lagi di Invoice Generator.</p>
                     </div>
                 </div>
                 
