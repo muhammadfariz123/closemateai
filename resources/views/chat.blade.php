@@ -181,19 +181,10 @@
 
         /* Responsive Breakpoints */
         @media (max-width: 1400px) {
-            .sidebar { width: 200px; }
-            .main-content { margin-left: 200px; }
             .chat-sidebar { width: 250px; }
             .chat-details { width: 220px; }
         }
         @media (max-width: 1200px) {
-            .sidebar { width: 70px; }
-            .main-content { margin-left: 70px; }
-            .sidebar-title { display: none; }
-            .nav-item span { display: none; }
-            .nav-item { justify-content: center; padding: 12px; }
-            .nav-item i { font-size: 18px; margin: 0; }
-            #btn-collapse { display: none; }
             .chat-header { flex-direction: column; align-items: flex-start; }
             .chat-header-actions { width: 100%; padding-top: 8px; border-top: 1px solid var(--border-color); margin-top: 4px; }
         }
