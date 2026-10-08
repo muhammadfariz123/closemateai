@@ -98,8 +98,30 @@ Route::get('/api/debug/logs', function() {
 Route::get('/api/debug/users', function() {
     $dbHost = env('DB_HOST');
     $dbDatabase = env('DB_DATABASE');
-    $users = \App\Models\User::all(['id', 'email', 'webhook_secret']);
+    $users = \App\Models\User::all();
     return response()->json(['host' => $dbHost, 'db' => $dbDatabase, 'users' => $users]);
+});
+
+Route::get('/api/debug/ai', function() {
+    $groqApiKey = env('GROQ_API_KEY');
+    if (!$groqApiKey) return response()->json(['error' => 'No GROQ key']);
+    
+    $model = 'llama3-8b-8192'; // Using a REAL Groq model
+    $response = Http::withToken($groqApiKey)
+        ->timeout(15)
+        ->post('https://api.groq.com/openai/v1/chat/completions', [
+            'model' => $model,
+            'messages' => [['role' => 'user', 'content' => 'Test 123']],
+        ]);
+        
+    return response()->json([
+        'status' => $response->status(),
+        'json' => $response->json(),
+        'old_models' => ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b']
+Route::get('/api/debug/reset-chats', function() {
+    \Illuminate\Support\Facades\DB::table('messages')->truncate();
+    \Illuminate\Support\Facades\DB::table('chats')->truncate();
+    return "Chats reset!";
 });
 
 Route::get('/api/debug/chats', function() {
