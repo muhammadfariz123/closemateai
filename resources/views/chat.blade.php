@@ -460,7 +460,7 @@
 
         async function fetchChats() {
             try {
-                let res = await fetch('/api/chats');
+                let res = await fetch('/api/chats?_=' + new Date().getTime());
                 let chats = await res.json();
                 
                 // Cek new messages to play sound
