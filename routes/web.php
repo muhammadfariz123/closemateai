@@ -18,6 +18,10 @@ Route::get('/dashboard', function () {
 use App\Http\Controllers\DashboardController;
 Route::get('/api/dashboard/stats', [DashboardController::class, 'stats']);
 
+use App\Http\Controllers\BookingController;
+Route::get('/api/bookings', [BookingController::class, 'getBookings']);
+Route::post('/api/bookings', [BookingController::class, 'addBooking']);
+
 Route::get('/chat', function () {
     return view('chat');
 });

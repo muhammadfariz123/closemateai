@@ -214,6 +214,11 @@
             .step-text { text-align: left; }
             .qr-placeholder { width: 100%; max-width: 240px; }
             .alert-box { flex-direction: column; align-items: flex-start; gap: 12px; }
+            
+            .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+            .toast { background: white; color: var(--text-dark); padding: 16px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 4px solid var(--success); animation: slideIn 0.3s forwards; }
+            @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+            @keyframes fadeOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
         }
     </style>
 </head>
@@ -316,7 +321,7 @@
                 <select class="form-control" style="border-radius: 20px; width: 140px;">
                     <option>Semua Bulan</option>
                 </select>
-                <button class="btn btn-primary" style="border-radius: 8px;"><i class="fa-solid fa-plus"></i> Tambah Booking</button>
+                <button onclick="openBookingModal()" class="btn btn-primary" style="border-radius: 8px;"><i class="fa-solid fa-plus"></i> Tambah Booking</button>
             </div>
         </div>
         
@@ -394,6 +399,9 @@
         </div>
     </div>
 
+    @include('components.booking-modal')
+    <div class="toast-container" id="toast-container"></div>
+
     <script>
         // Fitur Sidebar Collapse
         const btnCollapse = document.getElementById('btn-collapse');
@@ -415,6 +423,241 @@
                 profileDropdown.classList.remove('show');
             }
         });
+        
+        // Toast Function
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            const iconColor = type === 'success' ? 'var(--success)' : 'var(--danger)';
+            
+            toast.innerHTML = `<i class="fa-solid ${iconClass}" style="color: ${iconColor}; font-size: 16px;"></i> ${message}`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Booking Modal Logic
+        const bookingModal = document.getElementById('bookingModal');
+        let addonsData = [];
+        let costsData = [];
+        let teamData = [];
+
+        function openBookingModal() {
+            // Reset form
+            document.getElementById('b_client_name').value = '';
+            document.getElementById('b_client_wa').value = '';
+            document.getElementById('b_client_address').value = '';
+            document.getElementById('b_event_date').value = '';
+            document.getElementById('b_start_time').value = '';
+            document.getElementById('b_end_time').value = '';
+            document.getElementById('b_package_name').value = '';
+            document.getElementById('b_package_price').value = '';
+            document.getElementById('b_package_qty').value = '1';
+            document.getElementById('b_paid_amount').value = '0';
+            document.getElementById('b_discount').value = '0';
+            document.getElementById('b_payment_date').value = '';
+            document.getElementById('b_result_link').value = '';
+            document.getElementById('b_notes').value = '';
+            
+            addonsData = [];
+            costsData = [];
+            teamData = [];
+            renderAddons();
+            renderCosts();
+            renderTeam();
+            calculateBooking();
+            
+            bookingModal.style.display = 'flex';
+        }
+
+        function closeBookingModal() {
+            bookingModal.style.display = 'none';
+        }
+
+        function addBookingAddon() {
+            addonsData.push({ name: '', price: 0 });
+            renderAddons();
+            calculateBooking();
+        }
+
+        function removeBookingAddon(index) {
+            addonsData.splice(index, 1);
+            renderAddons();
+            calculateBooking();
+        }
+
+        function renderAddons() {
+            const container = document.getElementById('b_addons_container');
+            if (addonsData.length === 0) {
+                container.innerHTML = '<p style="font-size: 13px; color: var(--text-muted); margin: 0;">Belum ada add-on.</p>';
+                return;
+            }
+            let html = '';
+            addonsData.forEach((item, index) => {
+                html += `
+                <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center;">
+                    <input type="text" class="form-control" placeholder="Nama Add-on" value="${item.name}" onchange="addonsData[${index}].name = this.value">
+                    <input type="number" class="form-control" placeholder="Harga" value="${item.price}" oninput="addonsData[${index}].price = parseFloat(this.value) || 0; calculateBooking();" style="width: 150px;">
+                    <button onclick="removeBookingAddon(${index})" style="background: none; border: none; color: var(--danger); cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function addBookingCost() {
+            costsData.push({ name: '', price: 0 });
+            renderCosts();
+            calculateBooking();
+        }
+
+        function removeBookingCost(index) {
+            costsData.splice(index, 1);
+            renderCosts();
+            calculateBooking();
+        }
+
+        function renderCosts() {
+            const container = document.getElementById('b_costs_container');
+            if (costsData.length === 0) {
+                container.innerHTML = '<p style="font-size: 13px; color: var(--text-muted); margin: 0;">Belum ada biaya operasional.</p>';
+                return;
+            }
+            let html = '';
+            costsData.forEach((item, index) => {
+                html += `
+                <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center;">
+                    <input type="text" class="form-control" placeholder="Nama Biaya (contoh: transport)" value="${item.name}" onchange="costsData[${index}].name = this.value">
+                    <input type="number" class="form-control" placeholder="Harga" value="${item.price}" oninput="costsData[${index}].price = parseFloat(this.value) || 0; calculateBooking();" style="width: 150px;">
+                    <button onclick="removeBookingCost(${index})" style="background: none; border: none; color: var(--danger); cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function addBookingTeam() {
+            teamData.push({ role: '', name: '' });
+            renderTeam();
+        }
+
+        function removeBookingTeam(index) {
+            teamData.splice(index, 1);
+            renderTeam();
+        }
+
+        function renderTeam() {
+            const container = document.getElementById('b_team_container');
+            if (teamData.length === 0) {
+                container.innerHTML = '<p style="font-size: 13px; color: var(--text-muted); margin: 0;">Belum ada tim.</p>';
+                return;
+            }
+            let html = '';
+            teamData.forEach((item, index) => {
+                html += `
+                <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center;">
+                    <input type="text" class="form-control" placeholder="Role (e.g. Fotografer)" value="${item.role}" onchange="teamData[${index}].role = this.value">
+                    <input type="text" class="form-control" placeholder="Nama" value="${item.name}" onchange="teamData[${index}].name = this.value">
+                    <button onclick="removeBookingTeam(${index})" style="background: none; border: none; color: var(--danger); cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function formatRupiah(num) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+        }
+
+        function calculateBooking() {
+            const packagePrice = parseFloat(document.getElementById('b_package_price').value) || 0;
+            const packageQty = parseFloat(document.getElementById('b_package_qty').value) || 1;
+            const discount = parseFloat(document.getElementById('b_discount').value) || 0;
+            
+            const totalPackage = packagePrice * packageQty;
+            const totalAddon = addonsData.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+            const totalIncome = totalPackage + totalAddon - discount;
+            
+            const totalCost = costsData.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+            const profit = totalIncome - totalCost;
+            
+            document.getElementById('b_label_total_income').innerText = formatRupiah(totalPackage + totalAddon);
+            document.getElementById('b_label_total_cost').innerText = formatRupiah(totalCost);
+            
+            document.getElementById('b_summary_income').innerText = formatRupiah(totalIncome);
+            document.getElementById('b_summary_cost').innerText = formatRupiah(totalCost);
+            document.getElementById('b_summary_profit').innerText = formatRupiah(profit);
+        }
+
+        async function saveBooking() {
+            const btn = document.getElementById('btnSaveBooking');
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Menyimpan...';
+            btn.disabled = true;
+            
+            // Re-calculate to ensure variables are fresh
+            const packagePrice = parseFloat(document.getElementById('b_package_price').value) || 0;
+            const packageQty = parseFloat(document.getElementById('b_package_qty').value) || 1;
+            const discount = parseFloat(document.getElementById('b_discount').value) || 0;
+            const totalPackage = packagePrice * packageQty;
+            const totalAddon = addonsData.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+            const totalIncome = totalPackage + totalAddon - discount;
+            const totalCost = costsData.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+            const profit = totalIncome - totalCost;
+
+            const payload = {
+                client_name: document.getElementById('b_client_name').value,
+                client_wa_number: document.getElementById('b_client_wa').value,
+                client_address: document.getElementById('b_client_address').value,
+                event_date: document.getElementById('b_event_date').value,
+                start_time: document.getElementById('b_start_time').value,
+                end_time: document.getElementById('b_end_time').value,
+                package_name: document.getElementById('b_package_name').value,
+                package_price: packagePrice,
+                package_qty: packageQty,
+                paid_amount: parseFloat(document.getElementById('b_paid_amount').value) || 0,
+                discount: discount,
+                addons: addonsData,
+                operational_costs: costsData,
+                total_income: totalIncome,
+                total_operational_cost: totalCost,
+                net_profit: profit,
+                payment_date: document.getElementById('b_payment_date').value,
+                payment_status: document.getElementById('b_payment_status').value,
+                production_status: document.getElementById('b_production_status').value,
+                result_link: document.getElementById('b_result_link').value,
+                team_members: teamData,
+                notes: document.getElementById('b_notes').value,
+            };
+            
+            try {
+                const res = await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (res.ok) {
+                    showToast('Booking berhasil disimpan!');
+                    closeBookingModal();
+                    // Here you would typically refresh the table or calendar
+                } else {
+                    showToast('Gagal menyimpan booking.', 'error');
+                }
+            } catch (err) {
+                showToast('Terjadi kesalahan jaringan.', 'error');
+            }
+            
+            btn.innerHTML = 'Simpan Booking';
+            btn.disabled = false;
+        }
+
     </script>
 </body>
 </html>

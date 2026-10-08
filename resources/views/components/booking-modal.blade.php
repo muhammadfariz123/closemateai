@@ -1,0 +1,165 @@
+    <div id="bookingModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; width: 600px; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">Tambah Booking</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Kelola data acara, pembayaran, rincian biaya operasional, dan progres produksi klien Anda.</p>
+                </div>
+                <button onclick="closeBookingModal()" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div style="padding: 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Nama Klien</label>
+                        <input type="text" id="b_client_name" class="form-control" placeholder="Pilih dari lead Booked atau ketik manual">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">No. WhatsApp</label>
+                        <input type="text" id="b_client_wa" class="form-control" placeholder="628123456789">
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Alamat Klien (opsional)</label>
+                    <textarea id="b_client_address" class="form-control" placeholder="Alamat lengkap klien" rows="2"></textarea>
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Tanggal Acara</label>
+                    <input type="date" id="b_event_date" class="form-control">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Jam Mulai (opsional)</label>
+                        <input type="time" id="b_start_time" class="form-control">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Jam Selesai (opsional)</label>
+                        <input type="time" id="b_end_time" class="form-control">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Nama Paket</label>
+                        <input type="text" id="b_package_name" class="form-control" placeholder="Ketik nama paket">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Harga Paket (Rp)</label>
+                        <input type="number" id="b_package_price" class="form-control" placeholder="0" oninput="calculateBooking()">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Jumlah Paket</label>
+                        <input type="number" id="b_package_qty" class="form-control" value="1" min="1" oninput="calculateBooking()">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Sudah Dibayar (Rp)</label>
+                        <input type="number" id="b_paid_amount" class="form-control" value="0">
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Diskon (Rp)</label>
+                    <input type="number" id="b_discount" class="form-control" value="0" oninput="calculateBooking()">
+                </div>
+                
+                <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="font-size: 14px; font-weight: 600;">Add-On Item</h4>
+                        <button class="btn btn-secondary" onclick="addBookingAddon()" style="padding: 4px 12px; font-size: 12px;"><i class="fa-solid fa-plus"></i> Tambah Add-On</button>
+                    </div>
+                    <div id="b_addons_container">
+                        <!-- Addon list -->
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
+                        <span style="font-size: 13px; color: var(--text-muted);">Total Harga (paket + add-on)</span>
+                        <strong style="font-size: 14px;" id="b_label_total_income">Rp 0</strong>
+                    </div>
+                </div>
+                
+                <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="font-size: 14px; font-weight: 600;">Biaya Operasional (HPP)</h4>
+                        <button class="btn btn-secondary" onclick="addBookingCost()" style="padding: 4px 12px; font-size: 12px;"><i class="fa-solid fa-plus"></i> Tambah Biaya</button>
+                    </div>
+                    <div id="b_costs_container">
+                        <!-- Costs list -->
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
+                        <span style="font-size: 13px; color: var(--text-muted);">Total Biaya Operasional</span>
+                        <strong style="font-size: 14px;" id="b_label_total_cost">Rp 0</strong>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(80, 205, 137, 0.1); border: 1px solid rgba(80, 205, 137, 0.2); border-radius: 8px; padding: 16px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 13px; color: var(--text-muted);">Total Pendapatan (Paket + Add-On - Diskon)</span>
+                        <span style="font-size: 13px; font-weight: 600;" id="b_summary_income">Rp 0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                        <span style="font-size: 13px; color: var(--text-muted);">Total Biaya Operasional</span>
+                        <span style="font-size: 13px; font-weight: 600;" id="b_summary_cost">Rp 0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid rgba(80, 205, 137, 0.2);">
+                        <strong style="font-size: 15px; color: var(--text-dark);">Estimasi Profit Bersih</strong>
+                        <strong style="font-size: 15px; color: var(--success);" id="b_summary_profit">Rp 0</strong>
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Tanggal Bayar</label>
+                    <input type="date" id="b_payment_date" class="form-control">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Status Pembayaran</label>
+                        <select id="b_payment_status" class="form-control">
+                            <option>DP 1</option>
+                            <option>DP 2</option>
+                            <option>Lunas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Status Produksi</label>
+                        <select id="b_production_status" class="form-control">
+                            <option>Pre-Event</option>
+                            <option>On-Event</option>
+                            <option>Editing</option>
+                            <option>Done</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Hasil Kerja</label>
+                    <input type="text" id="b_result_link" class="form-control" placeholder="Link hasil kerja klien ini (https://...)">
+                </div>
+                
+                <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="font-size: 14px; font-weight: 600;">Tim yang Handle Project</h4>
+                        <button class="btn btn-secondary" onclick="addBookingTeam()" style="padding: 4px 12px; font-size: 12px;"><i class="fa-solid fa-plus"></i> Tambah Tim</button>
+                    </div>
+                    <div id="b_team_container">
+                        <!-- Team list -->
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Catatan</label>
+                    <textarea id="b_notes" class="form-control" placeholder="Catatan internal, permintaan khusus klien, dll." rows="3"></textarea>
+                </div>
+            </div>
+            
+            <div style="padding: 20px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px;">
+                <button onclick="closeBookingModal()" class="btn btn-secondary">Batal</button>
+                <button onclick="saveBooking()" class="btn btn-primary" id="btnSaveBooking">Simpan Booking</button>
+            </div>
+        </div>
+    </div>
