@@ -286,6 +286,7 @@
                     </div>
                     <div class="chat-header-actions">
                         <button class="btn-action btn-outline"><i class="fa-regular fa-user"></i> Ambil Chat Ini</button>
+                        <button class="btn-action btn-outline" style="color: #dc3545; border-color: rgba(220, 53, 69, 0.2);" onclick="clearChatHistory()"><i class="fa-solid fa-trash"></i> Reset & Hapus Chat</button>
                         <button class="btn-action btn-outline"><i class="fa-solid fa-share-nodes"></i> Pindahkan Handler</button>
                         
                         <div class="takeover-toggle-container">
@@ -540,6 +541,24 @@
                 let data = await res.json();
                 if(data.success) {
                     updateTakeoverUI(isTakeover, true);
+                    fetchChats(); // refresh list
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function clearChatHistory() {
+            if(!activeChatId) return;
+            if(!confirm('Yakin ingin mereset dan menghapus seluruh riwayat chat ini? (Gunakan hanya untuk testing/simulasi)')) return;
+            
+            try {
+                let res = await fetch(`/api/chats/${activeChatId}/clear-history`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+                });
+                let data = await res.json();
+                if(data.success) {
+                    showToast(data.message, 'fa-check-circle');
+                    fetchActiveChatMessages(false);
                     fetchChats(); // refresh list
                 }
             } catch(e) { console.error(e); }

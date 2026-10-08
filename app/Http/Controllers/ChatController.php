@@ -94,4 +94,22 @@ class ChatController extends Controller
 
         return response()->json(['success' => true, 'chat' => $chat]);
     }
+
+    public function clearChatHistory(Request $request, $chatId)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) return response()->json(['success' => false]);
+
+        $chat = Chat::where('id', $chatId)->where('user_id', $user->id)->firstOrFail();
+        
+        // Delete all messages associated with this chat
+        Message::where('chat_id', $chat->id)->delete();
+        
+        // Reset chat status
+        $chat->ai_reply_count = 0;
+        $chat->is_human_takeover = false;
+        $chat->save();
+
+        return response()->json(['success' => true, 'message' => 'Riwayat chat berhasil dihapus. AI akan menganggap ini sebagai percakapan baru.']);
+    }
 }
