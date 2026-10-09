@@ -267,9 +267,9 @@
         .theme-btn.active { border-color: var(--primary); background: rgba(107, 92, 216, 0.05); color: var(--primary); }
         .theme-color-dot { width: 12px; height: 12px; border-radius: 50%; }
         
-        .preview-document-container { padding: 24px; background: #f1f1f4; overflow: auto; max-height: 70vh; display: flex; justify-content: center; }
-        .document-page { box-sizing: border-box; width: 794px !important; min-width: 794px !important; margin: 0 auto; background: white; padding: 48px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; font-family: 'Inter', sans-serif; }
-        /* document-inner removed */
+        .preview-document-container { padding: 24px; background: #f1f1f4; overflow: auto; max-height: 70vh; }
+        .document-page { box-sizing: border-box; width: 100%; max-width: 794px; margin: 0 auto; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; font-family: 'Inter', sans-serif; }
+        .document-inner { padding: 48px; width: 100%; box-sizing: border-box; overflow: hidden; }
         
         /* Document Themes */
         /* 1. Wedding Elegance (Red/Pinkish) */
@@ -291,7 +291,7 @@
         .doc-info-item h4 { font-size: 11px; color: var(--doc-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
         .doc-info-item p { font-size: 14px; color: var(--doc-text); font-weight: 600; }
         
-        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; table-layout: fixed; word-wrap: break-word; }
         .doc-table th { background: var(--doc-primary); color: white; padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
         .doc-table td { padding: 12px 16px; border-bottom: 1px solid #eee; font-size: 13px; color: var(--doc-text); }
         .doc-section-title { font-weight: 700; color: var(--doc-primary); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; padding-top: 16px !important; }
@@ -570,8 +570,9 @@
             
             <div class="preview-document-container">
                 <div class="document-page theme-wedding" id="preview-document">
-                    <!-- Top Border -->
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary); z-index: 2;"></div>
+                    <div class="document-inner">
+                        <!-- Top Border -->
+                        <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary); z-index: 2;"></div>
                     
                     <div class="doc-header">
                         <div class="doc-vendor">
@@ -658,6 +659,7 @@
                     
                     <!-- Bottom Border -->
                     <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary); z-index: 2;"></div>
+                    </div> <!-- document-inner end -->
                 </div>
             </div>
         </div>
