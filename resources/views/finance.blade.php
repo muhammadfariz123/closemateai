@@ -1056,6 +1056,7 @@
                 mode: "range",
                 showMonths: 2,
                 dateFormat: "Y-m-d",
+                closeOnSelect: false,
                 onReady: function(selectedDates, dateStr, instance) {
                     const footer = document.createElement("div");
                     footer.className = "flatpickr-footer";
