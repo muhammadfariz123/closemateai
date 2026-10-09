@@ -472,6 +472,7 @@
         let editingBookingId = null;
 
         function openBookingModal(id = null) {
+            if (typeof id !== 'string') id = null;
             editingBookingId = id;
             if (id) {
                 document.getElementById('booking_modal_title').innerText = 'Edit Booking & Biaya Operasional';
@@ -531,6 +532,7 @@
                 document.getElementById('b_paid_amount').value = '0';
                 document.getElementById('b_discount').value = '0';
                 document.getElementById('b_payment_date').value = '';
+                document.getElementById('b_payment_status').value = 'DP 1';
                 document.getElementById('b_production_status').value = 'Pre-Event';
                 document.getElementById('b_custom_status_container').style.display = 'none';
                 document.getElementById('b_production_status').style.display = 'block';
