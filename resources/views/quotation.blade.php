@@ -266,11 +266,10 @@
         .theme-btn:hover { background: #f9f9f9; }
         .theme-btn.active { border-color: var(--primary); background: rgba(107, 92, 216, 0.05); color: var(--primary); }
         .theme-color-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .preview-document-container { padding: 24px; background: #f1f1f4; overflow: auto; max-height: 70vh; display: flex; justify-content: center; }
+        .document-page { box-sizing: border-box; width: 794px; min-width: 794px; margin: 0 auto; background: white; padding: 48px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; font-family: 'Inter', sans-serif; }
         
-        .preview-document-container { padding: 24px; background: #f1f1f4; overflow-y: auto; overflow-x: hidden; max-height: 70vh; text-align: center; }
-        .document-page { box-sizing: border-box !important; width: 100% !important; max-width: 794px !important; margin: 0 auto; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; font-family: 'Inter', sans-serif; padding: 1px; text-align: left; }
-        .document-margin-wrapper { margin: 6%; width: auto; overflow: hidden; }
-        .document-page * { box-sizing: border-box !important; }
+        /* Document Themes */
         /* 1. Wedding Elegance (Red/Pinkish) */
         .theme-wedding { --doc-primary: #a75d67; --doc-secondary: #f4e8ea; --doc-text: #333; --doc-font: 'Playfair Display', serif; }
         /* 2. Royal Navy (Blue) */
@@ -286,13 +285,13 @@
         .doc-meta h2 { font-family: var(--doc-font); letter-spacing: 2px; color: var(--doc-primary); font-size: 24px; margin-bottom: 4px; text-transform: uppercase; }
         .doc-meta p { font-size: 12px; color: #666; margin-bottom: 2px; }
         
-        .doc-info-box { background: var(--doc-secondary); padding: 20px; border-radius: 8px; margin-bottom: 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 16px; }
+        .doc-info-box { background: var(--doc-secondary); padding: 20px; border-radius: 8px; margin-bottom: 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; }
         .doc-info-item h4 { font-size: 11px; color: var(--doc-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
         .doc-info-item p { font-size: 14px; color: var(--doc-text); font-weight: 600; }
         
-        .doc-table { width: 100%; max-width: 100%; border-collapse: collapse; margin-bottom: 24px; word-break: break-word; overflow-wrap: break-word; }
-        .doc-table th { background: var(--doc-primary); color: white; padding: 12px 10px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
-        .doc-table td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 12px; color: var(--doc-text); }
+        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; table-layout: fixed; word-wrap: break-word; }
+        .doc-table th { background: var(--doc-primary); color: white; padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .doc-table td { padding: 12px 16px; border-bottom: 1px solid #eee; font-size: 13px; color: var(--doc-text); }
         .doc-section-title { font-weight: 700; color: var(--doc-primary); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; padding-top: 16px !important; }
         
         .doc-totals { width: 100%; max-width: 300px; margin-left: auto; margin-bottom: 32px; }
@@ -310,14 +309,22 @@
         .doc-tnc h4 { font-size: 14px; color: var(--doc-primary); font-weight: 700; letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; }
         
         .doc-signatures { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 32px; margin-top: 48px; }
-        .doc-sig-box { text-align: center; flex: 1; min-width: 100px; max-width: 200px; }
+        .doc-sig-box { text-align: center; flex: 1; min-width: 150px; max-width: 200px; }
         .doc-sig-box p { font-size: 12px; color: #666; margin-bottom: 60px; }
         .doc-sig-box .sig-line { border-bottom: 1px solid #333; font-weight: 700; padding-bottom: 8px; font-size: 14px; }
+        
+        @media (max-width: 900px) {
+            .preview-document-container { padding: 16px; justify-content: flex-start; }
+            .document-page { zoom: 0.8; }
+        }
+        @media (max-width: 600px) {
+            .document-page { zoom: 0.45; }
+        }
         
         @media print {
             body * { visibility: hidden; }
             #preview-document, #preview-document * { visibility: visible; }
-            #preview-document { position: absolute; left: 0; top: 0; margin: 0; padding: 0; box-shadow: none; }
+            #preview-document { position: absolute; left: 0; top: 0; margin: 0; padding: 0; box-shadow: none; zoom: 1 !important; }
         }
     </style>
 </head>
@@ -561,9 +568,8 @@
             
             <div class="preview-document-container">
                 <div class="document-page theme-wedding" id="preview-document">
-                    <div class="document-margin-wrapper">
-                        <!-- Top Border -->
-                        <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary); z-index: 2;"></div>
+                    <!-- Top Border -->
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
                     
                     <div class="doc-header">
                         <div class="doc-vendor">
@@ -601,10 +607,10 @@
                     <table class="doc-table">
                         <thead>
                             <tr>
-                                <th style="width: 35%;">ITEM / LAYANAN</th>
-                                <th style="text-align: center; width: 15%;">QTY</th>
-                                <th style="text-align: right; width: 25%;">HARGA SATUAN</th>
-                                <th style="text-align: right; width: 25%;">TOTAL</th>
+                                <th>ITEM / LAYANAN</th>
+                                <th style="text-align: center;">QTY</th>
+                                <th style="text-align: right;">HARGA SATUAN</th>
+                                <th style="text-align: right;">TOTAL</th>
                             </tr>
                         </thead>
                         <tbody id="doc_items_tbody">
@@ -647,10 +653,9 @@
                             <div class="sig-line" id="doc_sig_client">-</div>
                         </div>
                     </div>
-                    </div> <!-- document-margin-wrapper end -->
                     
                     <!-- Bottom Border -->
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary); z-index: 2;"></div>
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
                 </div>
             </div>
         </div>
