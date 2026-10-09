@@ -81,9 +81,30 @@
 
         /* Content Card */
         .content-card { background: white; border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); min-height: 300px; display: flex; flex-direction: column; }
-        .content-header { padding: 20px 24px; font-size: 16px; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
+        .content-header { padding: 20px 24px; font-size: 16px; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-color); }
         
         .empty-state { flex: 1; display: flex; justify-content: center; align-items: center; color: var(--text-muted); font-size: 14px; padding: 40px; }
+
+        /* Activity Items */
+        .activity-list { display: flex; flex-direction: column; }
+        .activity-item { display: flex; align-items: center; padding: 16px 24px; gap: 16px; border-bottom: 1px solid var(--border-color); transition: background-color 0.2s; }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-item:hover { background-color: var(--bg-light); }
+        
+        .activity-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .icon-purple { background-color: rgba(107, 92, 216, 0.1); color: var(--primary); }
+        .icon-green { background-color: rgba(80, 205, 137, 0.1); color: var(--success); }
+        .icon-blue { background-color: rgba(0, 158, 253, 0.1); color: #009efd; }
+        .icon-orange { background-color: rgba(255, 199, 0, 0.1); color: var(--warning); }
+        .icon-grey { background-color: rgba(161, 165, 183, 0.1); color: var(--text-muted); }
+        
+        .activity-details { flex: 1; min-width: 0; }
+        .activity-details h4 { font-size: 14px; font-weight: 600; color: var(--text-dark); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .activity-details p { font-size: 13px; color: var(--text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .activity-meta { text-align: right; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px; }
+        .activity-meta span { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+        .activity-meta small { font-size: 11px; color: var(--text-muted); }
 
         /* Responsive Mobile Layout */
         @media (max-width: 768px) {
@@ -266,34 +287,141 @@
         </div>
 
         <div class="filter-card">
-            <div class="filter-row">
-                <div class="badge-tab active-purple">Semua</div>
-                <div class="badge-tab">Balasan Admin</div>
-                <div class="badge-tab">Balasan AI</div>
-                <div class="badge-tab">Chat Masuk</div>
-                <div class="badge-tab">Handler</div>
-                <div class="badge-tab">Takeover</div>
-                <div class="badge-tab">Lead</div>
+            <div class="filter-row" id="main_filters">
+                <div class="badge-tab active-purple" onclick="setMainFilter('Semua')">Semua</div>
+                <div class="badge-tab" onclick="setMainFilter('Balasan Admin')">Balasan Admin</div>
+                <div class="badge-tab" onclick="setMainFilter('Balasan AI')">Balasan AI</div>
+                <div class="badge-tab" onclick="setMainFilter('Chat Masuk')">Chat Masuk</div>
+                <div class="badge-tab" onclick="setMainFilter('Handler')">Handler</div>
+                <div class="badge-tab" onclick="setMainFilter('Takeover')">Takeover</div>
+                <div class="badge-tab" onclick="setMainFilter('Lead')">Lead</div>
             </div>
-            <div class="filter-row" style="border-top: 1px solid var(--border-color); padding-top: 20px;">
-                <div class="badge-tab active-gray" style="border: none;">Semua Anggota</div>
-                <div class="badge-tab-text">Penapict (Owner)</div>
-                <div class="badge-tab-text">Sistem / AI</div>
+            <div class="filter-row" style="border-top: 1px solid var(--border-color); padding-top: 20px;" id="sub_filters">
+                <div class="badge-tab active-gray" style="border: none;" onclick="setSubFilter('Semua Anggota')">Semua Anggota</div>
+                <div class="badge-tab-text" onclick="setSubFilter('Penapict (Owner)')">Penapict (Owner)</div>
+                <div class="badge-tab-text" onclick="setSubFilter('Sistem / AI')">Sistem / AI</div>
             </div>
         </div>
 
         <div class="content-card">
             <div class="content-header">
-                <i class="fa-solid fa-clock-rotate-left" style="color: var(--text-muted);"></i> 0 aktivitas
+                <i class="fa-solid fa-clock-rotate-left" style="color: var(--text-muted);"></i> <span id="activity_count">0 aktivitas</span>
             </div>
-            <div class="empty-state">
-                Belum ada aktivitas untuk filter ini.
+            <div class="activity-list" id="activity_container">
+                <!-- Activities rendered here -->
             </div>
         </div>
 
     </div>
 
     <script>
+        const mockActivities = [
+            { type: 'Lead', actor: 'Sistem', title: 'Proses follow up label Follow Up', desc: '1 pesan terkirim. 0 dibatalkan | 1 barusan.', time: '08 Okt, 20.27', icon: 'fa-bolt', color: 'purple' },
+            { type: 'Lead', actor: 'Sistem', title: 'Follow up terkirim ke e', desc: 'Label "Follow Up" -> "Pesan Follow up 1"', time: '08 Okt, 20.27', icon: 'fa-comment-dots', color: 'grey' },
+            { type: 'Balasan Admin', actor: 'Penapict', title: 'Admin membalas e', desc: 'Halo Kak e, mau tanya apakah ada yang ingin didiskusikan lagi terkait paket yang kami tawarkan untuk tanggal acara Anda?', time: '08 Okt, 20.27', icon: 'fa-user-tie', color: 'green' },
+            { type: 'Lead', actor: 'Sistem', title: 'Lead baru: e', desc: '+6281223334455', time: '08 Okt, 20.27', icon: 'fa-bolt', color: 'purple' },
+            { type: 'Balasan AI', actor: 'Sistem', title: 'AI membalas e', desc: 'Halo Kak e, selamat datang di Penapict! Ada yang bisa kami bantu untuk rencana acara bahagianya?', time: '08 Okt, 19.57', icon: 'fa-robot', color: 'purple' },
+            { type: 'Chat Masuk', actor: 'Sistem', title: 'Pesan baru dari e', desc: 'yis', time: '08 Okt, 19.57', icon: 'fa-comment-dots', color: 'blue' },
+            { type: 'Takeover', actor: 'Penapict', title: 'Penapict mengaktifkan kembali AI', desc: 'Fariz', time: '08 Okt, 16.54', icon: 'fa-wrench', color: 'orange' },
+            { type: 'Chat Masuk', actor: 'Sistem', title: 'Pesan baru dari Fariz', desc: 'permisi ka', time: '08 Okt, 19.44', icon: 'fa-comment-dots', color: 'blue' },
+            { type: 'Handler', actor: 'Penapict', title: 'Penapict mengambil chat Fariz', desc: 'Handler: Penapict', time: '08 Okt, 16.26', icon: 'fa-user-plus', color: 'grey' },
+            { type: 'Handler', actor: 'Penapict', title: 'Penapict melepas handler chat Fariz', desc: 'Chat kembali tanpa handler', time: '08 Okt, 16.16', icon: 'fa-user-minus', color: 'grey' },
+            { type: 'Handler', actor: 'Penapict', title: 'Penapict mengambil chat Fariz', desc: 'Handler: Penapict', time: '08 Okt, 16.15', icon: 'fa-user-plus', color: 'grey' },
+            { type: 'Handler', actor: 'Penapict', title: 'Penapict melepas handler chat Fariz', desc: 'Chat kembali tanpa handler', time: '08 Okt, 16.15', icon: 'fa-user-minus', color: 'grey' },
+            { type: 'Takeover', actor: 'Penapict', title: 'Penapict mengaktifkan Human Takeover', desc: 'Fariz', time: '08 Okt, 12.59', icon: 'fa-wrench', color: 'orange' },
+            { type: 'Takeover', actor: 'Sistem', title: 'Human takeover diminta', desc: 'Fariz menunggu balasan admin', time: '08 Okt, 12.58', icon: 'fa-wrench', color: 'orange' },
+            { type: 'Balasan Admin', actor: 'Penapict', title: 'Penapict membalas Frz', desc: 'halo ka', time: '08 Okt, 12.49', icon: 'fa-user-tie', color: 'green' },
+            { type: 'Balasan AI', actor: 'Sistem', title: 'AI membalas Frz', desc: 'Maaf kak, admin kami akan segera membalas pesan ini ya 🙏', time: '08 Okt, 12.34', icon: 'fa-robot', color: 'purple' },
+            { type: 'Balasan AI', actor: 'Sistem', title: 'AI membalas Frz', desc: 'Ini link price list-nya ya kak 🙏 https://drive.google.com/file/...', time: '08 Okt, 12.32', icon: 'fa-robot', color: 'purple' },
+            { type: 'Balasan AI', actor: 'Sistem', title: 'AI membalas Frz', desc: 'Boleh diinfokan juga untuk rencana tanggal dan lokasi acaranya agar bisa aku cek ketersediaan tim kami?', time: '08 Okt, 12.32', icon: 'fa-robot', color: 'purple' },
+            { type: 'Balasan AI', actor: 'Sistem', title: 'AI membalas Frz', desc: 'Halo Kak Frz tentu boleh. Ini aku kirimkan katalog lengkap paket dokumentasi kami ya.', time: '08 Okt, 12.32', icon: 'fa-robot', color: 'purple' },
+            { type: 'Chat Masuk', actor: 'Sistem', title: 'Pesan baru dari Frz', desc: 'Untuk tanggal 26 desember 2026 ka lokasinya di purwokerto', time: '08 Okt, 12.34', icon: 'fa-comment-dots', color: 'blue' },
+            { type: 'Chat Masuk', actor: 'Sistem', title: 'Pesan baru dari Frz', desc: 'Boleh minta pricelist?', time: '08 Okt, 12.32', icon: 'fa-comment-dots', color: 'blue' },
+            { type: 'Chat Masuk', actor: 'Sistem', title: 'Pesan baru dari Frz', desc: 'Halo ka', time: '08 Okt, 12.22', icon: 'fa-comment-dots', color: 'blue' },
+            { type: 'Lead', actor: 'Sistem', title: 'Lead baru: Frz', desc: '+628987654321', time: '08 Okt, 12.22', icon: 'fa-bolt', color: 'purple' }
+        ];
+
+        let currentMainFilter = 'Semua';
+        let currentSubFilter = 'Semua Anggota';
+
+        function renderActivities() {
+            const container = document.getElementById('activity_container');
+            const countEl = document.getElementById('activity_count');
+            
+            let filtered = mockActivities.filter(a => {
+                let matchMain = (currentMainFilter === 'Semua') || (a.type === currentMainFilter);
+                
+                let matchSub = true;
+                if (currentSubFilter === 'Penapict (Owner)') {
+                    matchSub = (a.actor === 'Penapict');
+                } else if (currentSubFilter === 'Sistem / AI') {
+                    matchSub = (a.actor === 'Sistem');
+                }
+                
+                return matchMain && matchSub;
+            });
+            
+            countEl.innerText = `${filtered.length} aktivitas`;
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="empty-state">Belum ada aktivitas untuk filter ini.</div>`;
+                return;
+            }
+            
+            let html = '';
+            filtered.forEach(a => {
+                html += `
+                <div class="activity-item">
+                    <div class="activity-icon icon-${a.color}">
+                        <i class="fa-solid ${a.icon}"></i>
+                    </div>
+                    <div class="activity-details">
+                        <h4>${a.title}</h4>
+                        <p>${a.desc}</p>
+                    </div>
+                    <div class="activity-meta">
+                        <span>${a.actor}</span>
+                        <small>${a.time}</small>
+                    </div>
+                </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function setMainFilter(type) {
+            currentMainFilter = type;
+            const parent = document.getElementById('main_filters');
+            parent.querySelectorAll('.badge-tab').forEach(el => {
+                if(el.innerText === type) {
+                    el.classList.add('active-purple');
+                } else {
+                    el.classList.remove('active-purple');
+                }
+            });
+            renderActivities();
+        }
+
+        function setSubFilter(type) {
+            currentSubFilter = type;
+            const parent = document.getElementById('sub_filters');
+            parent.querySelectorAll('div').forEach(el => {
+                if(el.innerText === type) {
+                    el.className = 'badge-tab active-gray';
+                    el.style.border = 'none';
+                } else {
+                    el.className = 'badge-tab-text';
+                    el.style.border = '';
+                }
+            });
+            renderActivities();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderActivities();
+        });
+
         // Sidebar Collapse
         document.getElementById('btn-collapse').addEventListener('click', function() {
             document.body.classList.toggle('sidebar-collapsed');
