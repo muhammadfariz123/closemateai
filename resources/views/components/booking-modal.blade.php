@@ -152,13 +152,18 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Status Produksi</label>
-                        <select id="b_production_status" class="form-control">
+                        <select id="b_production_status" class="form-control" onchange="toggleCustomStatus()">
                             <option>Pre-Event</option>
                             <option>Hari H</option>
                             <option>Proses Edit</option>
                             <option>Revisi</option>
                             <option>Selesai & Terkirim</option>
+                            <option value="custom">+ Status custom...</option>
                         </select>
+                        <div id="b_custom_status_container" style="display: none; gap: 8px; align-items: center;">
+                            <input type="text" id="b_custom_status_input" class="form-control" placeholder="Tulis status baru, mis. Sele..." style="flex: 1;">
+                            <button class="btn btn-secondary" onclick="cancelCustomStatus()" style="padding: 6px 12px; font-size: 12px; border-radius: 6px; border: 1px solid var(--border-color);">Batal</button>
+                        </div>
                     </div>
                 </div>
                 

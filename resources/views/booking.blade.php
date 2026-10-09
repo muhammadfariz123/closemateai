@@ -428,7 +428,21 @@
                     document.getElementById('b_discount').value = b.discount ? new Intl.NumberFormat('id-ID').format(b.discount) : '0';
                     document.getElementById('b_payment_date').value = b.payment_date || '';
                     document.getElementById('b_payment_status').value = b.payment_status || 'DP 1';
-                    document.getElementById('b_production_status').value = b.production_status || 'Pre-Event';
+                    
+                    // Production Status Custom Logic
+                    const stdOptions = ['Pre-Event', 'Hari H', 'Proses Edit', 'Revisi', 'Selesai & Terkirim'];
+                    if (b.production_status && !stdOptions.includes(b.production_status)) {
+                        document.getElementById('b_production_status').value = 'custom';
+                        document.getElementById('b_custom_status_container').style.display = 'flex';
+                        document.getElementById('b_production_status').style.display = 'none';
+                        document.getElementById('b_custom_status_input').value = b.production_status;
+                    } else {
+                        document.getElementById('b_production_status').value = b.production_status || 'Pre-Event';
+                        document.getElementById('b_custom_status_container').style.display = 'none';
+                        document.getElementById('b_production_status').style.display = 'block';
+                        document.getElementById('b_custom_status_input').value = '';
+                    }
+                    
                     document.getElementById('b_result_link').value = b.result_link || '';
                     document.getElementById('b_notes').value = b.notes || '';
                     
@@ -451,6 +465,10 @@
                 document.getElementById('b_paid_amount').value = '0';
                 document.getElementById('b_discount').value = '0';
                 document.getElementById('b_payment_date').value = '';
+                document.getElementById('b_production_status').value = 'Pre-Event';
+                document.getElementById('b_custom_status_container').style.display = 'none';
+                document.getElementById('b_production_status').style.display = 'block';
+                document.getElementById('b_custom_status_input').value = '';
                 document.getElementById('b_result_link').value = '';
                 document.getElementById('b_notes').value = '';
                 
@@ -469,6 +487,32 @@
 
         function closeBookingModal() {
             bookingModal.style.display = 'none';
+        }
+        
+        function toggleCustomStatus() {
+            const select = document.getElementById('b_production_status');
+            const container = document.getElementById('b_custom_status_container');
+            const input = document.getElementById('b_custom_status_input');
+            
+            if (select.value === 'custom') {
+                select.style.display = 'none';
+                container.style.display = 'flex';
+                input.focus();
+            } else {
+                select.style.display = 'block';
+                container.style.display = 'none';
+            }
+        }
+        
+        function cancelCustomStatus() {
+            const select = document.getElementById('b_production_status');
+            const container = document.getElementById('b_custom_status_container');
+            const input = document.getElementById('b_custom_status_input');
+            
+            select.value = 'Pre-Event';
+            select.style.display = 'block';
+            container.style.display = 'none';
+            input.value = '';
         }
 
         // Helper functions for Rupiah input formatting
@@ -628,6 +672,11 @@
             const totalIncome = totalPackage + totalAddon - discount;
             const totalCost = costsData.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1)), 0);
             const profit = totalIncome - totalCost;
+            
+            let prodStatus = document.getElementById('b_production_status').value;
+            if (prodStatus === 'custom') {
+                prodStatus = document.getElementById('b_custom_status_input').value || 'Status Custom';
+            }
 
             const payload = {
                 id: editingBookingId || Date.now().toString(),
@@ -649,7 +698,7 @@
                 net_profit: profit,
                 payment_date: document.getElementById('b_payment_date').value,
                 payment_status: document.getElementById('b_payment_status').value,
-                production_status: document.getElementById('b_production_status').value,
+                production_status: prodStatus,
                 result_link: document.getElementById('b_result_link').value,
                 team_members: teamData,
                 notes: document.getElementById('b_notes').value,
