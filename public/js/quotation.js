@@ -521,14 +521,17 @@ function downloadDocPNG() {
     // Temporarily adjust styles for capture
     const origWidth = doc.style.width;
     const origMaxWidth = doc.style.maxWidth;
+    const origZoom = doc.style.zoom;
     doc.style.width = '794px';
     doc.style.maxWidth = 'none';
+    doc.style.zoom = '1';
     
     window.showToast('Menyiapkan gambar...', 'fa-spinner fa-spin');
     
     html2canvas(doc, { scale: 2, useCORS: true }).then(canvas => {
         doc.style.width = origWidth;
         doc.style.maxWidth = origMaxWidth;
+        doc.style.zoom = origZoom;
         let link = document.createElement('a');
         link.download = 'Quotation-' + Date.now() + '.png';
         link.href = canvas.toDataURL('image/png');
@@ -537,6 +540,7 @@ function downloadDocPNG() {
     }).catch(err => {
         doc.style.width = origWidth;
         doc.style.maxWidth = origMaxWidth;
+        doc.style.zoom = origZoom;
         console.error(err);
         alert('Gagal mendownload PNG.');
     });
@@ -549,14 +553,17 @@ function downloadDocPDF() {
     // Temporarily adjust styles for capture
     const origWidth = doc.style.width;
     const origMaxWidth = doc.style.maxWidth;
+    const origZoom = doc.style.zoom;
     doc.style.width = '794px';
     doc.style.maxWidth = 'none';
+    doc.style.zoom = '1';
 
     window.showToast('Menyiapkan PDF...', 'fa-spinner fa-spin');
     
     html2canvas(doc, { scale: 2, useCORS: true }).then(canvas => {
         doc.style.width = origWidth;
         doc.style.maxWidth = origMaxWidth;
+        doc.style.zoom = origZoom;
         const imgData = canvas.toDataURL('image/png');
         const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
         
@@ -570,6 +577,7 @@ function downloadDocPDF() {
     }).catch(err => {
         doc.style.width = origWidth;
         doc.style.maxWidth = origMaxWidth;
+        doc.style.zoom = origZoom;
         console.error(err);
         alert('Gagal mendownload PDF.');
     });

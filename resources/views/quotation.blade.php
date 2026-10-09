@@ -691,6 +691,6 @@
         });
     </script>
     <script src="/js/activity-logger.js"></script>
-    <script src="/js/quotation.js?v=6"></script>
+    <script src="/js/quotation.js?v=7"></script>
 </body>
 </html>
