@@ -353,9 +353,8 @@
             <div class="left-controls">
                 <div class="search-box">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" class="form-control" placeholder="Cari nama klien, nomor, atau paket...">
+                    <input type="text" id="b_search_input" class="form-control" placeholder="Cari nama klien, nomor, atau paket..." oninput="filterBookings()">
                 </div>
-                <button class="btn btn-danger"><i class="fa-brands fa-youtube"></i> Tutorial</button>
                 <button class="btn btn-secondary" onclick="openGoogleCalendarSync()"><i class="fa-regular fa-calendar"></i> Google Calendar</button>
             </div>
             
@@ -364,8 +363,12 @@
                     <button class="btn active" id="btn_calendar_view" onclick="switchView('calendar')"><i class="fa-regular fa-calendar-days"></i> Calendar View</button>
                     <button class="btn" id="btn_table_view" onclick="switchView('table')"><i class="fa-solid fa-table-list"></i> Table View</button>
                 </div>
-                <select class="form-control" style="border-radius: 20px; width: 140px;">
-                    <option>Semua Bulan</option>
+                <select id="b_month_filter" class="form-control" style="border-radius: 20px; width: 140px;" onchange="filterBookings()">
+                    <option value="all">Semua Bulan</option>
+                    <option value="2026-09">September 2026</option>
+                    <option value="2026-10">Oktober 2026</option>
+                    <option value="2026-11">November 2026</option>
+                    <option value="2026-12">Desember 2026</option>
                 </select>
                 <button onclick="openBookingModal()" class="btn btn-primary" style="border-radius: 8px;"><i class="fa-solid fa-plus"></i> Tambah Booking</button>
             </div>
@@ -373,9 +376,9 @@
         
         <div class="panel" id="calendar_panel">
             <div class="calendar-header">
-                <button class="btn-nav"><i class="fa-solid fa-chevron-left"></i></button>
-                <div class="calendar-title">Oktober 2026</div>
-                <button class="btn-nav"><i class="fa-solid fa-chevron-right"></i></button>
+                <button class="btn-nav" onclick="changeCalendarMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="calendar-title" id="calendar_month_title">Oktober 2026</div>
+                <button class="btn-nav" onclick="changeCalendarMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
             
             <div class="calendar-grid" id="b_calendar_grid">
@@ -1227,13 +1230,72 @@
             }
         }
         
+        function getFilteredBookings() {
+            let bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            const searchVal = document.getElementById('b_search_input').value.toLowerCase();
+            const monthVal = document.getElementById('b_month_filter').value;
+            
+            return bookings.filter(b => {
+                let matchSearch = true;
+                if (searchVal) {
+                    const str = `${b.client_name || ''} ${b.client_wa_number || ''} ${b.package_name || ''}`.toLowerCase();
+                    matchSearch = str.includes(searchVal);
+                }
+                
+                let matchMonth = true;
+                if (monthVal !== 'all' && b.event_date) {
+                    matchMonth = b.event_date.startsWith(monthVal);
+                }
+                
+                return matchSearch && matchMonth;
+            });
+        }
+
+        function filterBookings() {
+            renderTable();
+            renderCalendar();
+        }
+
+        let currentCalYear = 2026;
+        let currentCalMonth = 9; // October is 9 (0-indexed)
+
+        function changeCalendarMonth(offset) {
+            currentCalMonth += offset;
+            if (currentCalMonth > 11) {
+                currentCalMonth = 0;
+                currentCalYear++;
+            } else if (currentCalMonth < 0) {
+                currentCalMonth = 11;
+                currentCalYear--;
+            }
+            renderCalendar();
+        }
+
         // --- CALENDAR LOGIC ---
         function renderCalendar() {
             const grid = document.getElementById('b_calendar_grid');
             if (!grid) return;
             
-            const daysInMonth = 31; // October 2026
-            const firstDayOffset = 3; // October 1st 2026 is Thursday (0=Senin, 1=Selasa, 2=Rabu, 3=Kamis)
+            const monthVal = document.getElementById('b_month_filter').value;
+            
+            // If filter is set to specific month, sync calendar to that month
+            if (monthVal !== 'all') {
+                const parts = monthVal.split('-');
+                currentCalYear = parseInt(parts[0]);
+                currentCalMonth = parseInt(parts[1]) - 1;
+            }
+            
+            // Update calendar header text
+            const headerTitle = document.getElementById('calendar_month_title');
+            if (headerTitle) {
+                const d = new Date(currentCalYear, currentCalMonth, 1);
+                const formatter = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' });
+                headerTitle.innerText = monthVal === 'all' ? formatter.format(d) + " (Semua Bulan)" : formatter.format(d);
+            }
+            
+            const daysInMonth = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
+            let firstDay = new Date(currentCalYear, currentCalMonth, 1).getDay();
+            const firstDayOffset = firstDay === 0 ? 6 : firstDay - 1; // 0=Senin
             
             let html = `
                 <div class="calendar-day-header">Sen</div>
@@ -1250,11 +1312,14 @@
                 html += `<div class="calendar-day" style="opacity: 0; pointer-events: none;"></div>`;
             }
             
-            const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            const bookings = getFilteredBookings();
             
             for (let i = 1; i <= daysInMonth; i++) {
-                const isToday = i === 3; // Example today
-                const dateStr = `2026-10-${i.toString().padStart(2, '0')}`;
+                const today = new Date();
+                const isToday = (i === today.getDate() && currentCalMonth === today.getMonth() && currentCalYear === today.getFullYear());
+                const mStr = String(currentCalMonth + 1).padStart(2, '0');
+                const dStr = String(i).padStart(2, '0');
+                const dateStr = `${currentCalYear}-${mStr}-${dStr}`;
                 
                 // Find events for this date
                 const dayEvents = bookings.filter(b => b.event_date === dateStr);
@@ -1301,7 +1366,7 @@
             const tbody = document.getElementById('b_table_body');
             if (!tbody) return;
             
-            const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            const bookings = getFilteredBookings();
             if (bookings.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">Belum ada data booking.</td></tr>`;
                 return;
