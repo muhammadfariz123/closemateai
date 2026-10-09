@@ -607,14 +607,18 @@
             const totalCost = costsData.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1)), 0);
             const profit = totalIncome - totalCost;
             
-            document.getElementById('b_label_total_income').innerText = formatRupiah(totalPackage + totalAddon);
+            document.getElementById('b_label_total_income').innerText = formatRupiah(totalIncome);
             document.getElementById('b_label_total_cost').innerText = formatRupiah(totalCost);
             
             // Dynamic label for income
-            if (discount > 0) {
-                document.getElementById('b_label_summary_income').innerText = `Total Pendapatan (Paket + Add-On Rp ${new Intl.NumberFormat('id-ID').format(totalPackage + totalAddon)} - diskon Rp ${new Intl.NumberFormat('id-ID').format(discount)})`;
+            if (discount > 0 || totalAddon > 0) {
+                let addonStr = totalAddon > 0 ? ` + add-on Rp ${new Intl.NumberFormat('id-ID').format(totalAddon)}` : '';
+                let discStr = discount > 0 ? ` - diskon Rp ${new Intl.NumberFormat('id-ID').format(discount)}` : '';
+                document.getElementById('b_label_total_harga_addon').innerText = `Total Harga (paket${addonStr}${discStr})`;
+                document.getElementById('b_label_summary_income').innerText = `Total Pendapatan (paket${addonStr}${discStr})`;
             } else {
                 document.getElementById('b_label_summary_income').innerText = `Total Pendapatan (Paket + Add-On)`;
+                document.getElementById('b_label_total_harga_addon').innerText = `Total Harga (paket + add-on)`;
             }
             
             document.getElementById('b_summary_income').innerText = formatRupiah(totalIncome);

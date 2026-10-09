@@ -86,7 +86,7 @@
                         <!-- Addon list -->
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
-                        <span style="font-size: 13px; color: var(--text-muted);">Total Harga (paket + add-on)</span>
+                        <span id="b_label_total_harga_addon" style="font-size: 13px; color: var(--text-muted);">Total Harga (paket + add-on)</span>
                         <strong style="font-size: 14px;" id="b_label_total_income">Rp 0</strong>
                     </div>
                 </div>
