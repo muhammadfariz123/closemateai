@@ -945,6 +945,11 @@
             }
             
             localStorage.setItem('b_events', JSON.stringify(bookings));
+            
+            if(window.logSysActivity && !editingBookingId) {
+                window.logSysActivity('Lead', 'Sistem', 'Booking / Lead baru ditambahkan', 'Klien: ' + payload.clientName + ' (' + payload.date + ')', 'fa-bolt', 'purple');
+            }
+
             showToast(editingBookingId ? 'Booking diperbarui!' : 'Booking ditambahkan!');
             closeBookingModal();
             renderCalendar();
@@ -1582,5 +1587,6 @@
             showToast('Link kalender disalin', 'success');
         }
     </script>
+    <script src="/js/activity-logger.js"></script>
 </body>
 </html>

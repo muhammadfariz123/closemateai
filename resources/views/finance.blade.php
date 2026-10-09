@@ -699,6 +699,10 @@
             
             localStorage.setItem('f_expenses', JSON.stringify(expenses));
             
+            if(window.logSysActivity && !id) {
+                window.logSysActivity('Handler', 'Penapict', 'Mencatat pengeluaran', judul + ' (Rp ' + nominal.toLocaleString('id-ID') + ')', 'fa-money-bill-wave', 'grey');
+            }
+            
             closeExpenseModal();
             calculateFinance();
         }
@@ -1100,5 +1104,6 @@
             });
         });
     </script>
+    <script src="/js/activity-logger.js"></script>
 </body>
 </html>

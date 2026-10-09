@@ -719,6 +719,18 @@
                     updateTakeoverUI(isTakeover, true);
                     const aiLabel = document.getElementById('aiActivityLabel');
                     if(aiLabel) aiLabel.style.display = isTakeover ? 'none' : 'flex';
+                    
+                    if(window.logSysActivity) {
+                        let name = "Klien";
+                        let chat = chatsData.find(c => c.id === activeChatId);
+                        if(chat) name = chat.client_name || chat.client_wa_number;
+                        if(isTakeover) {
+                            window.logSysActivity('Takeover', 'Penapict', 'Mengaktifkan Human Takeover', name, 'fa-wrench', 'orange');
+                        } else {
+                            window.logSysActivity('Takeover', 'Penapict', 'Mengaktifkan kembali AI', name, 'fa-robot', 'purple');
+                        }
+                    }
+                    
                     fetchChats(); // refresh list
                 }
             } catch(e) { console.error(e); }
@@ -770,6 +782,13 @@
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
                     body: JSON.stringify({ message: text })
                 });
+                
+                if(window.logSysActivity) {
+                    let chat = chatsData.find(c => c.id === activeChatId);
+                    let name = chat ? (chat.client_name || chat.client_wa_number) : "Klien";
+                    window.logSysActivity('Balasan Admin', 'Penapict', 'Admin membalas ' + name, text.substring(0, 30) + (text.length > 30 ? '...' : ''), 'fa-user-tie', 'green');
+                }
+                
                 await fetchActiveChatMessages(false);
                 fetchChats();
             } catch(e) { 
@@ -989,6 +1008,13 @@
                     body: JSON.stringify({ handler: businessName })
                 });
                 showToast(`Chat dihandle oleh ${businessName}`, 'fa-check-circle');
+                
+                if(window.logSysActivity) {
+                    let chat = chatsData.find(c => c.id === activeChatId);
+                    let name = chat ? (chat.client_name || chat.client_wa_number) : "Klien";
+                    window.logSysActivity('Handler', 'Penapict', 'Mengambil handler chat ' + name, 'Handler: ' + businessName, 'fa-user-plus', 'grey');
+                }
+                
                 await fetchActiveChatMessages(true);
                 fetchChats();
             } catch (e) {
@@ -1015,6 +1041,13 @@
                     body: JSON.stringify({ handler: null })
                 });
                 showToast('Chat dilepas', 'fa-check-circle');
+                
+                if(window.logSysActivity) {
+                    let chat = chatsData.find(c => c.id === activeChatId);
+                    let name = chat ? (chat.client_name || chat.client_wa_number) : "Klien";
+                    window.logSysActivity('Handler', 'Penapict', 'Melepas handler chat ' + name, 'Chat kembali tanpa handler', 'fa-user-minus', 'grey');
+                }
+                
                 await fetchActiveChatMessages(true);
                 fetchChats();
             } catch (e) {
@@ -1072,5 +1105,6 @@
         }
     </script>
 
+    <script src="/js/activity-logger.js"></script>
 </body>
 </html>

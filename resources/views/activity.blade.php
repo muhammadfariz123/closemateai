@@ -339,14 +339,23 @@
             { type: 'Lead', actor: 'Sistem', title: 'Lead baru: Frz', desc: '+628987654321', time: '08 Okt, 12.22', icon: 'fa-bolt', color: 'purple' }
         ];
 
+        let sysActivities = JSON.parse(localStorage.getItem('sys_activities'));
+        if (!sysActivities || sysActivities.length === 0) {
+            sysActivities = mockActivities;
+            localStorage.setItem('sys_activities', JSON.stringify(sysActivities));
+        }
+
         let currentMainFilter = 'Semua';
         let currentSubFilter = 'Semua Anggota';
 
         function renderActivities() {
+            // refresh data from localStorage in case it changed in another tab
+            sysActivities = JSON.parse(localStorage.getItem('sys_activities')) || [];
+            
             const container = document.getElementById('activity_container');
             const countEl = document.getElementById('activity_count');
             
-            let filtered = mockActivities.filter(a => {
+            let filtered = sysActivities.filter(a => {
                 let matchMain = (currentMainFilter === 'Semua') || (a.type === currentMainFilter);
                 
                 let matchSub = true;
