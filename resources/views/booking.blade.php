@@ -1376,7 +1376,7 @@
             let totalBiayaAcara = 0;
             if (b.operational_costs && b.operational_costs.length > 0) {
                 b.operational_costs.forEach(c => {
-                    const costAmt = parseFloat(c.amount) || 0;
+                    const costAmt = (parseFloat(c.price) || 0) * (parseFloat(c.qty) || 1);
                     if (c.type === 'HPP') totalHpp += costAmt;
                     totalBiayaAcara += costAmt;
                 });
@@ -1438,7 +1438,8 @@
             document.getElementById('main_title_p').innerText = defaultTitleP;
             
             document.querySelector('.controls-row').style.display = 'flex';
-            switchView(currentView);
+            const isTable = document.getElementById('btn_table_view').classList.contains('active');
+            switchView(isTable ? 'table' : 'calendar');
         }
     </script>
 </body>
