@@ -513,6 +513,8 @@
                     addonsData = b.addons || [];
                     costsData = b.operational_costs || [];
                     teamData = b.team_members || [];
+                    
+                    toggleHandlerBadge();
                 }
             } else {
                 document.getElementById('booking_modal_title').innerText = 'Tambah Booking';
@@ -539,6 +541,8 @@
                 addonsData = [];
                 costsData = [];
                 teamData = [];
+                
+                toggleHandlerBadge();
             }
             
             renderAddons();
@@ -577,6 +581,16 @@
             select.style.display = 'block';
             container.style.display = 'none';
             input.value = '';
+        }
+        
+        function toggleHandlerBadge() {
+            const clientName = document.getElementById('b_client_name').value;
+            const badge = document.getElementById('b_handler_badge');
+            if (clientName.trim() !== '') {
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
         }
 
         // Helper functions for Rupiah input formatting
