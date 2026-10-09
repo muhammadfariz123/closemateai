@@ -259,6 +259,66 @@
             .qr-placeholder { width: 100%; max-width: 240px; }
             .alert-box { flex-direction: column; align-items: flex-start; gap: 12px; }
         }
+        /* Preview Modal Styles */
+        .preview-controls { padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 16px 16px 0 0; }
+        .theme-selectors { display: flex; gap: 12px; }
+        .theme-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-color); background: white; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; transition: 0.2s; }
+        .theme-btn:hover { background: #f9f9f9; }
+        .theme-btn.active { border-color: var(--primary); background: rgba(107, 92, 216, 0.05); color: var(--primary); }
+        .theme-color-dot { width: 12px; height: 12px; border-radius: 50%; }
+        
+        .preview-document-container { padding: 24px; background: #f1f1f4; overflow-y: auto; max-height: 70vh; display: flex; justify-content: center; }
+        .document-page { width: 794px; min-height: 1123px; background: white; padding: 48px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; font-family: 'Inter', sans-serif; }
+        
+        /* Document Themes */
+        /* 1. Wedding Elegance (Red/Pinkish) */
+        .theme-wedding { --doc-primary: #a75d67; --doc-secondary: #f4e8ea; --doc-text: #333; --doc-font: 'Playfair Display', serif; }
+        /* 2. Royal Navy (Blue) */
+        .theme-navy { --doc-primary: #1b365d; --doc-secondary: #e6ebf2; --doc-text: #333; --doc-font: 'Inter', sans-serif; }
+        /* 3. Clean Minimalist (Black) */
+        .theme-minimal { --doc-primary: #222222; --doc-secondary: #f5f5f5; --doc-text: #333; --doc-font: 'Inter', sans-serif; }
+        
+        .doc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; border-bottom: 4px solid var(--doc-primary); padding-bottom: 16px; }
+        .doc-vendor h1 { font-family: var(--doc-font); color: var(--doc-primary); font-size: 28px; font-style: italic; margin-bottom: 8px; }
+        .doc-status { background: var(--doc-secondary); color: var(--doc-primary); padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; }
+        
+        .doc-meta { text-align: right; }
+        .doc-meta h2 { font-family: var(--doc-font); letter-spacing: 2px; color: var(--doc-primary); font-size: 24px; margin-bottom: 4px; text-transform: uppercase; }
+        .doc-meta p { font-size: 12px; color: #666; margin-bottom: 2px; }
+        
+        .doc-info-box { background: var(--doc-secondary); padding: 20px; border-radius: 8px; margin-bottom: 32px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .doc-info-item h4 { font-size: 11px; color: var(--doc-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .doc-info-item p { font-size: 14px; color: var(--doc-text); font-weight: 600; }
+        
+        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        .doc-table th { background: var(--doc-primary); color: white; padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .doc-table td { padding: 12px 16px; border-bottom: 1px solid #eee; font-size: 13px; color: var(--doc-text); }
+        .doc-section-title { font-weight: 700; color: var(--doc-primary); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; padding-top: 16px !important; }
+        
+        .doc-totals { width: 300px; margin-left: auto; margin-bottom: 32px; }
+        .doc-total-row { display: flex; justify-content: space-between; padding: 8px 16px; font-size: 14px; }
+        .doc-grand-total { background: var(--doc-primary); color: white; font-weight: bold; font-size: 16px; border-radius: 4px; margin-top: 8px; }
+        
+        .doc-termins-title { font-size: 14px; color: var(--doc-primary); font-weight: 700; letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; }
+        .doc-termins-grid { display: flex; gap: 16px; margin-bottom: 32px; }
+        .doc-termin-card { border: 1px solid var(--doc-primary); padding: 16px; border-radius: 8px; flex: 1; }
+        .doc-termin-card h5 { font-size: 11px; color: var(--doc-primary); text-transform: uppercase; margin-bottom: 4px; }
+        .doc-termin-card p { font-size: 14px; font-weight: 700; color: var(--doc-text); margin-bottom: 4px; }
+        .doc-termin-card .termin-val { font-size: 16px; color: var(--doc-primary); font-weight: 800; }
+        
+        .doc-tnc { font-size: 12px; color: #555; line-height: 1.6; margin-bottom: 48px; }
+        .doc-tnc h4 { font-size: 14px; color: var(--doc-primary); font-weight: 700; letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; }
+        
+        .doc-signatures { display: flex; justify-content: space-between; margin-top: 48px; }
+        .doc-sig-box { text-align: center; width: 200px; }
+        .doc-sig-box p { font-size: 12px; color: #666; margin-bottom: 60px; }
+        .doc-sig-box .sig-line { border-bottom: 1px solid #333; font-weight: 700; padding-bottom: 8px; font-size: 14px; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #preview-document, #preview-document * { visibility: visible; }
+            #preview-document { position: absolute; left: 0; top: 0; margin: 0; padding: 0; box-shadow: none; }
+        }
     </style>
 </head>
 <body>
@@ -482,6 +542,120 @@
         </div>
     </div>
 
+    <!-- Preview Modal -->
+    <div class="modal-overlay" id="preview-modal">
+        <div class="modal-content" style="max-width: 900px; padding: 0; overflow: hidden; background: white;">
+            <div class="preview-controls">
+                <div style="font-weight: 600; font-size: 16px;">Preview Penawaran</div>
+                <div class="theme-selectors">
+                    <button class="theme-btn active" onclick="setDocTheme('theme-wedding', this)"><div class="theme-color-dot" style="background: #a75d67;"></div> Wedding Elegance</button>
+                    <button class="theme-btn" onclick="setDocTheme('theme-navy', this)"><div class="theme-color-dot" style="background: #1b365d;"></div> Royal Navy</button>
+                    <button class="theme-btn" onclick="setDocTheme('theme-minimal', this)"><div class="theme-color-dot" style="background: #222222;"></div> Clean Minimalist</button>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-outline" onclick="downloadDocPNG()"><i class="fa-solid fa-image"></i> PNG</button>
+                    <button class="btn btn-primary" onclick="downloadDocPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                    <button class="btn-icon" style="background: transparent; color: var(--text-muted);" onclick="closePreviewModal()"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            
+            <div class="preview-document-container">
+                <div class="document-page theme-wedding" id="preview-document">
+                    <!-- Top Border -->
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
+                    
+                    <div class="doc-header">
+                        <div class="doc-vendor">
+                            <h1 id="doc_vendor_name">Penapict</h1>
+                            <div class="doc-status" id="doc_status">Draft</div>
+                        </div>
+                        <div class="doc-meta">
+                            <h2>PENAWARAN HARGA</h2>
+                            <p style="letter-spacing: 2px;">QUOTATION</p>
+                            <br>
+                            <p style="font-weight: 600; color: #333;" id="doc_no">No. QT-0000</p>
+                            <p id="doc_dates">Terbit: - · Berlaku s/d -</p>
+                        </div>
+                    </div>
+                    
+                    <div class="doc-info-box">
+                        <div class="doc-info-item">
+                            <h4>NAMA KLIEN</h4>
+                            <p id="doc_client_name">-</p>
+                        </div>
+                        <div class="doc-info-item">
+                            <h4>WHATSAPP</h4>
+                            <p id="doc_client_phone">-</p>
+                        </div>
+                        <div class="doc-info-item">
+                            <h4>TANGGAL ACARA</h4>
+                            <p id="doc_event_date">-</p>
+                        </div>
+                        <div class="doc-info-item" style="grid-column: span 3;">
+                            <h4>LOKASI / VENUE</h4>
+                            <p id="doc_venue">-</p>
+                        </div>
+                    </div>
+                    
+                    <table class="doc-table">
+                        <thead>
+                            <tr>
+                                <th>ITEM / LAYANAN</th>
+                                <th style="text-align: center;">QTY</th>
+                                <th style="text-align: right;">HARGA SATUAN</th>
+                                <th style="text-align: right;">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doc_items_tbody">
+                            <!-- Items rendered here -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="doc-totals">
+                        <div class="doc-total-row">
+                            <span style="color: #666;">Subtotal</span>
+                            <span style="font-weight: 600;" id="doc_subtotal">Rp 0</span>
+                        </div>
+                        <div class="doc-total-row">
+                            <span style="color: #666;">Diskon</span>
+                            <span style="font-weight: 600;" id="doc_discount">- Rp 0</span>
+                        </div>
+                        <div class="doc-total-row doc-grand-total">
+                            <span>GRAND TOTAL</span>
+                            <span id="doc_grand_total">Rp 0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="doc-termins-title">JADWAL PEMBAYARAN</div>
+                    <div class="doc-termins-grid" id="doc_termins_grid">
+                        <!-- Termins here -->
+                    </div>
+                    
+                    <div class="doc-tnc">
+                        <h4>SYARAT & KETENTUAN</h4>
+                        <div id="doc_tnc_text" style="white-space: pre-wrap;"></div>
+                    </div>
+                    
+                    <div class="doc-signatures">
+                        <div class="doc-sig-box">
+                            <p>Hormat kami,</p>
+                            <div class="sig-line" id="doc_sig_vendor">Penapict</div>
+                        </div>
+                        <div class="doc-sig-box">
+                            <p>Disetujui oleh,</p>
+                            <div class="sig-line" id="doc_sig_client">-</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bottom Border -->
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         // Sidebar Collapse
         document.getElementById('btn-collapse').addEventListener('click', function() {
@@ -509,6 +683,6 @@
         });
     </script>
     <script src="/js/activity-logger.js"></script>
-    <script src="/js/quotation.js?v=3"></script>
+    <script src="/js/quotation.js?v=4"></script>
 </body>
 </html>

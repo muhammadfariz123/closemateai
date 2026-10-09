@@ -377,7 +377,7 @@ function renderQuotationsList() {
                 </div>
                 <div class="action-btns" style="display: flex; gap: 8px;">
                     <button class="btn btn-outline btn-small" onclick="alert('Link berhasil disalin!')"><i class="fa-regular fa-copy"></i> Copy Link</button>
-                    <button class="btn btn-outline btn-small" onclick="alert('Membuka PDF...')"><i class="fa-solid fa-download"></i> Preview & PDF</button>
+                    <button class="btn btn-outline btn-small" onclick="openPreviewModal('${q.id}')"><i class="fa-solid fa-download"></i> Preview & PDF</button>
                     <button class="btn btn-outline btn-small" onclick="openQuotationModal('${q.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
                     <button class="btn btn-outline btn-small" onclick="alert('Convert ke Booking...')"><i class="fa-regular fa-calendar-check"></i> Convert to Booking</button>
                     <button class="btn-icon btn-del" style="height: 32px; width: 32px;" title="Hapus" onclick="deleteQuotation('${q.id}')"><i class="fa-solid fa-trash-can"></i></button>
@@ -411,3 +411,147 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.addEventListener('input', (e) => handleSearch(e.target.value));
     }
 });
+
+// PREVIEW MODAL LOGIC
+let currentPreviewId = null;
+
+function openPreviewModal(id) {
+    let quotes = JSON.parse(localStorage.getItem('q_quotations')) || [];
+    let q = quotes.find(x => x.id === id);
+    if(!q) return;
+    
+    currentPreviewId = id;
+    
+    // Vendor logic
+    document.getElementById('doc_vendor_name').innerText = 'Penapict'; // Ideally from settings/auth
+    document.getElementById('doc_status').innerText = q.status;
+    document.getElementById('doc_no').innerText = 'No. ' + q.q_no;
+    
+    let validDate = q.valid_until ? new Date(q.valid_until).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-';
+    let createDate = q.created_at ? new Date(q.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-';
+    document.getElementById('doc_dates').innerText = 'Terbit: ' + createDate + ' · Berlaku s/d ' + validDate;
+    
+    document.getElementById('doc_client_name').innerText = q.client || '-';
+    document.getElementById('doc_client_phone').innerText = q.phone || '-';
+    document.getElementById('doc_event_date').innerText = q.event_date ? new Date(q.event_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-';
+    document.getElementById('doc_venue').innerText = q.venue || '-';
+    
+    // Items
+    let itemsHtml = '';
+    let sections = {};
+    (q.items || []).forEach(item => {
+        let sec = item.section || 'LAIN-LAIN';
+        if(!sections[sec]) sections[sec] = [];
+        sections[sec].push(item);
+    });
+    
+    for(let sec in sections) {
+        itemsHtml += `<tr><td colspan="4" class="doc-section-title">${sec}</td></tr>`;
+        sections[sec].forEach(item => {
+            let subtotal = item.qty * item.harga;
+            itemsHtml += `
+                <tr>
+                    <td>
+                        <div style="font-weight: 600;">${item.name}</div>
+                        <div style="font-size: 11px; color: #666; margin-top: 4px;">${item.desc.replace(/\\n/g, '<br>')}</div>
+                    </td>
+                    <td style="text-align: center;">${item.qty} ${item.satuan}</td>
+                    <td style="text-align: right;">Rp ${item.harga.toLocaleString('id-ID')}</td>
+                    <td style="text-align: right; font-weight: 600;">Rp ${subtotal.toLocaleString('id-ID')}</td>
+                </tr>
+            `;
+        });
+    }
+    document.getElementById('doc_items_tbody').innerHTML = itemsHtml;
+    
+    // Totals
+    let subtotal = 0;
+    (q.items || []).forEach(item => subtotal += (item.qty * item.harga));
+    document.getElementById('doc_subtotal').innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
+    document.getElementById('doc_discount').innerText = '- Rp ' + (q.discount || 0).toLocaleString('id-ID');
+    document.getElementById('doc_grand_total').innerText = 'Rp ' + q.grandTotal.toLocaleString('id-ID');
+    
+    // Termins
+    let terminsHtml = '';
+    (q.termins || []).forEach(t => {
+        let val = t.type === 'Persentase (%)' ? (q.grandTotal * (t.value / 100)) : t.value;
+        let suffix = t.type === 'Persentase (%)' ? ` (${t.value}%)` : '';
+        terminsHtml += `
+            <div class="doc-termin-card">
+                <h5>TAHAP</h5>
+                <p>${t.name}${suffix}</p>
+                <div class="termin-val">Rp ${val.toLocaleString('id-ID')}</div>
+            </div>
+        `;
+    });
+    document.getElementById('doc_termins_grid').innerHTML = terminsHtml;
+    
+    document.getElementById('doc_tnc_text').innerText = q.tnc || '-';
+    document.getElementById('doc_sig_client').innerText = q.client || '-';
+    
+    const pModal = document.getElementById('preview-modal');
+    if(pModal) {
+        pModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closePreviewModal() {
+    const pModal = document.getElementById('preview-modal');
+    if(pModal) {
+        pModal.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+}
+
+function setDocTheme(themeClass, el) {
+    const doc = document.getElementById('preview-document');
+    doc.className = 'document-page ' + themeClass;
+    
+    document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+    if(el) el.classList.add('active');
+}
+
+function downloadDocPNG() {
+    const doc = document.getElementById('preview-document');
+    if(!doc) return;
+    
+    // Temporarily adjust styles for capture
+    doc.style.transform = 'scale(1)';
+    
+    window.showToast('Menyiapkan gambar...', 'fa-spinner fa-spin');
+    
+    html2canvas(doc, { scale: 2, useCORS: true }).then(canvas => {
+        let link = document.createElement('a');
+        link.download = 'Quotation-' + Date.now() + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        window.showToast('Gambar berhasil diunduh!');
+    }).catch(err => {
+        console.error(err);
+        alert('Gagal mendownload PNG.');
+    });
+}
+
+function downloadDocPDF() {
+    const doc = document.getElementById('preview-document');
+    if(!doc || !window.jspdf) return;
+    
+    window.showToast('Menyiapkan PDF...', 'fa-spinner fa-spin');
+    
+    html2canvas(doc, { scale: 2, useCORS: true }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+        
+        // A4 size: 210 x 297 mm
+        const pdfWidth = 210;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save('Quotation-' + Date.now() + '.pdf');
+        window.showToast('PDF berhasil diunduh!');
+    }).catch(err => {
+        console.error(err);
+        alert('Gagal mendownload PDF.');
+    });
+}
