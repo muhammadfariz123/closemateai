@@ -222,6 +222,50 @@
             
             .package-dropdown-item:hover { background: rgba(255,255,255,0.1); }
         }
+        .table-view {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            color: var(--text-color);
+        }
+        .table-view th {
+            text-align: left;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            font-weight: 500;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .table-view td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+        .badge-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-dp1 { background: rgba(255, 199, 0, 0.1); color: #b38b00; border: 1px solid #ffc700; }
+        .badge-dp2 { background: rgba(80, 205, 137, 0.1); color: #2d8a57; border: 1px solid #50cd89; }
+        .badge-lunas { background: rgba(107, 92, 216, 0.1); color: #493bb3; border: 1px solid #6b5cd8; }
+        .badge-production { background: rgba(243, 244, 246, 1); color: #4b5563; border: 1px solid #d1d5db; }
+        .handler-badge {
+            background: rgba(107, 92, 216, 0.1);
+            color: #6b5cd8;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+        .action-icons {
+            display: flex;
+            gap: 12px;
+            color: var(--text-muted);
+        }
+        .action-icons i { cursor: pointer; }
+        .action-icons i:hover { color: var(--primary-color); }
+        .action-icons i.delete:hover { color: var(--danger); }
     </style>
 </head>
 <body>
@@ -317,8 +361,8 @@
             
             <div class="right-controls">
                 <div class="btn-group">
-                    <button class="btn active"><i class="fa-regular fa-calendar-days"></i> Calendar View</button>
-                    <button class="btn"><i class="fa-solid fa-table-list"></i> Table View</button>
+                    <button class="btn active" id="btn_calendar_view" onclick="switchView('calendar')"><i class="fa-regular fa-calendar-days"></i> Calendar View</button>
+                    <button class="btn" id="btn_table_view" onclick="switchView('table')"><i class="fa-solid fa-table-list"></i> Table View</button>
                 </div>
                 <select class="form-control" style="border-radius: 20px; width: 140px;">
                     <option>Semua Bulan</option>
@@ -327,7 +371,7 @@
             </div>
         </div>
         
-        <div class="panel">
+        <div class="panel" id="calendar_panel">
             <div class="calendar-header">
                 <button class="btn-nav"><i class="fa-solid fa-chevron-left"></i></button>
                 <div class="calendar-title">Oktober 2026</div>
@@ -353,6 +397,26 @@
                 <div class="legend-item"><div class="legend-dot" style="background: transparent; border: 2px solid #50cd89;"></div> DP 2</div>
                 <div class="legend-item"><div class="legend-dot" style="background: transparent; border: 2px solid #6b5cd8;"></div> LUNAS</div>
             </div>
+        </div>
+
+        <div class="panel" id="table_panel" style="display: none; padding: 0;">
+            <table class="table-view">
+                <thead>
+                    <tr>
+                        <th>Klien</th>
+                        <th>Handler</th>
+                        <th>Tanggal Acara</th>
+                        <th>Paket & Harga</th>
+                        <th>Pembayaran</th>
+                        <th>Produksi</th>
+                        <th>Link Hasil</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="b_table_body">
+                    <!-- Table content will be rendered by renderTable() -->
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -720,6 +784,7 @@
             showToast(editingBookingId ? 'Booking diperbarui!' : 'Booking ditambahkan!');
             closeBookingModal();
             renderCalendar();
+            renderTable();
             
             btn.innerHTML = 'Simpan Booking';
             btn.disabled = false;
@@ -974,7 +1039,30 @@
         document.addEventListener('DOMContentLoaded', () => {
             refreshHppTemplateDropdown();
             renderCalendar();
+            renderTable();
         });
+        
+        // --- VIEW TOGGLE LOGIC ---
+        function switchView(view) {
+            const btnCalendar = document.getElementById('btn_calendar_view');
+            const btnTable = document.getElementById('btn_table_view');
+            const pnlCalendar = document.getElementById('calendar_panel');
+            const pnlTable = document.getElementById('table_panel');
+            
+            if (view === 'table') {
+                btnCalendar.classList.remove('active');
+                btnTable.classList.add('active');
+                pnlCalendar.style.display = 'none';
+                pnlTable.style.display = 'block';
+                renderTable();
+            } else {
+                btnTable.classList.remove('active');
+                btnCalendar.classList.add('active');
+                pnlTable.style.display = 'none';
+                pnlCalendar.style.display = 'block';
+                renderCalendar();
+            }
+        }
         
         // --- CALENDAR LOGIC ---
         function renderCalendar() {
@@ -1031,6 +1119,74 @@
             grid.innerHTML = html;
         }
 
+        // --- TABLE LOGIC ---
+        function renderTable() {
+            const tbody = document.getElementById('b_table_body');
+            if (!tbody) return;
+            
+            const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            if (bookings.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">Belum ada data booking.</td></tr>`;
+                return;
+            }
+            
+            let html = '';
+            bookings.forEach(b => {
+                let badgeClass = 'badge-dp1';
+                if (b.payment_status === 'DP 2') badgeClass = 'badge-dp2';
+                if (b.payment_status === 'Lunas') badgeClass = 'badge-lunas';
+                
+                let handlersHtml = '';
+                if (b.team_members && b.team_members.length > 0) {
+                    handlersHtml = b.team_members.map(t => `<span class="handler-badge">${t.name}</span>`).join(' ');
+                }
+                
+                let resultLinkHtml = '-';
+                if (b.result_link) {
+                    resultLinkHtml = `<div style="display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-link" style="color: var(--text-muted);"></i><a href="${b.result_link}" target="_blank" style="color: var(--text-color); text-decoration: none; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">${b.result_link}</a><i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px; color: var(--text-muted);"></i></div>`;
+                }
+
+                html += `
+                <tr>
+                    <td>
+                        <div style="font-weight: 600;">${b.client_name || '-'}</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${b.client_wa_number || ''}</div>
+                        ${b.client_address ? `<div style="font-size: 11px; color: var(--text-muted);">${b.client_address}</div>` : ''}
+                    </td>
+                    <td>${handlersHtml || '-'}</td>
+                    <td>${b.event_date || '-'}</td>
+                    <td>
+                        <div style="font-weight: 500;">${b.package_name || '-'}</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Rp ${new Intl.NumberFormat('id-ID').format(b.package_price || 0)} &middot; dibayar</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">Rp ${new Intl.NumberFormat('id-ID').format(b.paid_amount || 0)}</div>
+                    </td>
+                    <td><span class="badge-status ${badgeClass}">${b.payment_status || 'DP 1'}</span></td>
+                    <td><span class="badge-status badge-production">${b.production_status || 'Pre-Event'}</span></td>
+                    <td>${resultLinkHtml}</td>
+                    <td>
+                        <div class="action-icons">
+                            <i class="fa-regular fa-folder"></i>
+                            <i class="fa-regular fa-calendar-check"></i>
+                            <i class="fa-solid fa-pen" onclick="openBookingModal('${b.id}')"></i>
+                            <i class="fa-regular fa-trash-can delete" onclick="deleteBooking('${b.id}')"></i>
+                        </div>
+                    </td>
+                </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function deleteBooking(id) {
+            if(confirm('Yakin ingin menghapus booking ini?')) {
+                let bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+                bookings = bookings.filter(x => x.id !== id);
+                localStorage.setItem('b_events', JSON.stringify(bookings));
+                renderTable();
+                renderCalendar();
+                showToast('Booking dihapus', 'success');
+            }
+        }
     </script>
 </body>
 </html>
