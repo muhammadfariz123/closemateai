@@ -304,12 +304,12 @@
         .doc-info-item p { font-size: 13px; color: var(--doc-text); font-weight: 600; }
         .doc-info-item.full-width { grid-column: span 3; }
         
-        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; table-layout: fixed; word-wrap: break-word; }
+        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; word-break: break-word; }
         .doc-table th, .doc-table td { box-sizing: border-box; }
-        .doc-table th { background: var(--doc-primary); color: white; padding: 10px 16px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .doc-table th { background: var(--doc-primary); color: white; padding: 8px 12px; font-size: 11px; text-transform: uppercase; font-weight: 600; white-space: normal; }
         .doc-table th:first-child { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
         .doc-table th:last-child { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
-        .doc-table td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: var(--doc-text); }
+        .doc-table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: var(--doc-text); white-space: normal; }
         .doc-section-title { font-weight: 700; color: var(--doc-primary); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding-top: 16px !important; padding-bottom: 8px !important; }
         
         .doc-totals { width: 100%; max-width: 280px; margin-left: auto; margin-bottom: 24px; }
@@ -628,10 +628,10 @@
                         <table class="doc-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 50%;">ITEM / LAYANAN</th>
+                                    <th style="width: 45%;">ITEM / LAYANAN</th>
                                     <th style="text-align: center; width: 10%;">QTY</th>
                                     <th style="text-align: right; width: 20%;">HARGA SATUAN</th>
-                                    <th style="text-align: right; width: 20%;">TOTAL</th>
+                                    <th style="text-align: right; width: 25%;">TOTAL</th>
                                 </tr>
                             </thead>
                             <tbody id="doc_items_tbody">
