@@ -267,8 +267,8 @@
         .theme-btn.active { border-color: var(--primary); background: rgba(107, 92, 216, 0.05); color: var(--primary); }
         .theme-color-dot { width: 12px; height: 12px; border-radius: 50%; }
         
-        .preview-document-container { padding: 24px; background: #f1f1f4; overflow-y: auto; max-height: 70vh; display: flex; justify-content: center; }
-        .document-page { width: 794px; min-height: 1123px; background: white; padding: 48px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; font-family: 'Inter', sans-serif; }
+        .preview-document-container { padding: 24px; background: #f1f1f4; overflow: auto; max-height: 70vh; display: flex; justify-content: center; }
+        .document-page { box-sizing: border-box; width: 794px; min-height: 1123px; background: white; padding: 48px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; font-family: 'Inter', sans-serif; }
         
         /* Document Themes */
         /* 1. Wedding Elegance (Red/Pinkish) */
@@ -657,6 +657,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
+        const VENDOR_NAME = "{{ auth()->check() ? auth()->user()->name : 'Vendor' }}";
         // Sidebar Collapse
         document.getElementById('btn-collapse').addEventListener('click', function() {
             document.body.classList.toggle('sidebar-collapsed');
@@ -683,6 +684,6 @@
         });
     </script>
     <script src="/js/activity-logger.js"></script>
-    <script src="/js/quotation.js?v=4"></script>
+    <script src="/js/quotation.js?v=5"></script>
 </body>
 </html>

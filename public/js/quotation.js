@@ -423,7 +423,8 @@ function openPreviewModal(id) {
     currentPreviewId = id;
     
     // Vendor logic
-    document.getElementById('doc_vendor_name').innerText = 'Penapict'; // Ideally from settings/auth
+    let vName = typeof VENDOR_NAME !== 'undefined' ? VENDOR_NAME : 'Vendor';
+    document.getElementById('doc_vendor_name').innerText = vName;
     document.getElementById('doc_status').innerText = q.status;
     document.getElementById('doc_no').innerText = 'No. ' + q.q_no;
     
@@ -487,6 +488,7 @@ function openPreviewModal(id) {
     document.getElementById('doc_termins_grid').innerHTML = terminsHtml;
     
     document.getElementById('doc_tnc_text').innerText = q.tnc || '-';
+    document.getElementById('doc_sig_vendor').innerText = vName;
     document.getElementById('doc_sig_client').innerText = q.client || '-';
     
     const pModal = document.getElementById('preview-modal');
