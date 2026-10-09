@@ -130,6 +130,34 @@
         .termin-value { font-size: 12px; color: var(--text-muted); margin-top: -6px; margin-bottom: 16px; }
         
         textarea.form-control { resize: vertical; min-height: 80px; font-family: 'Inter', sans-serif; }
+        
+        .table-responsive { width: 100%; overflow-x: auto; background: white; border-radius: 12px; border: 1px solid var(--border-color); }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th { padding: 16px; text-align: left; font-size: 13px; font-weight: 600; color: var(--text-muted); border-bottom: 1px dashed var(--border-color); white-space: nowrap; }
+        td { padding: 16px; font-size: 14px; border-bottom: 1px dashed var(--border-color); vertical-align: middle; }
+        tr:hover { background-color: #fafafa; }
+        tr:last-child td { border-bottom: none; }
+        
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .status-draft { background: #f1f1f4; color: var(--text-muted); }
+        .status-terkirim { background: rgba(107, 92, 216, 0.1); color: var(--primary); }
+        .status-disetujui { background: rgba(80, 205, 137, 0.1); color: var(--success); }
+        .status-ditolak { background: rgba(241, 65, 108, 0.1); color: var(--danger); }
+        
+        .action-btns { display: flex; gap: 8px; }
+        .btn-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 14px; transition: 0.2s; }
+        .btn-view { background: #f1f1f4; color: var(--text-dark); }
+        .btn-view:hover { background: #e4e6ef; }
+        .btn-send-wa { background: rgba(80, 205, 137, 0.1); color: var(--success); }
+        .btn-send-wa:hover { background: rgba(80, 205, 137, 0.2); }
+        .btn-del { background: rgba(241, 65, 108, 0.1); color: var(--danger); }
+        .btn-del:hover { background: rgba(241, 65, 108, 0.2); }
+        
+        /* Toast Container */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: white; color: var(--text-dark); padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; border-left: 4px solid var(--success); animation: slideInRight 0.3s forwards; }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
         /* Responsive Mobile Layout */
         @media (max-width: 768px) {
@@ -234,6 +262,7 @@
     </style>
 </head>
 <body>
+    <div id="toast-container"></div>
 
     <!-- Sidebar -->
     <div class="sidebar">
@@ -322,17 +351,35 @@
                 <div class="search-box">
                     <input type="text" placeholder="Cari klien / no. penawaran">
                 </div>
-                <button class="btn btn-primary" id="btn-create-quotation">
+                <button class="btn btn-primary" onclick="openQuotationModal()">
                     <i class="fa-solid fa-plus"></i> Buat Penawaran
                 </button>
             </div>
         </div>
         
-        <div class="empty-state">
+        <div class="empty-state" id="empty-state">
             <div class="empty-icon">
                 <i class="fa-solid fa-file-signature"></i>
             </div>
             <p>Belum ada penawaran. Buat penawaran pertama Anda sekarang.</p>
+        </div>
+        
+        <div class="table-responsive" id="quotations-table-container" style="display: none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No. Penawaran</th>
+                        <th>Klien & Event</th>
+                        <th>Nilai Penawaran</th>
+                        <th>Masa Berlaku</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="quotations-table-body">
+                    <!-- Dinamis render -->
+                </tbody>
+            </table>
         </div>
 
     </div>
@@ -350,99 +397,65 @@
             
             <div class="modal-body">
                 <div class="form-grid">
+                    <input type="hidden" id="q_id">
                     <div class="form-group">
                         <label class="form-label">No. Penawaran</label>
-                        <input type="text" class="form-control" value="QT-20261003-870">
+                        <input type="text" class="form-control" id="q_no" readonly style="background: #f1f1f4;">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Status</label>
-                        <select class="form-control">
-                            <option>Draft</option>
-                            <option>Terkirim</option>
+                        <select class="form-control" id="q_status">
+                            <option value="Draft">Draft</option>
+                            <option value="Terkirim">Terkirim</option>
+                            <option value="Disetujui">Disetujui</option>
+                            <option value="Ditolak">Ditolak</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Nama Klien</label>
-                        <input type="text" class="form-control" placeholder="Nama calon klien">
+                        <input type="text" class="form-control" id="q_client" placeholder="Nama calon klien">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Nomor WhatsApp</label>
-                        <input type="text" class="form-control" placeholder="08xxxxxxxxx">
+                        <input type="text" class="form-control" id="q_phone" placeholder="08xxxxxxxxx">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Tanggal Acara</label>
-                        <input type="date" class="form-control" placeholder="mm/dd/yyyy">
+                        <input type="date" class="form-control" id="q_event_date" placeholder="mm/dd/yyyy">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Lokasi Venue / Kota</label>
-                        <input type="text" class="form-control" placeholder="Contoh: Hotel Mulia, Jakarta">
+                        <input type="text" class="form-control" id="q_venue" placeholder="Contoh: Hotel Mulia, Jakarta">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Berlaku Sampai</label>
-                        <input type="date" class="form-control" placeholder="mm/dd/yyyy">
+                        <input type="date" class="form-control" id="q_valid_until" placeholder="mm/dd/yyyy">
                     </div>
                 </div>
                 
                 <div>
                     <div class="section-header">
                         <div class="section-title">Item Penawaran</div>
-                        <button class="btn btn-outline btn-small"><i class="fa-solid fa-plus"></i> Tambah Item</button>
+                        <button class="btn btn-outline btn-small" onclick="addQuotationItem()"><i class="fa-solid fa-plus"></i> Tambah Item</button>
                     </div>
-                    
-                    <div class="item-card">
-                        <div class="item-row">
-                            <div class="form-group">
-                                <label class="form-label">Section (opsional)</label>
-                                <input type="text" class="form-control" value="Paket Utama">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Nama Layanan / Produk</label>
-                                <input type="text" class="form-control" placeholder="Contoh: Makeup Akad + Resepsi">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Deskripsi Detail</label>
-                            <textarea class="form-control" placeholder="Rincian layanan yang didapatkan klien"></textarea>
-                        </div>
-                        <div class="item-calc-row" style="margin-top: 8px;">
-                            <div class="form-group">
-                                <label class="form-label">Qty</label>
-                                <input type="number" class="form-control" value="1">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Satuan</label>
-                                <select class="form-control">
-                                    <option>Paket</option>
-                                    <option>Pcs</option>
-                                    <option>Sesi</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Harga Satuan</label>
-                                <input type="text" class="form-control" value="0">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Subtotal</label>
-                                <input type="text" class="form-control" value="Rp 0" readonly style="background: #f1f1f4; border: none;">
-                            </div>
-                            <button class="icon-btn" style="margin-top: 24px;"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
+                    <div id="q_items_container" style="display:flex; flex-direction:column; gap:16px;">
+                        <!-- Items rendered by JS -->
                     </div>
                 </div>
                 
                 <div class="form-grid" style="align-items: flex-start;">
                     <div class="form-group">
                         <label class="form-label">Diskon (Rp)</label>
-                        <input type="text" class="form-control" value="0">
+                        <input type="text" class="form-control" id="q_discount" value="0" onkeyup="formatRupiahInput(this); calculateQuotationTotals()">
                     </div>
                     <div class="summary-box">
                         <div class="summary-grid">
                             <div style="color: var(--text-muted);">Subtotal</div>
-                            <div class="bold">Rp 0</div>
+                            <div class="bold" id="q_sum_subtotal">Rp 0</div>
                             <div style="color: var(--text-muted);">Diskon</div>
-                            <div class="bold">- Rp 0</div>
+                            <div class="bold" id="q_sum_discount">- Rp 0</div>
                             <div class="bold total-row">Grand Total</div>
-                            <div class="bold total-row">Rp 0</div>
+                            <div class="bold total-row" id="q_sum_grandtotal">Rp 0</div>
                         </div>
                     </div>
                 </div>
@@ -450,46 +463,17 @@
                 <div style="margin-top: 10px;">
                     <div class="section-header">
                         <div class="section-title">Skema Termin Pembayaran</div>
-                        <button class="btn btn-outline btn-small"><i class="fa-solid fa-plus"></i> Tambah Termin</button>
+                        <button class="btn btn-outline btn-small" onclick="addTerminItem()"><i class="fa-solid fa-plus"></i> Tambah Termin</button>
                     </div>
                     
-                    <div class="termin-row">
-                        <input type="text" class="form-control" value="DP 1 (Booking Fee)">
-                        <select class="form-control">
-                            <option>Persentase (%)</option>
-                            <option>Nominal (Rp)</option>
-                        </select>
-                        <input type="number" class="form-control" value="30">
-                        <button class="icon-btn"><i class="fa-solid fa-trash-can"></i></button>
+                    <div id="q_termins_container">
+                        <!-- Termin rendered by JS -->
                     </div>
-                    <div class="termin-value">Nilai termin: Rp 0</div>
-                    
-                    <div class="termin-row">
-                        <input type="text" class="form-control" value="DP 2">
-                        <select class="form-control">
-                            <option>Persentase (%)</option>
-                            <option>Nominal (Rp)</option>
-                        </select>
-                        <input type="number" class="form-control" value="40">
-                        <button class="icon-btn"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                    <div class="termin-value">Nilai termin: Rp 0</div>
-                    
-                    <div class="termin-row">
-                        <input type="text" class="form-control" value="Pelunasan">
-                        <select class="form-control">
-                            <option>Persentase (%)</option>
-                            <option>Nominal (Rp)</option>
-                        </select>
-                        <input type="number" class="form-control" value="30">
-                        <button class="icon-btn"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                    <div class="termin-value">Nilai termin: Rp 0</div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">Syarat & Ketentuan (T&C / SOP Vendor)</label>
-                    <textarea class="form-control" style="min-height: 140px;">1. Penawaran ini berlaku sesuai tanggal masa berlaku di atas.
+                    <textarea class="form-control" id="q_tnc" style="min-height: 140px;">1. Penawaran ini berlaku sesuai tanggal masa berlaku di atas.
 2. Tanggal acara dianggap ter-booking setelah DP 1 diterima.
 3. DP yang sudah dibayarkan tidak dapat dikembalikan (non-refundable).
 4. Pelunasan dilakukan paling lambat H-7 sebelum hari acara.
@@ -498,14 +482,14 @@
                 
                 <div class="form-group">
                     <label class="form-label">Catatan Internal (tidak tampil ke klien)</label>
-                    <textarea class="form-control" style="min-height: 80px;"></textarea>
+                    <textarea class="form-control" id="q_internal_notes" style="min-height: 80px;"></textarea>
                 </div>
                 
             </div>
             
             <div class="modal-footer">
                 <button class="btn btn-outline" id="btn-cancel-modal">Batal</button>
-                <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Penawaran</button>
+                <button class="btn btn-primary" onclick="saveQuotation()"><i class="fa-solid fa-floppy-disk"></i> Simpan Penawaran</button>
             </div>
         </div>
     </div>
@@ -518,14 +502,8 @@
 
         // Modal Logic
         const modal = document.getElementById('quotation-modal');
-        const btnCreate = document.getElementById('btn-create-quotation');
         const btnClose = document.getElementById('close-modal');
         const btnCancel = document.getElementById('btn-cancel-modal');
-
-        btnCreate.addEventListener('click', () => {
-            modal.classList.add('show');
-            document.body.style.overflow = 'hidden';
-        });
 
         const closeModal = () => {
             modal.classList.remove('show');
@@ -542,5 +520,7 @@
             }
         });
     </script>
+    <script src="/js/activity-logger.js"></script>
+    <script src="/js/quotation.js"></script>
 </body>
 </html>
