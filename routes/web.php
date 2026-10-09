@@ -60,6 +60,9 @@ Route::get('/booking', function () {
     return view('booking');
 });
 
+use App\Http\Controllers\CalendarController;
+Route::get('/api/public/calendar/{token}.ics', [CalendarController::class, 'export']);
+
 Route::get('/invoice', function () {
     return view('invoice');
 });

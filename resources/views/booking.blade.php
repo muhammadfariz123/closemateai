@@ -356,7 +356,7 @@
                     <input type="text" class="form-control" placeholder="Cari nama klien, nomor, atau paket...">
                 </div>
                 <button class="btn btn-danger"><i class="fa-brands fa-youtube"></i> Tutorial</button>
-                <button class="btn btn-secondary"><i class="fa-regular fa-calendar"></i> Google Calendar</button>
+                <button class="btn btn-secondary" onclick="openGoogleCalendarSync()"><i class="fa-regular fa-calendar"></i> Google Calendar</button>
             </div>
             
             <div class="right-controls">
@@ -538,6 +538,36 @@
     </div>
 
     @include('components.booking-modal')
+    
+    <!-- Google Calendar Sync Modal -->
+    <div class="modal-overlay" id="googleCalendarSyncModal" style="display: none;">
+        <div class="modal-content" style="width: 500px; padding: 24px; border-radius: 12px; background: white;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 style="font-size: 16px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-regular fa-calendar-check" style="color: var(--primary-color);"></i> Hubungkan Jadwal Booking ke Google Calendar
+                </h2>
+                <i class="fa-solid fa-times close-btn" onclick="closeGoogleCalendarSync()" style="cursor: pointer; color: var(--text-muted);"></i>
+            </div>
+            <div class="modal-body" style="font-size: 13px; color: var(--text-color);">
+                <p style="margin-bottom: 16px; line-height: 1.5;">Salin link langganan di bawah ini, lalu tambahkan di Google Calendar melalui menu <strong>Other calendars &rarr; From URL</strong>. Semua booking akan muncul otomatis dan ikut ter-update saat kamu mengubah data.</p>
+                
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <input type="text" class="form-control" id="gcal_sync_link" readonly value="{{ url('/api/public/calendar/47f4e8be-387f-4497-b2bc-57d81fe5f331.ics') }}" style="flex: 1; background: #f9f9f9; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
+                    <button class="btn btn-secondary" onclick="copyGcalSyncLink()" style="padding: 8px 16px; border-radius: 8px; background: white; border: 1px solid var(--border-color); cursor: pointer;"><i class="fa-regular fa-copy"></i></button>
+                </div>
+                
+                <ol style="margin-bottom: 16px; padding-left: 20px; line-height: 1.6;">
+                    <li>Buka calendar.google.com di browser desktop.</li>
+                    <li>Klik tanda + di samping "Other calendars" &rarr; pilih "From URL".</li>
+                    <li>Tempel link di atas lalu klik "Add calendar".</li>
+                </ol>
+                
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">Catatan: Google Calendar menarik ulang link langganan secara berkala (biasanya beberapa jam, bisa sampai 24 jam). Jadi booking baru tidak muncul seketika. Kalau ingin langsung tampil, pakai ikon kalender di Table View untuk menambahkan booking itu secara manual.</p>
+                
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">Link bersifat rahasia. Jangan dibagikan ke pihak lain karena berisi jadwal klien. Untuk satu booking saja, gunakan ikon kalender di Table View.</p>
+            </div>
+        </div>
+    </div>
     <div class="toast-container" id="toast-container"></div>
 
     <script>
@@ -1471,6 +1501,22 @@
             
             const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}${dates}&details=${details}&location=${location}`;
             window.open(url, '_blank');
+        }
+
+        function openGoogleCalendarSync() {
+            document.getElementById('googleCalendarSyncModal').style.display = 'flex';
+        }
+
+        function closeGoogleCalendarSync() {
+            document.getElementById('googleCalendarSyncModal').style.display = 'none';
+        }
+
+        function copyGcalSyncLink() {
+            const copyText = document.getElementById("gcal_sync_link");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); 
+            navigator.clipboard.writeText(copyText.value);
+            showToast('Link kalender disalin', 'success');
         }
     </script>
 </body>
