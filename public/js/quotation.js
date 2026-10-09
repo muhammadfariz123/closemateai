@@ -87,7 +87,7 @@ function renderQuotationItems() {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Subtotal</label>
-                        <input type="text" class="form-control" value="Rp ${subtotal.toLocaleString('id-ID')}" readonly style="background: #f1f1f4; border: none;">
+                        <input type="text" class="form-control" id="q_item_subtotal_${item.id}" value="Rp ${subtotal.toLocaleString('id-ID')}" readonly style="background: #f1f1f4; border: none;">
                     </div>
                     <button class="icon-btn" style="margin-top: 24px;" onclick="removeQuotationItem(${item.id})"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
@@ -106,7 +106,11 @@ function updateQItem(id, field, value) {
     }
     
     if (field === 'qty' || field === 'harga') {
-        renderQuotationItems(); // re-render to update subtotal
+        let subtotal = item.qty * item.harga;
+        let subElement = document.getElementById('q_item_subtotal_' + id);
+        if (subElement) subElement.value = 'Rp ' + subtotal.toLocaleString('id-ID');
+        
+        calculateQuotationTotals();
     }
 }
 
