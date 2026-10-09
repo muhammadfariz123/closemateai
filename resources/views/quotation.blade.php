@@ -267,12 +267,21 @@
         .theme-btn.active { border-color: var(--primary); background: rgba(107, 92, 216, 0.05); color: var(--primary); }
         .theme-color-dot { width: 12px; height: 12px; border-radius: 50%; }
         
-        .preview-document-container { padding: 24px; background: #f1f1f4; overflow-y: auto; overflow-x: hidden; max-height: 70vh; }
-        .document-page { box-sizing: border-box !important; width: 100%; max-width: 794px; margin: 0 auto; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; font-family: 'Inter', sans-serif; padding: 1px; }
+        .preview-document-container { padding: 24px; background: #f1f1f4; overflow: auto; max-height: 70vh; text-align: center; }
+        .document-page { box-sizing: border-box !important; width: 794px !important; min-width: 794px !important; margin: 0 auto; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; font-family: 'Inter', sans-serif; padding: 1px; flex-shrink: 0; text-align: left; }
         .document-margin-wrapper { margin: 47px; width: auto; overflow: hidden; }
         .document-page * { box-sizing: border-box !important; }
         
-        /* Document Themes */
+        @media screen and (max-width: 900px) {
+            .document-page { zoom: 0.85; }
+            .preview-document-container { padding: 16px; }
+        }
+        @media screen and (max-width: 700px) {
+            .document-page { zoom: 0.7; }
+        }
+        @media screen and (max-width: 500px) {
+            .document-page { zoom: 0.5; }
+        }
         /* 1. Wedding Elegance (Red/Pinkish) */
         .theme-wedding { --doc-primary: #a75d67; --doc-secondary: #f4e8ea; --doc-text: #333; --doc-font: 'Playfair Display', serif; }
         /* 2. Royal Navy (Blue) */
@@ -603,10 +612,10 @@
                     <table class="doc-table">
                         <thead>
                             <tr>
-                                <th>ITEM / LAYANAN</th>
-                                <th style="text-align: center;">QTY</th>
-                                <th style="text-align: right;">HARGA SATUAN</th>
-                                <th style="text-align: right;">TOTAL</th>
+                                <th style="width: 35%;">ITEM / LAYANAN</th>
+                                <th style="text-align: center; width: 15%;">QTY</th>
+                                <th style="text-align: right; width: 25%;">HARGA SATUAN</th>
+                                <th style="text-align: right; width: 25%;">TOTAL</th>
                             </tr>
                         </thead>
                         <tbody id="doc_items_tbody">
