@@ -96,13 +96,20 @@
                         <h4 style="font-size: 14px; font-weight: 600;">Biaya Operasional (HPP)</h4>
                         <button class="btn btn-secondary" onclick="addBookingCost()" style="padding: 4px 12px; font-size: 12px;"><i class="fa-solid fa-plus"></i> Tambah Biaya</button>
                     </div>
-                    <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center; background: rgba(0,0,0,0.02); padding: 8px; border-radius: 8px;">
-                        <select id="b_hpp_template" class="form-control" style="flex: 1;" onchange="loadHppTemplate()">
-                            <option value="">Belum ada template HPP</option>
-                        </select>
-                        <div style="display: flex; gap: 8px; align-items: center; flex: 1;">
-                            <input type="text" id="b_hpp_template_name" class="form-control" placeholder="Nama template, mis. Paket..." style="flex: 1;">
-                            <button class="btn btn-primary" onclick="saveHppTemplate()" style="padding: 6px 16px; font-size: 12px; border-radius: 20px;">Simpan</button>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 8px;">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <select id="b_hpp_template" class="form-control" style="flex: 1; min-width: 150px;" onchange="onHppTemplateChange()">
+                                <option value="">Belum ada template HPP</option>
+                            </select>
+                            <button id="btn_apply_hpp_template" class="btn btn-primary" onclick="applyHppTemplate()" style="padding: 6px 12px; font-size: 12px; display: none; background: var(--primary); border: none; border-radius: 6px;">Terapkan Template</button>
+                            <button id="btn_delete_hpp_template" onclick="deleteHppTemplate()" style="padding: 6px 12px; font-size: 12px; display: none; background: none; border: none; color: var(--danger); cursor: pointer;"><i class="fa-regular fa-trash-can"></i> Hapus Template</button>
+                        </div>
+                        <div id="b_hpp_save_container" style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                            <button id="btn_show_save_hpp" class="btn btn-secondary" onclick="toggleSaveHppInput()" style="padding: 4px 12px; font-size: 12px; border-radius: 6px;"><i class="fa-regular fa-floppy-disk"></i> Simpan Template</button>
+                            <div id="b_hpp_save_input_group" style="display: none; flex: 1; gap: 8px; align-items: center;">
+                                <input type="text" id="b_hpp_template_name" class="form-control" placeholder="Nama template HPP baru..." style="flex: 1; font-size: 13px;">
+                                <button class="btn btn-primary" onclick="saveHppTemplate()" style="padding: 6px 16px; font-size: 12px; border-radius: 20px;">Simpan</button>
+                            </div>
                         </div>
                     </div>
                     <div id="b_costs_container">

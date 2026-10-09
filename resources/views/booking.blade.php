@@ -836,9 +836,39 @@
             } else {
                 let html = '<option value="">Pilih Template HPP...</option>';
                 templates.forEach(t => {
-                    html += `<option value="${t.name}">${t.name}</option>`;
+                    const itemCount = t.items ? t.items.length : 0;
+                    html += `<option value="${t.name}">${t.name} (${itemCount} item)</option>`;
                 });
                 select.innerHTML = html;
+            }
+            onHppTemplateChange(); // Reset buttons
+        }
+
+        function onHppTemplateChange() {
+            const select = document.getElementById('b_hpp_template');
+            const applyBtn = document.getElementById('btn_apply_hpp_template');
+            const deleteBtn = document.getElementById('btn_delete_hpp_template');
+            
+            if (select.value) {
+                applyBtn.style.display = 'block';
+                deleteBtn.style.display = 'block';
+            } else {
+                applyBtn.style.display = 'none';
+                deleteBtn.style.display = 'none';
+            }
+        }
+        
+        function toggleSaveHppInput() {
+            const btn = document.getElementById('btn_show_save_hpp');
+            const group = document.getElementById('b_hpp_save_input_group');
+            
+            if (group.style.display === 'none' || !group.style.display) {
+                group.style.display = 'flex';
+                btn.style.display = 'none';
+                document.getElementById('b_hpp_template_name').focus();
+            } else {
+                group.style.display = 'none';
+                btn.style.display = 'block';
             }
         }
         
@@ -865,10 +895,11 @@
             localStorage.setItem('hppTemplates', JSON.stringify(templates));
             showToast('Template HPP disimpan');
             document.getElementById('b_hpp_template_name').value = '';
+            toggleSaveHppInput(); // Hide input, show btn again
             refreshHppTemplateDropdown();
         }
         
-        function loadHppTemplate() {
+        function applyHppTemplate() {
             const select = document.getElementById('b_hpp_template');
             const name = select.value;
             if (!name) return;
@@ -880,10 +911,26 @@
                 costsData = JSON.parse(JSON.stringify(template.items));
                 renderCosts();
                 calculateBooking();
-                showToast('Template HPP dimuat');
+                const itemCount = template.items ? template.items.length : 0;
+                showToast(`Template "${template.name}" diterapkan (${itemCount} item)`);
             }
             // Reset select
             select.value = '';
+            onHppTemplateChange();
+        }
+        
+        function deleteHppTemplate() {
+            const select = document.getElementById('b_hpp_template');
+            const name = select.value;
+            if (!name) return;
+            
+            if (confirm(`Hapus template HPP "${name}"?`)) {
+                let templates = getHppTemplates();
+                templates = templates.filter(t => t.name !== name);
+                localStorage.setItem('hppTemplates', JSON.stringify(templates));
+                showToast(`Template "${name}" dihapus`);
+                refreshHppTemplateDropdown();
+            }
         }
         
         // Initialize dropdowns on load
