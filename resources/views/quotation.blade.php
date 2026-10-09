@@ -305,6 +305,7 @@
         .doc-info-item.full-width { grid-column: span 3; }
         
         .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; table-layout: fixed; word-wrap: break-word; }
+        .doc-table th, .doc-table td { box-sizing: border-box; }
         .doc-table th { background: var(--doc-primary); color: white; padding: 10px 16px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         .doc-table th:first-child { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
         .doc-table th:last-child { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
@@ -628,10 +629,10 @@
                         <table class="doc-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 45%;">ITEM / LAYANAN</th>
-                                    <th style="text-align: center; width: 15%;">QTY</th>
-                                    <th style="text-align: right; width: 20%;">HARGA SATUAN</th>
-                                    <th style="text-align: right; width: 20%;">TOTAL</th>
+                                    <th style="width: 44%;">ITEM / LAYANAN</th>
+                                    <th style="text-align: center; width: 12%;">QTY</th>
+                                    <th style="text-align: right; width: 22%;">HARGA SATUAN</th>
+                                    <th style="text-align: right; width: 22%;">TOTAL</th>
                                 </tr>
                             </thead>
                             <tbody id="doc_items_tbody">
