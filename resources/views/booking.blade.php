@@ -940,7 +940,6 @@
             }
 
             const payload = {
-                id: editingBookingId || Date.now().toString(),
                 client_name: document.getElementById('b_client_name').value,
                 client_wa_number: document.getElementById('b_client_wa').value,
                 client_address: document.getElementById('b_client_address').value,
@@ -964,6 +963,10 @@
                 team_members: teamData,
                 notes: document.getElementById('b_notes').value,
             };
+            
+            if (editingBookingId) {
+                payload.id = editingBookingId;
+            }
             
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             fetch('/api/bookings', {
