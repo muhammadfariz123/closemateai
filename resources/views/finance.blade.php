@@ -150,6 +150,15 @@
         .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; }
         .form-control:focus { border-color: var(--primary); }
         
+        .action-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); transition: 0.2s; font-size: 14px; display: inline-flex; justify-content: center; align-items: center; width: 28px; height: 28px; border-radius: 4px; }
+        .action-btn:hover { background: var(--bg-light); color: var(--text-dark); }
+        .action-btn.delete:hover { background: rgba(241, 65, 108, 0.1); color: var(--danger); }
+        
+        .chart-tooltip { position: absolute; left: 48%; top: 40%; background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); z-index: 10; display: none; flex-direction: column; gap: 10px; font-size: 12px; pointer-events: none; }
+        .chart-tooltip-title { font-weight: 600; color: var(--text-dark); margin-bottom: 2px; }
+        .chart-interactive-area { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 5; cursor: pointer; }
+        .chart-interactive-area:hover ~ .chart-tooltip { display: flex; }
+        
         /* Toasts */
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
         .toast { background: white; border-left: 4px solid var(--success); padding: 12px 20px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease; }
@@ -395,11 +404,11 @@
             
             <div class="chart-placeholder">
                 <div class="y-axis">
-                    <div>10jt -</div>
-                    <div>8jt -</div>
-                    <div>6jt -</div>
-                    <div>4jt -</div>
-                    <div>2jt -</div>
+                    <div>0jt -</div>
+                    <div>0jt -</div>
+                    <div>0jt -</div>
+                    <div>0jt -</div>
+                    <div>0jt -</div>
                 </div>
                 <div class="grid-line"></div>
                 <div class="grid-line"></div>
@@ -407,13 +416,25 @@
                 <div class="grid-line"></div>
                 <div class="grid-line solid"></div>
                 
-                <div style="position: absolute; left: 50%; bottom: 20px; display: flex; flex-direction: column; align-items: center; transform: translateX(-50%); width: 80%;">
-                    <div style="display: flex; align-items: flex-end; justify-content: center; width: 100%; height: 260px; position: relative;">
-                        <div id="chart_bar_masuk" style="width: 100px; height: 10%; background: var(--success); margin-right: 4px;"></div>
-                        <div id="chart_bar_keluar" style="width: 100px; height: 50%; background: var(--danger);"></div>
-                        <div style="position: absolute; width: 100%; top: 50%; border-top: 2px solid #3b82f6; display: flex; justify-content: center;">
-                            <div style="width: 8px; height: 8px; border-radius: 50%; border: 2px solid #3b82f6; background: white; margin-top: -5px;"></div>
-                        </div>
+                <div style="position: absolute; left: 40px; right: 0; bottom: 20px; top: 20px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center;">
+                    <div style="position: relative; width: 100%; height: 100%;">
+                        <!-- Uang Masuk Line -->
+                        <div id="chart_line_masuk" style="position: absolute; bottom: 0%; left: 10%; width: 40%; height: 2px; background: var(--success);"></div>
+                        
+                        <!-- Pengeluaran Bar -->
+                        <div id="chart_bar_keluar" style="position: absolute; bottom: 0; left: 50%; width: 40%; height: 0%; background: #dc2626; border-radius: 4px 4px 0 0;"></div>
+                        
+                        <!-- Net Profit Line -->
+                        <div id="chart_line_profit" style="position: absolute; bottom: 0%; left: 50%; width: 40%; height: 0px; border-top: 1px dashed #3b82f6;"></div>
+                        <div id="chart_dot_profit" style="position: absolute; bottom: 0%; left: 50%; width: 8px; height: 8px; border-radius: 50%; border: 2px solid #3b82f6; background: white; transform: translate(-50%, 4px);"></div>
+                    </div>
+                    
+                    <div class="chart-interactive-area"></div>
+                    <div class="chart-tooltip" id="chart_tooltip">
+                        <div class="chart-tooltip-title" id="tooltip_title">Okt 26</div>
+                        <div style="color: var(--success);">Uang Masuk: <span id="tooltip_masuk">Rp 0</span></div>
+                        <div style="color: #dc2626;">Pengeluaran: <span id="tooltip_keluar">Rp 0</span></div>
+                        <div style="color: #3b82f6;">Net Profit: <span id="tooltip_profit">Rp 0</span></div>
                     </div>
                 </div>
                 
@@ -700,7 +721,13 @@
                         <td style="font-weight: 500;">${e.judul}</td>
                         <td><span style="color: var(--text-muted); font-size: 12px;">${e.kategori}</span></td>
                         <td>${acaraName}</td>
-                        <td style="color: var(--danger); font-weight: 600;">- Rp ${formatRupiah(e.nominal)}</td>
+                        <td style="color: var(--danger); font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
+                            - Rp ${formatRupiah(e.nominal)}
+                            <div>
+                                <button class="action-btn" onclick="editExpense('${e.id}')"><i class="fa-solid fa-pen"></i></button>
+                                <button class="action-btn delete" onclick="deleteExpense('${e.id}')"><i class="fa-regular fa-trash-can"></i></button>
+                            </div>
+                        </td>
                     </tr>
                     `;
                 });
@@ -737,12 +764,56 @@
                 profTbody.innerHTML = `<tr><td colspan="6" class="empty-row">Belum ada booking untuk dihitung.</td></tr>`;
             }
             
-            if (totalOmset > 0) {
-                const max = Math.max(uangMasuk, totalPengeluaran);
-                if (max > 0) {
-                    document.getElementById('chart_bar_masuk').style.height = `${(uangMasuk / max) * 100}%`;
-                    document.getElementById('chart_bar_keluar').style.height = `${(totalPengeluaran / max) * 100}%`;
-                }
+            // Update Tooltip
+            document.getElementById('tooltip_masuk').innerText = 'Rp ' + formatRupiah(uangMasuk);
+            document.getElementById('tooltip_keluar').innerText = 'Rp ' + formatRupiah(totalPengeluaran);
+            document.getElementById('tooltip_profit').innerText = (profitBersih < 0 ? '-' : '') + 'Rp ' + formatRupiah(Math.abs(profitBersih));
+            
+            const today = new Date();
+            const formatter = new Intl.DateTimeFormat('id-ID', { month: 'short', year: '2-digit' });
+            const shortPeriod = formatter.format(today);
+            document.getElementById('tooltip_title').innerText = shortPeriod;
+            document.querySelector('.x-axis').innerText = shortPeriod;
+            
+            // Basic chart update mockup
+            let max = Math.max(uangMasuk, totalPengeluaran, Math.abs(profitBersih));
+            if (max === 0) max = 1;
+            
+            let masukPct = Math.min((uangMasuk / max) * 100, 100);
+            let keluarPct = Math.min((totalPengeluaran / max) * 100, 100);
+            let profitPct = Math.min((Math.abs(profitBersih) / max) * 100, 100);
+            
+            document.getElementById('chart_line_masuk').style.bottom = `${masukPct}%`;
+            document.getElementById('chart_bar_keluar').style.height = `${keluarPct}%`;
+            
+            const dotProfit = document.getElementById('chart_dot_profit');
+            const lineProfit = document.getElementById('chart_line_profit');
+            
+            // If profit is negative, we just show it at 0% or flip the chart visually, but since bottom is 0:
+            if (profitBersih < 0) {
+                dotProfit.style.bottom = `0%`;
+                lineProfit.style.bottom = `0%`;
+                dotProfit.style.borderColor = `var(--danger)`;
+                lineProfit.style.borderTopColor = `var(--danger)`;
+            } else {
+                dotProfit.style.bottom = `${profitPct}%`;
+                lineProfit.style.bottom = `${profitPct}%`;
+                dotProfit.style.borderColor = `#3b82f6`;
+                lineProfit.style.borderTopColor = `#3b82f6`;
+            }
+        }
+
+        function editExpense(id) {
+            alert("Fitur edit akan segera hadir.");
+        }
+        
+        function deleteExpense(id) {
+            if(confirm("Apakah Anda yakin ingin menghapus pengeluaran ini?")) {
+                let expenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+                expenses = expenses.filter(e => e.id !== id);
+                localStorage.setItem('f_expenses', JSON.stringify(expenses));
+                showToast("Pengeluaran dihapus");
+                calculateFinance();
             }
         }
 
