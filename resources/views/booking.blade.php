@@ -334,7 +334,7 @@
                 <button class="btn-nav"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
             
-            <div class="calendar-grid">
+            <div class="calendar-grid" id="b_calendar_grid">
                 <!-- Headers -->
                 <div class="calendar-day-header">Sen</div>
                 <div class="calendar-day-header">Sel</div>
