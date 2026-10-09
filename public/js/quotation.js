@@ -488,7 +488,7 @@ function openPreviewModal(id) {
     document.getElementById('doc_termins_grid').innerHTML = terminsHtml;
     
     document.getElementById('doc_tnc_text').innerText = q.tnc || '-';
-    document.getElementById('doc_sig_vendor').innerText = vName;
+    document.getElementById('doc_sig_vendor').innerText = vName; // Matching user account profile name!
     document.getElementById('doc_sig_client').innerText = q.client || '-';
     
     const pModal = document.getElementById('preview-modal');
@@ -518,29 +518,37 @@ function downloadDocPNG() {
     const doc = document.getElementById('preview-document');
     if(!doc) return;
     
-    // Temporarily adjust styles for capture
+    // Force dimensions to EXACTLY 1 Page A4 (794px width, 1123px height) for the capture
+    const wrapper = document.getElementById('document-wrapper');
+    const origTransform = wrapper ? wrapper.style.transform : '';
+    if(wrapper) wrapper.style.transform = 'none';
+    
     const origWidth = doc.style.width;
+    const origHeight = doc.style.height;
     const origMaxWidth = doc.style.maxWidth;
-    const origZoom = doc.style.zoom;
     doc.style.width = '794px';
-    doc.style.maxWidth = 'none';
-    doc.style.zoom = '1';
+    doc.style.maxWidth = '794px';
+    doc.style.height = '1123px';
     
     window.showToast('Menyiapkan gambar...', 'fa-spinner fa-spin');
     
     html2canvas(doc, { scale: 2, useCORS: true }).then(canvas => {
+        // Restore
+        if(wrapper) wrapper.style.transform = origTransform;
         doc.style.width = origWidth;
         doc.style.maxWidth = origMaxWidth;
-        doc.style.zoom = origZoom;
+        doc.style.height = origHeight;
+        
         let link = document.createElement('a');
         link.download = 'Quotation-' + Date.now() + '.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
         window.showToast('Gambar berhasil diunduh!');
     }).catch(err => {
+        if(wrapper) wrapper.style.transform = origTransform;
         doc.style.width = origWidth;
         doc.style.maxWidth = origMaxWidth;
-        doc.style.zoom = origZoom;
+        doc.style.height = origHeight;
         console.error(err);
         alert('Gagal mendownload PNG.');
     });
@@ -550,34 +558,42 @@ function downloadDocPDF() {
     const doc = document.getElementById('preview-document');
     if(!doc || !window.jspdf) return;
     
-    // Temporarily adjust styles for capture
+    // Force dimensions to EXACTLY 1 Page A4 (794px width, 1123px height) for the capture
+    const wrapper = document.getElementById('document-wrapper');
+    const origTransform = wrapper ? wrapper.style.transform : '';
+    if(wrapper) wrapper.style.transform = 'none';
+    
     const origWidth = doc.style.width;
+    const origHeight = doc.style.height;
     const origMaxWidth = doc.style.maxWidth;
-    const origZoom = doc.style.zoom;
     doc.style.width = '794px';
-    doc.style.maxWidth = 'none';
-    doc.style.zoom = '1';
+    doc.style.maxWidth = '794px';
+    doc.style.height = '1123px';
 
     window.showToast('Menyiapkan PDF...', 'fa-spinner fa-spin');
     
     html2canvas(doc, { scale: 2, useCORS: true }).then(canvas => {
+        // Restore
+        if(wrapper) wrapper.style.transform = origTransform;
         doc.style.width = origWidth;
         doc.style.maxWidth = origMaxWidth;
-        doc.style.zoom = origZoom;
-        const imgData = canvas.toDataURL('image/png');
+        doc.style.height = origHeight;
+        
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
         
-        // A4 size: 210 x 297 mm
+        // Exact 1-page A4 dimensions (210mm x 297mm)
         const pdfWidth = 210;
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        const pdfHeight = 297;
         
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
         pdf.save('Quotation-' + Date.now() + '.pdf');
         window.showToast('PDF berhasil diunduh!');
     }).catch(err => {
+        if(wrapper) wrapper.style.transform = origTransform;
         doc.style.width = origWidth;
         doc.style.maxWidth = origMaxWidth;
-        doc.style.zoom = origZoom;
+        doc.style.height = origHeight;
         console.error(err);
         alert('Gagal mendownload PDF.');
     });

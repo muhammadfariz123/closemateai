@@ -260,71 +260,92 @@
             .alert-box { flex-direction: column; align-items: flex-start; gap: 12px; }
         }
         /* Preview Modal Styles */
-        .preview-controls { padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 16px 16px 0 0; }
+        .preview-controls { padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 12px 12px 0 0; }
         .theme-selectors { display: flex; gap: 12px; }
         .theme-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-color); background: white; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; transition: 0.2s; }
         .theme-btn:hover { background: #f9f9f9; }
         .theme-btn.active { border-color: var(--primary); background: rgba(107, 92, 216, 0.05); color: var(--primary); }
         .theme-color-dot { width: 12px; height: 12px; border-radius: 50%; }
-        .preview-document-container { padding: 24px; background: #f1f1f4; overflow: auto; max-height: 70vh; display: flex; justify-content: center; }
-        .document-page { box-sizing: border-box; width: 794px; min-width: 794px; margin: 0 auto; background: white; padding: 48px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; font-family: 'Inter', sans-serif; }
+        
+        .preview-document-container { padding: 32px 24px; background: #f1f1f4; overflow-y: auto; overflow-x: hidden; max-height: calc(100vh - 140px); display: flex; justify-content: center; border-radius: 0 0 12px 12px; }
+        .document-wrapper { display: flex; justify-content: center; transform-origin: top center; transition: transform 0.2s ease; }
+        
+        .document-page { 
+            box-sizing: border-box; 
+            width: 794px; 
+            height: 1123px; /* Exact A4 Height */
+            background: white; 
+            padding: 48px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+            position: relative; 
+            font-family: 'Inter', sans-serif;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
         
         /* Document Themes */
-        /* 1. Wedding Elegance (Red/Pinkish) */
-        .theme-wedding { --doc-primary: #a75d67; --doc-secondary: #f4e8ea; --doc-text: #333; --doc-font: 'Playfair Display', serif; }
-        /* 2. Royal Navy (Blue) */
-        .theme-navy { --doc-primary: #1b365d; --doc-secondary: #e6ebf2; --doc-text: #333; --doc-font: 'Inter', sans-serif; }
-        /* 3. Clean Minimalist (Black) */
+        .theme-wedding { --doc-primary: #a75d67; --doc-secondary: #fdf4f5; --doc-text: #333; --doc-font: 'Playfair Display', serif; }
+        .theme-navy { --doc-primary: #1b365d; --doc-secondary: #eef3f9; --doc-text: #333; --doc-font: 'Inter', sans-serif; }
         .theme-minimal { --doc-primary: #222222; --doc-secondary: #f5f5f5; --doc-text: #333; --doc-font: 'Inter', sans-serif; }
         
-        .doc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; border-bottom: 4px solid var(--doc-primary); padding-bottom: 16px; flex-wrap: wrap; gap: 20px; }
+        .doc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 20px; }
         .doc-vendor h1 { font-family: var(--doc-font); color: var(--doc-primary); font-size: 28px; font-style: italic; margin-bottom: 8px; }
-        .doc-status { background: var(--doc-secondary); color: var(--doc-primary); padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; }
+        .doc-status { background: var(--doc-secondary); color: var(--doc-primary); padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-block; }
         
         .doc-meta { text-align: right; }
-        .doc-meta h2 { font-family: var(--doc-font); letter-spacing: 2px; color: var(--doc-primary); font-size: 24px; margin-bottom: 4px; text-transform: uppercase; }
-        .doc-meta p { font-size: 12px; color: #666; margin-bottom: 2px; }
+        .doc-meta h2 { font-family: var(--doc-font); letter-spacing: 3px; color: var(--doc-primary); font-size: 20px; margin-bottom: 4px; text-transform: uppercase; }
+        .doc-meta p { font-size: 11px; color: #777; margin-bottom: 2px; }
+        .doc-meta p.doc-no-text { font-weight: 700; color: #333; font-size: 12px; margin-top: 8px; margin-bottom: 4px; }
         
-        .doc-info-box { background: var(--doc-secondary); padding: 20px; border-radius: 8px; margin-bottom: 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; }
-        .doc-info-item h4 { font-size: 11px; color: var(--doc-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-        .doc-info-item p { font-size: 14px; color: var(--doc-text); font-weight: 600; }
+        .doc-info-box { background: var(--doc-secondary); padding: 18px 24px; border-radius: 8px; margin-bottom: 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .doc-info-item h4 { font-size: 10px; color: var(--doc-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .doc-info-item p { font-size: 13px; color: var(--doc-text); font-weight: 600; }
+        .doc-info-item.full-width { grid-column: span 3; }
         
-        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; table-layout: fixed; word-wrap: break-word; }
-        .doc-table th { background: var(--doc-primary); color: white; padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
-        .doc-table td { padding: 12px 16px; border-bottom: 1px solid #eee; font-size: 13px; color: var(--doc-text); }
-        .doc-section-title { font-weight: 700; color: var(--doc-primary); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; padding-top: 16px !important; }
+        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; table-layout: fixed; word-wrap: break-word; }
+        .doc-table th { background: var(--doc-primary); color: white; padding: 10px 16px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .doc-table th:first-child { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
+        .doc-table th:last-child { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
+        .doc-table td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: var(--doc-text); }
+        .doc-section-title { font-weight: 700; color: var(--doc-primary); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding-top: 16px !important; padding-bottom: 8px !important; }
         
-        .doc-totals { width: 100%; max-width: 300px; margin-left: auto; margin-bottom: 32px; }
-        .doc-total-row { display: flex; justify-content: space-between; padding: 8px 16px; font-size: 14px; }
-        .doc-grand-total { background: var(--doc-primary); color: white; font-weight: bold; font-size: 16px; border-radius: 4px; margin-top: 8px; }
+        .doc-totals { width: 100%; max-width: 280px; margin-left: auto; margin-bottom: 24px; }
+        .doc-total-row { display: flex; justify-content: space-between; padding: 6px 16px; font-size: 13px; }
+        .doc-grand-total { background: var(--doc-primary); color: white; font-weight: 700; font-size: 14px; border-radius: 6px; margin-top: 8px; padding: 10px 16px; }
         
-        .doc-termins-title { font-size: 14px; color: var(--doc-primary); font-weight: 700; letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; }
-        .doc-termins-grid { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 32px; }
-        .doc-termin-card { border: 1px solid var(--doc-primary); padding: 16px; border-radius: 8px; flex: 1; }
-        .doc-termin-card h5 { font-size: 11px; color: var(--doc-primary); text-transform: uppercase; margin-bottom: 4px; }
-        .doc-termin-card p { font-size: 14px; font-weight: 700; color: var(--doc-text); margin-bottom: 4px; }
-        .doc-termin-card .termin-val { font-size: 16px; color: var(--doc-primary); font-weight: 800; }
+        .doc-termins-title { font-size: 11px; color: var(--doc-primary); font-weight: 700; letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; }
+        .doc-termins-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+        .doc-termin-card { border: 1px solid rgba(167, 93, 103, 0.3); padding: 12px 14px; border-radius: 8px; flex: 1; min-width: 120px; }
+        .doc-termin-card h5 { font-size: 10px; color: var(--doc-primary); text-transform: uppercase; margin-bottom: 4px; font-weight: 700; }
+        .doc-termin-card p { font-size: 12px; font-weight: 600; color: var(--doc-text); margin-bottom: 4px; }
+        .doc-termin-card .termin-val { font-size: 14px; color: var(--doc-primary); font-weight: 700; }
         
-        .doc-tnc { font-size: 12px; color: #555; line-height: 1.6; margin-bottom: 48px; }
-        .doc-tnc h4 { font-size: 14px; color: var(--doc-primary); font-weight: 700; letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; }
+        .doc-tnc { font-size: 11px; color: #444; line-height: 1.6; margin-bottom: auto; }
+        .doc-tnc h4 { font-size: 11px; color: var(--doc-primary); font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
         
-        .doc-signatures { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 32px; margin-top: 48px; }
-        .doc-sig-box { text-align: center; flex: 1; min-width: 150px; max-width: 200px; }
-        .doc-sig-box p { font-size: 12px; color: #666; margin-bottom: 60px; }
-        .doc-sig-box .sig-line { border-bottom: 1px solid #333; font-weight: 700; padding-bottom: 8px; font-size: 14px; }
+        .doc-signatures { display: flex; justify-content: space-between; margin-top: 32px; }
+        .doc-sig-box { text-align: center; width: 180px; }
+        .doc-sig-box p { font-size: 11px; color: #666; margin-bottom: 60px; }
+        .doc-sig-box .sig-line { border-bottom: 1px solid #222; margin-bottom: 6px; }
+        .doc-sig-box .sig-name { font-weight: 600; font-size: 13px; color: #222; }
         
+        /* Auto scale container down without scrollbars */
         @media (max-width: 900px) {
-            .preview-document-container { padding: 16px; justify-content: flex-start; }
-            .document-page { zoom: 0.8; }
+            .document-wrapper { transform: scale(0.9); margin-bottom: -112px; }
         }
-        @media (max-width: 600px) {
-            .document-page { zoom: 0.45; }
+        @media (max-width: 768px) {
+            .document-wrapper { transform: scale(0.7); margin-bottom: -337px; }
+        }
+        @media (max-width: 500px) {
+            .document-wrapper { transform: scale(0.45); margin-bottom: -617px; }
         }
         
         @media print {
             body * { visibility: hidden; }
             #preview-document, #preview-document * { visibility: visible; }
-            #preview-document { position: absolute; left: 0; top: 0; margin: 0; padding: 0; box-shadow: none; zoom: 1 !important; }
+            #preview-document { position: absolute; left: 0; top: 0; margin: 0; padding: 0; box-shadow: none; transform: none !important; width: 794px; height: 1123px; }
         }
     </style>
 </head>
@@ -551,7 +572,7 @@
 
     <!-- Preview Modal -->
     <div class="modal-overlay" id="preview-modal">
-        <div class="modal-content" style="max-width: 900px; padding: 0; overflow: hidden; background: white;">
+        <div class="modal-content" style="max-width: 900px; padding: 0; background: white;">
             <div class="preview-controls">
                 <div style="font-weight: 600; font-size: 16px;">Preview Penawaran</div>
                 <div class="theme-selectors">
@@ -567,95 +588,98 @@
             </div>
             
             <div class="preview-document-container">
-                <div class="document-page theme-wedding" id="preview-document">
-                    <!-- Top Border -->
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
-                    
-                    <div class="doc-header">
-                        <div class="doc-vendor">
-                            <h1 id="doc_vendor_name">Penapict</h1>
-                            <div class="doc-status" id="doc_status">Draft</div>
+                <div class="document-wrapper" id="document-wrapper">
+                    <div class="document-page theme-wedding" id="preview-document">
+                        <!-- Top Border -->
+                        <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
+                        
+                        <div class="doc-header">
+                            <div class="doc-vendor">
+                                <h1 id="doc_vendor_name">Penapict</h1>
+                                <div class="doc-status" id="doc_status">Draft</div>
+                            </div>
+                            <div class="doc-meta">
+                                <h2>PENAWARAN HARGA</h2>
+                                <p style="letter-spacing: 2px;">QUOTATION</p>
+                                <p class="doc-no-text" id="doc_no">No. QT-0000</p>
+                                <p id="doc_dates">Terbit: - · Berlaku s/d -</p>
+                            </div>
                         </div>
-                        <div class="doc-meta">
-                            <h2>PENAWARAN HARGA</h2>
-                            <p style="letter-spacing: 2px;">QUOTATION</p>
-                            <br>
-                            <p style="font-weight: 600; color: #333;" id="doc_no">No. QT-0000</p>
-                            <p id="doc_dates">Terbit: - · Berlaku s/d -</p>
+                        
+                        <div class="doc-info-box">
+                            <div class="doc-info-item">
+                                <h4>NAMA KLIEN</h4>
+                                <p id="doc_client_name">-</p>
+                            </div>
+                            <div class="doc-info-item">
+                                <h4>WHATSAPP</h4>
+                                <p id="doc_client_phone">-</p>
+                            </div>
+                            <div class="doc-info-item">
+                                <h4>TANGGAL ACARA</h4>
+                                <p id="doc_event_date">-</p>
+                            </div>
+                            <div class="doc-info-item full-width">
+                                <h4>LOKASI / VENUE</h4>
+                                <p id="doc_venue">-</p>
+                            </div>
                         </div>
+                        
+                        <table class="doc-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45%;">ITEM / LAYANAN</th>
+                                    <th style="text-align: center; width: 15%;">QTY</th>
+                                    <th style="text-align: right; width: 20%;">HARGA SATUAN</th>
+                                    <th style="text-align: right; width: 20%;">TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody id="doc_items_tbody">
+                                <!-- Items rendered here -->
+                            </tbody>
+                        </table>
+                        
+                        <div class="doc-totals">
+                            <div class="doc-total-row">
+                                <span style="color: #666;">Subtotal</span>
+                                <span style="font-weight: 600;" id="doc_subtotal">Rp 0</span>
+                            </div>
+                            <div class="doc-total-row">
+                                <span style="color: #666;">Diskon</span>
+                                <span style="font-weight: 600;" id="doc_discount">- Rp 0</span>
+                            </div>
+                            <div class="doc-total-row doc-grand-total">
+                                <span>GRAND TOTAL</span>
+                                <span id="doc_grand_total">Rp 0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="doc-termins-title">JADWAL PEMBAYARAN</div>
+                        <div class="doc-termins-grid" id="doc_termins_grid">
+                            <!-- Termins here -->
+                        </div>
+                        
+                        <div class="doc-tnc">
+                            <h4>SYARAT & KETENTUAN</h4>
+                            <div id="doc_tnc_text" style="white-space: pre-wrap;"></div>
+                        </div>
+                        
+                        <div class="doc-signatures">
+                            <div class="doc-sig-box">
+                                <p>Hormat kami,</p>
+                                <div class="sig-line"></div>
+                                <div class="sig-name" id="doc_sig_vendor">Penapict</div>
+                            </div>
+                            <div class="doc-sig-box">
+                                <p>Disetujui oleh,</p>
+                                <div class="sig-line"></div>
+                                <div class="sig-name" id="doc_sig_client">-</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bottom Border -->
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
                     </div>
-                    
-                    <div class="doc-info-box">
-                        <div class="doc-info-item">
-                            <h4>NAMA KLIEN</h4>
-                            <p id="doc_client_name">-</p>
-                        </div>
-                        <div class="doc-info-item">
-                            <h4>WHATSAPP</h4>
-                            <p id="doc_client_phone">-</p>
-                        </div>
-                        <div class="doc-info-item">
-                            <h4>TANGGAL ACARA</h4>
-                            <p id="doc_event_date">-</p>
-                        </div>
-                        <div class="doc-info-item" style="grid-column: span 3;">
-                            <h4>LOKASI / VENUE</h4>
-                            <p id="doc_venue">-</p>
-                        </div>
-                    </div>
-                    
-                    <table class="doc-table">
-                        <thead>
-                            <tr>
-                                <th>ITEM / LAYANAN</th>
-                                <th style="text-align: center;">QTY</th>
-                                <th style="text-align: right;">HARGA SATUAN</th>
-                                <th style="text-align: right;">TOTAL</th>
-                            </tr>
-                        </thead>
-                        <tbody id="doc_items_tbody">
-                            <!-- Items rendered here -->
-                        </tbody>
-                    </table>
-                    
-                    <div class="doc-totals">
-                        <div class="doc-total-row">
-                            <span style="color: #666;">Subtotal</span>
-                            <span style="font-weight: 600;" id="doc_subtotal">Rp 0</span>
-                        </div>
-                        <div class="doc-total-row">
-                            <span style="color: #666;">Diskon</span>
-                            <span style="font-weight: 600;" id="doc_discount">- Rp 0</span>
-                        </div>
-                        <div class="doc-total-row doc-grand-total">
-                            <span>GRAND TOTAL</span>
-                            <span id="doc_grand_total">Rp 0</span>
-                        </div>
-                    </div>
-                    
-                    <div class="doc-termins-title">JADWAL PEMBAYARAN</div>
-                    <div class="doc-termins-grid" id="doc_termins_grid">
-                        <!-- Termins here -->
-                    </div>
-                    
-                    <div class="doc-tnc">
-                        <h4>SYARAT & KETENTUAN</h4>
-                        <div id="doc_tnc_text" style="white-space: pre-wrap;"></div>
-                    </div>
-                    
-                    <div class="doc-signatures">
-                        <div class="doc-sig-box">
-                            <p>Hormat kami,</p>
-                            <div class="sig-line" id="doc_sig_vendor">Penapict</div>
-                        </div>
-                        <div class="doc-sig-box">
-                            <p>Disetujui oleh,</p>
-                            <div class="sig-line" id="doc_sig_client">-</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Bottom Border -->
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
                 </div>
             </div>
         </div>
