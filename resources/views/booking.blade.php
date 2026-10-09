@@ -394,8 +394,8 @@
             
             <div class="calendar-legend">
                 <div class="legend-item"><div class="legend-dot" style="background: #ffc700; border: 1px solid #e0b000;"></div> DP 1</div>
-                <div class="legend-item"><div class="legend-dot" style="background: transparent; border: 2px solid #50cd89;"></div> DP 2</div>
-                <div class="legend-item"><div class="legend-dot" style="background: transparent; border: 2px solid #6b5cd8;"></div> LUNAS</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #50cd89; border: 1px solid #47b679;"></div> DP 2</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #6b5cd8; border: 1px solid #5a4db8;"></div> LUNAS</div>
             </div>
         </div>
 
@@ -1103,16 +1103,16 @@
                     let borderCol = '#e0b000';
                     
                     if (evt.payment_status === 'DP 2') {
-                        bgCol = 'transparent';
-                        textCol = '#50cd89';
-                        borderCol = '#50cd89';
+                        bgCol = '#50cd89';
+                        textCol = '#fff';
+                        borderCol = '#47b679';
                     } else if (evt.payment_status === 'Lunas') {
-                        bgCol = 'transparent';
-                        textCol = '#6b5cd8';
-                        borderCol = '#6b5cd8';
+                        bgCol = '#6b5cd8';
+                        textCol = '#fff';
+                        borderCol = '#5a4db8';
                     }
                     
-                    eventsHtml += `<div class="event-pill" onclick="openBookingModal('${evt.id}')" style="cursor: pointer; margin-top: 4px; padding: 4px 8px; border-radius: 4px; background: ${bgCol}; color: ${textCol}; border: 1px solid ${borderCol}; font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${evt.client_name || 'No Name'}</div>`;
+                    eventsHtml += `<div class="event-pill" onclick="openBookingModal('${evt.id}')" style="cursor: pointer; margin-top: 4px; padding: 4px 8px; border-radius: 4px; background: ${bgCol}; color: ${textCol}; border: 1px solid ${borderCol}; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${evt.client_name || 'No Name'}</div>`;
                 });
                 
                 html += `
