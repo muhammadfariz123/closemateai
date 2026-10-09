@@ -72,11 +72,13 @@ function renderQuotationItems() {
                         <label class="form-label">Satuan</label>
                         <select class="form-control" onchange="updateQItem(${item.id}, 'satuan', this.value)">
                             <option value="Paket" ${item.satuan === 'Paket' ? 'selected' : ''}>Paket</option>
-                            <option value="Pcs" ${item.satuan === 'Pcs' ? 'selected' : ''}>Pcs</option>
-                            <option value="Sesi" ${item.satuan === 'Sesi' ? 'selected' : ''}>Sesi</option>
-                            <option value="Hari" ${item.satuan === 'Hari' ? 'selected' : ''}>Hari</option>
-                            <option value="Jam" ${item.satuan === 'Jam' ? 'selected' : ''}>Jam</option>
+                            <option value="Pax" ${item.satuan === 'Pax' ? 'selected' : ''}>Pax</option>
                             <option value="Orang" ${item.satuan === 'Orang' ? 'selected' : ''}>Orang</option>
+                            <option value="Set" ${item.satuan === 'Set' ? 'selected' : ''}>Set</option>
+                            <option value="Hari" ${item.satuan === 'Hari' ? 'selected' : ''}>Hari</option>
+                            <option value="Sesi" ${item.satuan === 'Sesi' ? 'selected' : ''}>Sesi</option>
+                            <option value="Jam" ${item.satuan === 'Jam' ? 'selected' : ''}>Jam</option>
+                            <option value="Pcs" ${item.satuan === 'Pcs' ? 'selected' : ''}>Pcs</option>
                         </select>
                     </div>
                     <div class="form-group">
