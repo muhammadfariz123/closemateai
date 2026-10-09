@@ -744,9 +744,12 @@
             let html = '';
             filteredPackages.forEach(pkg => {
                 html += `
-                <div class="package-dropdown-item" onclick="selectPackage('${pkg.name}', ${pkg.price})" style="padding: 10px 16px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                    <div style="font-size: 13px; font-weight: 600;">${pkg.name}</div>
-                    <div style="font-size: 12px; color: rgba(255,255,255,0.7);">${formatRupiah(pkg.price)}</div>
+                <div class="package-dropdown-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <div onclick="selectPackage('${pkg.name}', ${pkg.price})" style="cursor: pointer; flex: 1;">
+                        <div style="font-size: 13px; font-weight: 600;">${pkg.name}</div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.7);">${formatRupiah(pkg.price)}</div>
+                    </div>
+                    <button onclick="deleteSavedPackage(event, '${pkg.name}')" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px; padding: 4px;"><i class="fa-regular fa-trash-can"></i></button>
                 </div>`;
             });
             
@@ -756,14 +759,50 @@
         
         function selectPackage(name, price) {
             packageInput.value = name;
-            packagePriceInput.value = price;
+            packagePriceInput.value = price ? new Intl.NumberFormat('id-ID').format(price) : '';
             packageDropdown.style.display = 'none';
             calculateBooking();
         }
         
+        function deleteSavedPackage(event, name) {
+            event.stopPropagation();
+            let packages = getSavedPackages();
+            packages = packages.filter(p => p.name.toLowerCase() !== name.toLowerCase());
+            localStorage.setItem('savedPackages', JSON.stringify(packages));
+            renderPackageDropdown(packages);
+            if(packages.length === 0) {
+                packageDropdown.style.display = 'none';
+            }
+        }
+        
+        function togglePackageDropdown(e) {
+            if (e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            if (packageDropdown.style.display === 'block') {
+                packageDropdown.style.display = 'none';
+            } else {
+                const packages = getSavedPackages();
+                if (packages.length > 0) {
+                    renderPackageDropdown(packages);
+                } else {
+                    packageDropdown.innerHTML = '<div style="padding: 10px 16px; font-size: 12px; color: rgba(255,255,255,0.5);">Belum ada paket tersimpan</div>';
+                    packageDropdown.style.display = 'block';
+                }
+            }
+        }
+        
         // Show all on focus if empty
+        packageInput.addEventListener('click', (e) => {
+            if (!packageInput.value.trim() || packageDropdown.style.display !== 'block') {
+                const packages = getSavedPackages();
+                if (packages.length > 0) renderPackageDropdown(packages);
+            }
+        });
+        
         packageInput.addEventListener('focus', () => {
-            if (!packageInput.value.trim()) {
+            if (!packageInput.value.trim() && packageDropdown.style.display !== 'block') {
                 const packages = getSavedPackages();
                 if (packages.length > 0) renderPackageDropdown(packages);
             }

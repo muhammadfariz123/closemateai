@@ -46,7 +46,7 @@
                         <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Nama Paket</label>
                         <div style="position: relative;">
                             <input type="text" id="b_package_name" class="form-control" placeholder="Pilih dari pricelist atau ketik manual" oninput="checkPackagePrice()" autocomplete="off">
-                            <i class="fa-solid fa-caret-down" style="position: absolute; right: 12px; top: 12px; color: var(--text-muted); pointer-events: none;"></i>
+                            <i class="fa-solid fa-caret-down" onclick="togglePackageDropdown(event)" style="position: absolute; right: 12px; top: 12px; color: var(--text-muted); cursor: pointer; pointer-events: auto;"></i>
                             <div id="package_dropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: #232328; color: white; border-radius: 8px; margin-top: 4px; z-index: 10; max-height: 200px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
                                 <!-- Dropdown items -->
                             </div>
