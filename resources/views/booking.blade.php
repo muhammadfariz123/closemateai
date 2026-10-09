@@ -345,52 +345,7 @@
                 <div class="calendar-day-header">Min</div>
                 
                 <!-- Week 1 (Offset 3 days) -->
-                <div class="calendar-day" style="opacity: 0; pointer-events: none;"></div>
-                <div class="calendar-day" style="opacity: 0; pointer-events: none;"></div>
-                <div class="calendar-day" style="opacity: 0; pointer-events: none;"></div>
-                <div class="calendar-day"><div class="calendar-day-num">1</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">2</div></div>
-                <div class="calendar-day today"><div class="calendar-day-num">3</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">4</div></div>
-                
-                <!-- Week 2 -->
-                <div class="calendar-day"><div class="calendar-day-num">5</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">6</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">7</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">8</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">9</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">10</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">11</div></div>
-                
-                <!-- Week 3 -->
-                <div class="calendar-day">
-                    <div class="calendar-day-num">12</div>
-                    <div class="event-pill">Test</div>
-                </div>
-                <div class="calendar-day"><div class="calendar-day-num">13</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">14</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">15</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">16</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">17</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">18</div></div>
-                
-                <!-- Week 4 -->
-                <div class="calendar-day"><div class="calendar-day-num">19</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">20</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">21</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">22</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">23</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">24</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">25</div></div>
-                
-                <!-- Week 5 -->
-                <div class="calendar-day"><div class="calendar-day-num">26</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">27</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">28</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">29</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">30</div></div>
-                <div class="calendar-day"><div class="calendar-day-num">31</div></div>
-                <div class="calendar-day" style="opacity: 0; pointer-events: none;"></div>
+                <!-- Content will be rendered by renderCalendar() -->
             </div>
             
             <div class="calendar-legend">
@@ -450,27 +405,60 @@
         let addonsData = [];
         let costsData = [];
         let teamData = [];
+        let editingBookingId = null;
 
-        function openBookingModal() {
-            // Reset form
-            document.getElementById('b_client_name').value = '';
-            document.getElementById('b_client_wa').value = '';
-            document.getElementById('b_client_address').value = '';
-            document.getElementById('b_event_date').value = '';
-            document.getElementById('b_start_time').value = '';
-            document.getElementById('b_end_time').value = '';
-            document.getElementById('b_package_name').value = '';
-            document.getElementById('b_package_price').value = '';
-            document.getElementById('b_package_qty').value = '1';
-            document.getElementById('b_paid_amount').value = '0';
-            document.getElementById('b_discount').value = '0';
-            document.getElementById('b_payment_date').value = '';
-            document.getElementById('b_result_link').value = '';
-            document.getElementById('b_notes').value = '';
+        function openBookingModal(id = null) {
+            editingBookingId = id;
+            if (id) {
+                document.getElementById('booking_modal_title').innerText = 'Edit Booking & Biaya Operasional';
+                
+                const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+                const b = bookings.find(x => x.id === id);
+                if (b) {
+                    document.getElementById('b_client_name').value = b.client_name || '';
+                    document.getElementById('b_client_wa').value = b.client_wa_number || '';
+                    document.getElementById('b_client_address').value = b.client_address || '';
+                    document.getElementById('b_event_date').value = b.event_date || '';
+                    document.getElementById('b_start_time').value = b.start_time || '';
+                    document.getElementById('b_end_time').value = b.end_time || '';
+                    document.getElementById('b_package_name').value = b.package_name || '';
+                    document.getElementById('b_package_price').value = b.package_price ? new Intl.NumberFormat('id-ID').format(b.package_price) : '';
+                    document.getElementById('b_package_qty').value = b.package_qty || '1';
+                    document.getElementById('b_paid_amount').value = b.paid_amount ? new Intl.NumberFormat('id-ID').format(b.paid_amount) : '0';
+                    document.getElementById('b_discount').value = b.discount ? new Intl.NumberFormat('id-ID').format(b.discount) : '0';
+                    document.getElementById('b_payment_date').value = b.payment_date || '';
+                    document.getElementById('b_payment_status').value = b.payment_status || 'DP 1';
+                    document.getElementById('b_production_status').value = b.production_status || 'Pre-Event';
+                    document.getElementById('b_result_link').value = b.result_link || '';
+                    document.getElementById('b_notes').value = b.notes || '';
+                    
+                    addonsData = b.addons || [];
+                    costsData = b.operational_costs || [];
+                    teamData = b.team_members || [];
+                }
+            } else {
+                document.getElementById('booking_modal_title').innerText = 'Tambah Booking';
+                // Reset form
+                document.getElementById('b_client_name').value = '';
+                document.getElementById('b_client_wa').value = '';
+                document.getElementById('b_client_address').value = '';
+                document.getElementById('b_event_date').value = '';
+                document.getElementById('b_start_time').value = '';
+                document.getElementById('b_end_time').value = '';
+                document.getElementById('b_package_name').value = '';
+                document.getElementById('b_package_price').value = '';
+                document.getElementById('b_package_qty').value = '1';
+                document.getElementById('b_paid_amount').value = '0';
+                document.getElementById('b_discount').value = '0';
+                document.getElementById('b_payment_date').value = '';
+                document.getElementById('b_result_link').value = '';
+                document.getElementById('b_notes').value = '';
+                
+                addonsData = [];
+                costsData = [];
+                teamData = [];
+            }
             
-            addonsData = [];
-            costsData = [];
-            teamData = [];
             renderAddons();
             renderCosts();
             renderTeam();
@@ -582,8 +570,8 @@
             teamData.forEach((item, index) => {
                 html += `
                 <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center;">
-                    <input type="text" class="form-control" placeholder="Role (e.g. Fotografer)" value="${item.role}" onchange="teamData[${index}].role = this.value">
-                    <input type="text" class="form-control" placeholder="Nama" value="${item.name}" onchange="teamData[${index}].name = this.value">
+                    <input type="text" class="form-control" placeholder="Nama anggota tim" value="${item.name}" onchange="teamData[${index}].name = this.value" style="flex: 2;">
+                    <input type="text" class="form-control" placeholder="Posisi / job desk" value="${item.role}" onchange="teamData[${index}].role = this.value" style="flex: 1;">
                     <button onclick="removeBookingTeam(${index})" style="background: none; border: none; color: var(--danger); cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
                 </div>
                 `;
@@ -642,6 +630,7 @@
             const profit = totalIncome - totalCost;
 
             const payload = {
+                id: editingBookingId || Date.now().toString(),
                 client_name: document.getElementById('b_client_name').value,
                 client_wa_number: document.getElementById('b_client_wa').value,
                 client_address: document.getElementById('b_client_address').value,
@@ -666,23 +655,22 @@
                 notes: document.getElementById('b_notes').value,
             };
             
-            try {
-                const res = await fetch('/api/bookings', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (res.ok) {
-                    showToast('Booking berhasil disimpan!');
-                    closeBookingModal();
-                    // Here you would typically refresh the table or calendar
+            let bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            if (editingBookingId) {
+                const index = bookings.findIndex(x => x.id === editingBookingId);
+                if (index > -1) {
+                    bookings[index] = payload;
                 } else {
-                    showToast('Gagal menyimpan booking.', 'error');
+                    bookings.push(payload);
                 }
-            } catch (err) {
-                showToast('Terjadi kesalahan jaringan.', 'error');
+            } else {
+                bookings.push(payload);
             }
+            
+            localStorage.setItem('b_events', JSON.stringify(bookings));
+            showToast(editingBookingId ? 'Booking diperbarui!' : 'Booking ditambahkan!');
+            closeBookingModal();
+            renderCalendar();
             
             btn.innerHTML = 'Simpan Booking';
             btn.disabled = false;
@@ -936,7 +924,63 @@
         // Initialize dropdowns on load
         document.addEventListener('DOMContentLoaded', () => {
             refreshHppTemplateDropdown();
+            renderCalendar();
         });
+        
+        // --- CALENDAR LOGIC ---
+        function renderCalendar() {
+            const grid = document.getElementById('b_calendar_grid');
+            if (!grid) return;
+            
+            const daysInMonth = 31; // October 2026
+            const firstDayOffset = 3; // October 1st 2026 is Thursday (0=Senin, 1=Selasa, 2=Rabu, 3=Kamis)
+            
+            let html = `
+                <div class="calendar-day-header">Sen</div>
+                <div class="calendar-day-header">Sel</div>
+                <div class="calendar-day-header">Rab</div>
+                <div class="calendar-day-header">Kam</div>
+                <div class="calendar-day-header">Jum</div>
+                <div class="calendar-day-header">Sab</div>
+                <div class="calendar-day-header">Min</div>
+            `;
+            
+            // Empty offset days
+            for (let i = 0; i < firstDayOffset; i++) {
+                html += `<div class="calendar-day" style="opacity: 0; pointer-events: none;"></div>`;
+            }
+            
+            const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            
+            for (let i = 1; i <= daysInMonth; i++) {
+                const isToday = i === 3; // Example today
+                const dateStr = `2026-10-${i.toString().padStart(2, '0')}`;
+                
+                // Find events for this date
+                const dayEvents = bookings.filter(b => b.event_date === dateStr);
+                
+                let eventsHtml = '';
+                dayEvents.forEach(evt => {
+                    eventsHtml += `<div class="event-pill" onclick="openBookingModal('${evt.id}')" style="cursor: pointer; margin-top: 4px; padding: 4px 8px; border-radius: 4px; background: rgba(255, 199, 0, 0.2); color: #b38b00; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${evt.client_name || 'No Name'}</div>`;
+                });
+                
+                html += `
+                <div class="calendar-day ${isToday ? 'today' : ''}">
+                    <div class="calendar-day-num">${i}</div>
+                    ${eventsHtml}
+                </div>
+                `;
+            }
+            
+            // Pad end of grid
+            const totalCells = firstDayOffset + daysInMonth;
+            const remainingCells = 35 - totalCells; // 5 weeks * 7 days = 35
+            for (let i = 0; i < (remainingCells > 0 ? remainingCells : 42 - totalCells); i++) {
+                html += `<div class="calendar-day" style="opacity: 0; pointer-events: none;"></div>`;
+            }
+            
+            grid.innerHTML = html;
+        }
 
     </script>
 </body>

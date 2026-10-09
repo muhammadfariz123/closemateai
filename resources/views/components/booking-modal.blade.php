@@ -2,7 +2,7 @@
         <div style="background: white; width: 600px; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
             <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">Tambah Booking</h3>
+                    <h3 id="booking_modal_title" style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">Tambah Booking</h3>
                     <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Kelola data acara, pembayaran, rincian biaya operasional, dan progres produksi klien Anda.</p>
                 </div>
                 <button onclick="closeBookingModal()" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
@@ -154,9 +154,10 @@
                         <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Status Produksi</label>
                         <select id="b_production_status" class="form-control">
                             <option>Pre-Event</option>
-                            <option>On-Event</option>
-                            <option>Editing</option>
-                            <option>Done</option>
+                            <option>Hari H</option>
+                            <option>Proses Edit</option>
+                            <option>Revisi</option>
+                            <option>Selesai & Terkirim</option>
                         </select>
                     </div>
                 </div>
