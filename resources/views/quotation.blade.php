@@ -271,11 +271,10 @@
         
         .document-page { 
             box-sizing: border-box; 
-            width: 100%; 
-            max-width: 794px;
+            width: 794px; 
             min-height: 1123px; /* Exact A4 Height */
             background: white; 
-            padding: 40px; 
+            padding: 48px; 
             box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
             position: relative; 
             font-family: 'Inter', sans-serif;
@@ -283,6 +282,7 @@
             display: flex;
             flex-direction: column;
             margin: 0 auto;
+            zoom: 0.85; /* Global scale to match reference and prevent overflow */
         }
         
         /* Document Themes */
@@ -333,14 +333,14 @@
         .doc-sig-box .sig-name { font-weight: 600; font-size: 13px; color: #222; }
         
         /* Auto scale container down without scrollbars */
-        @media (max-width: 1024px) {
-            .document-page { zoom: 0.9; }
+        @media (max-width: 900px) {
+            .document-page { zoom: 0.7; }
         }
         @media (max-width: 768px) {
-            .document-page { zoom: 0.75; }
+            .document-page { zoom: 0.55; }
         }
         @media (max-width: 500px) {
-            .document-page { zoom: 0.55; }
+            .document-page { zoom: 0.45; }
         }
         
         @media print {
