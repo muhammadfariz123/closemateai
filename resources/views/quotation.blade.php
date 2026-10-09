@@ -434,7 +434,7 @@
                 <div class="form-grid" style="align-items: flex-start;">
                     <div class="form-group">
                         <label class="form-label">Diskon (Rp)</label>
-                        <input type="text" class="form-control" id="q_discount" value="0" onkeyup="formatRupiahInput(this); calculateQuotationTotals()">
+                        <input type="text" class="form-control" id="q_discount" value="" placeholder="0" onkeyup="formatRupiahInput(this); calculateQuotationTotals()">
                     </div>
                     <div class="summary-box">
                         <div class="summary-grid">
@@ -509,6 +509,6 @@
         });
     </script>
     <script src="/js/activity-logger.js"></script>
-    <script src="/js/quotation.js"></script>
+    <script src="/js/quotation.js?v=2"></script>
 </body>
 </html>

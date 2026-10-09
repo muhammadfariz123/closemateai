@@ -84,7 +84,7 @@ function renderQuotationItems() {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Harga Satuan</label>
-                        <input type="text" class="form-control" value="${item.harga > 0 ? item.harga.toLocaleString('id-ID') : 0}" onkeyup="formatRupiahInput(this); updateQItem(${item.id}, 'harga', this.value)">
+                        <input type="text" class="form-control" value="${item.harga ? item.harga.toLocaleString('id-ID') : ''}" placeholder="0" onkeyup="formatRupiahInput(this); updateQItem(${item.id}, 'harga', this.value)">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Subtotal</label>
@@ -149,7 +149,7 @@ function renderTerminItems() {
                     <option value="Persentase (%)" ${termin.type === 'Persentase (%)' ? 'selected' : ''}>Persentase (%)</option>
                     <option value="Nominal (Rp)" ${termin.type === 'Nominal (Rp)' ? 'selected' : ''}>Nominal (Rp)</option>
                 </select>
-                <input type="number" class="form-control" value="${termin.value}" onchange="updateQTermin(${termin.id}, 'value', this.value)">
+                <input type="number" class="form-control" value="${termin.value || ''}" placeholder="0" onchange="updateQTermin(${termin.id}, 'value', this.value)">
                 <button class="icon-btn" onclick="removeTerminItem(${termin.id})"><i class="fa-solid fa-trash-can"></i></button>
             </div>
             <div class="termin-value">Nilai termin: Rp ${terminValueRp.toLocaleString('id-ID')}</div>
@@ -197,7 +197,7 @@ function openQuotationModal(id = null) {
             document.getElementById('q_event_date').value = q.event_date;
             document.getElementById('q_venue').value = q.venue;
             document.getElementById('q_valid_until').value = q.valid_until;
-            document.getElementById('q_discount').value = q.discount.toLocaleString('id-ID');
+            document.getElementById('q_discount').value = q.discount ? q.discount.toLocaleString('id-ID') : '';
             document.getElementById('q_tnc').value = q.tnc;
             document.getElementById('q_internal_notes').value = q.internal_notes;
             
@@ -214,7 +214,7 @@ function openQuotationModal(id = null) {
         document.getElementById('q_event_date').value = '';
         document.getElementById('q_venue').value = '';
         document.getElementById('q_valid_until').value = '';
-        document.getElementById('q_discount').value = '0';
+        document.getElementById('q_discount').value = '';
         document.getElementById('q_internal_notes').value = '';
         
         qItems = [];
