@@ -509,6 +509,6 @@
         });
     </script>
     <script src="/js/activity-logger.js"></script>
-    <script src="/js/quotation.js?v=2"></script>
+    <script src="/js/quotation.js?v=3"></script>
 </body>
 </html>

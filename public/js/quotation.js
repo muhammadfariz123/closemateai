@@ -53,7 +53,7 @@ function renderQuotationItems() {
                 <div class="item-row">
                     <div class="form-group">
                         <label class="form-label">Section (opsional)</label>
-                        <input type="text" class="form-control" value="${item.section}" onchange="updateQItem(${item.id}, 'section', this.value)">
+                        <input type="text" class="form-control" value="${item.section}" placeholder="Paket Utama / Layanan Tambahan" onchange="updateQItem(${item.id}, 'section', this.value)">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Nama Layanan / Produk</label>
