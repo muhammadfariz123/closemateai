@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Booking & Operasional - CloseMateAI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -618,6 +619,38 @@
         let costsData = [];
         let teamData = [];
         let editingBookingId = null;
+        let globalBookings = [];
+
+        async function loadBookings() {
+            try {
+                let res = await fetch('/api/bookings');
+                globalBookings = await res.json();
+                
+                // Sync local storage if any
+                let local = JSON.parse(localStorage.getItem('b_events')) || [];
+                if (local.length > 0) {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    for (let b of local) {
+                        await fetch('/api/bookings', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            body: JSON.stringify(b)
+                        });
+                    }
+                    localStorage.removeItem('b_events');
+                    let res2 = await fetch('/api/bookings');
+                    globalBookings = await res2.json();
+                }
+                
+                renderTable();
+                renderCalendar();
+            } catch(e) {
+                console.error(e);
+            }
+        }
 
         function openBookingModal(id = null) {
             if (typeof id !== 'string') id = null;
@@ -625,8 +658,8 @@
             if (id) {
                 document.getElementById('booking_modal_title').innerText = 'Edit Booking & Biaya Operasional';
                 
-                const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
-                const b = bookings.find(x => x.id === id);
+                const bookings = globalBookings;
+                const b = bookings.find(x => x.id === (typeof id === 'number' ? id : parseInt(id)) || x.id == id);
                 if (b) {
                     document.getElementById('b_client_name').value = b.client_name || '';
                     document.getElementById('b_client_wa').value = b.client_wa_number || '';
@@ -932,31 +965,31 @@
                 notes: document.getElementById('b_notes').value,
             };
             
-            let bookings = JSON.parse(localStorage.getItem('b_events')) || [];
-            if (editingBookingId) {
-                const index = bookings.findIndex(x => x.id === editingBookingId);
-                if (index > -1) {
-                    bookings[index] = payload;
-                } else {
-                    bookings.push(payload);
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            fetch('/api/bookings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify(payload)
+            }).then(r => r.json()).then(data => {
+                if(window.logSysActivity && !editingBookingId) {
+                    window.logSysActivity('Lead', 'Sistem', 'Booking / Lead baru ditambahkan', 'Klien: ' + payload.client_name + ' (' + payload.event_date + ')', 'fa-bolt', 'purple');
                 }
-            } else {
-                bookings.push(payload);
-            }
-            
-            localStorage.setItem('b_events', JSON.stringify(bookings));
-            
-            if(window.logSysActivity && !editingBookingId) {
-                window.logSysActivity('Lead', 'Sistem', 'Booking / Lead baru ditambahkan', 'Klien: ' + payload.clientName + ' (' + payload.date + ')', 'fa-bolt', 'purple');
-            }
 
-            showToast(editingBookingId ? 'Booking diperbarui!' : 'Booking ditambahkan!');
-            closeBookingModal();
-            renderCalendar();
-            renderTable();
-            
-            btn.innerHTML = 'Simpan Booking';
-            btn.disabled = false;
+                showToast(editingBookingId ? 'Booking diperbarui!' : 'Booking ditambahkan!');
+                closeBookingModal();
+                loadBookings(); // Reload data
+                
+                btn.innerHTML = 'Simpan Booking';
+                btn.disabled = false;
+            }).catch(e => {
+                console.error(e);
+                alert('Gagal menyimpan booking');
+                btn.innerHTML = 'Simpan Booking';
+                btn.disabled = false;
+            });
         }
 
         // --- PACKAGE AUTOCOMPLETE & LOCAL STORAGE LOGIC ---
@@ -1207,8 +1240,7 @@
         // Initialize dropdowns on load
         document.addEventListener('DOMContentLoaded', () => {
             refreshHppTemplateDropdown();
-            renderCalendar();
-            renderTable();
+            loadBookings();
         });
         
         // --- VIEW TOGGLE LOGIC ---
@@ -1234,7 +1266,7 @@
         }
         
         function getFilteredBookings() {
-            let bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            let bookings = globalBookings;
             const searchVal = document.getElementById('b_search_input').value.toLowerCase();
             const monthVal = document.getElementById('b_month_filter').value;
             
@@ -1325,7 +1357,7 @@
                 const dateStr = `${currentCalYear}-${mStr}-${dStr}`;
                 
                 // Find events for this date
-                const dayEvents = bookings.filter(b => b.event_date === dateStr);
+                const dayEvents = bookings.filter(b => b.event_date && b.event_date.substring(0, 10) === dateStr);
                 
                 let eventsHtml = '';
                 dayEvents.forEach(evt => {
@@ -1397,7 +1429,7 @@
                         ${b.client_address ? `<div style="font-size: 11px; color: var(--text-muted);">${b.client_address}</div>` : ''}
                     </td>
                     <td>${handlersHtml || '-'}</td>
-                    <td>${b.event_date || '-'}</td>
+                    <td>${b.event_date ? b.event_date.substring(0, 10) : '-'}</td>
                     <td>
                         <div style="font-weight: 500;">${b.package_name || '-'}</div>
                         <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Rp ${new Intl.NumberFormat('id-ID').format(b.package_price || 0)} &middot; dibayar</div>
@@ -1422,12 +1454,14 @@
 
         function deleteBooking(id) {
             if(confirm('Yakin ingin menghapus booking ini?')) {
-                let bookings = JSON.parse(localStorage.getItem('b_events')) || [];
-                bookings = bookings.filter(x => x.id !== id);
-                localStorage.setItem('b_events', JSON.stringify(bookings));
-                renderTable();
-                renderCalendar();
-                showToast('Booking dihapus', 'success');
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                fetch('/api/bookings/' + id, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': csrfToken }
+                }).then(() => {
+                    loadBookings();
+                    showToast('Booking dihapus', 'success');
+                }).catch(e => console.error(e));
             }
         }
 
@@ -1435,8 +1469,8 @@
         const defaultTitleP = "Pantau jadwal acara, pembayaran, biaya operasional, dan estimasi profit setiap klien.";
 
         function openWorkspace(id) {
-            const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
-            const b = bookings.find(x => x.id === id);
+            const bookings = globalBookings;
+            const b = bookings.find(x => x.id == id);
             if (!b) return;
 
             document.querySelector('.controls-row').style.display = 'none';
@@ -1541,8 +1575,8 @@
         }
 
         function addToGoogleCalendar(id) {
-            const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
-            const b = bookings.find(x => x.id === id);
+            const bookings = globalBookings;
+            const b = bookings.find(x => x.id == id);
             if (!b) return;
             
             const title = encodeURIComponent(`${b.client_name || 'Klien'} - ${b.package_name || 'Event'}`);

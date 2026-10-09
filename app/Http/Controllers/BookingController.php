@@ -24,8 +24,14 @@ class BookingController extends Controller
         $user = auth()->user() ?? \App\Models\User::first();
         if (!$user) return response()->json(['success' => false], 401);
 
-        $booking = new Booking();
-        $booking->user_id = $user->id;
+        // If ID is provided, update existing
+        if ($request->has('id') && $request->input('id')) {
+            $booking = Booking::where('user_id', $user->id)->find($request->input('id'));
+            if (!$booking) return response()->json(['success' => false], 404);
+        } else {
+            $booking = new Booking();
+            $booking->user_id = $user->id;
+        }
         
         $fields = [
             'client_name', 'client_wa_number', 'client_address', 'event_date', 
@@ -44,5 +50,14 @@ class BookingController extends Controller
         $booking->save();
 
         return response()->json(['success' => true, 'booking' => $booking]);
+    }
+
+    public function deleteBooking($id)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) return response()->json(['success' => false], 401);
+
+        Booking::where('user_id', $user->id)->where('id', $id)->delete();
+        return response()->json(['success' => true]);
     }
 }

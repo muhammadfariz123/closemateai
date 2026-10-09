@@ -288,8 +288,16 @@
         @endif
         
         @php
-            $waMsg = "Halo Penapict, saya ingin konsultasi soal penawaran {$quotation->q_no}.";
-            $waLink = "https://wa.me/6281234567890?text=" . urlencode($waMsg);
+            $owner = \App\Models\User::first();
+            $ownerName = $owner ? ($owner->business_name ?? $owner->name) : 'Penapict';
+            $waPhone = $owner ? ($owner->business_wa_number ?? $owner->wa_number ?? '6281234567890') : '6281234567890';
+            // clean up number just in case
+            $waPhone = preg_replace('/[^0-9]/', '', $waPhone);
+            if(str_starts_with($waPhone, '0')) {
+                $waPhone = '62' . substr($waPhone, 1);
+            }
+            $waMsg = "Halo {$ownerName}, saya ingin konsultasi soal penawaran {$quotation->q_no}.";
+            $waLink = "https://wa.me/{$waPhone}?text=" . urlencode($waMsg);
         @endphp
         <a href="{{ $waLink }}" target="_blank" style="text-decoration: none;">
             <button class="btn-wa"><i class="fa-brands fa-whatsapp" style="color: #25D366; font-size: 16px;"></i> Konsultasi via WhatsApp</button>

@@ -194,9 +194,9 @@ function openQuotationModal(id = null) {
             document.getElementById('q_status').value = q.status;
             document.getElementById('q_client').value = q.client;
             document.getElementById('q_phone').value = q.phone;
-            document.getElementById('q_event_date').value = q.event_date;
+            document.getElementById('q_event_date').value = q.event_date ? q.event_date.substring(0, 10) : '';
             document.getElementById('q_venue').value = q.venue;
-            document.getElementById('q_valid_until').value = q.valid_until;
+            document.getElementById('q_valid_until').value = q.valid_until ? q.valid_until.substring(0, 10) : '';
             document.getElementById('q_discount').value = q.discount ? q.discount.toLocaleString('id-ID') : '';
             document.getElementById('q_tnc').value = q.tnc;
             document.getElementById('q_internal_notes').value = q.internal_notes;
@@ -241,7 +241,20 @@ let globalQuotations = []; // Store fetched quotations
 async function loadQuotations() {
     try {
         let res = await fetch('/api/quotations');
-        globalQuotations = await res.json();
+        let rawData = await res.json();
+        const parseQuotes = (data) => data.map(q => {
+            q.discount = parseFloat(q.discount) || 0;
+            q.grandTotal = parseFloat(q.grandTotal) || 0;
+            if (q.items) {
+                q.items = q.items.map(i => ({...i, harga: parseFloat(i.harga) || 0, qty: parseFloat(i.qty) || 0}));
+            }
+            if (q.termins) {
+                q.termins = q.termins.map(t => ({...t, value: parseFloat(t.value) || 0}));
+            }
+            return q;
+        });
+        
+        globalQuotations = parseQuotes(rawData);
         
         // Sync local storage if any
         let local = JSON.parse(localStorage.getItem('q_quotations')) || [];
@@ -259,7 +272,7 @@ async function loadQuotations() {
             }
             localStorage.removeItem('q_quotations');
             let res2 = await fetch('/api/quotations');
-            globalQuotations = await res2.json();
+            globalQuotations = parseQuotes(await res2.json());
         }
         
         renderQuotationsList();

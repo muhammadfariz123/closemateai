@@ -21,6 +21,7 @@ Route::get('/api/dashboard/stats', [DashboardController::class, 'stats']);
 use App\Http\Controllers\BookingController;
 Route::get('/api/bookings', [BookingController::class, 'getBookings']);
 Route::post('/api/bookings', [BookingController::class, 'addBooking']);
+Route::delete('/api/bookings/{id}', [BookingController::class, 'deleteBooking']);
 
 Route::get('/chat', function () {
     return view('chat');
