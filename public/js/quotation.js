@@ -187,7 +187,7 @@ function openQuotationModal(id = null) {
     
     if (id) {
         // Load existing
-        let quotes = JSON.parse(localStorage.getItem('q_quotations')) || [];
+        let quotes = globalQuotations;
         let q = quotes.find(x => x.id === id);
         if(q) {
             document.getElementById('q_no').value = q.q_no;
@@ -236,6 +236,34 @@ function openQuotationModal(id = null) {
     document.body.style.overflow = 'hidden';
 }
 
+let globalQuotations = []; // Store fetched quotations
+
+async function loadQuotations() {
+    try {
+        let res = await fetch('/api/quotations');
+        globalQuotations = await res.json();
+        
+        // Sync local storage if any
+        let local = JSON.parse(localStorage.getItem('q_quotations')) || [];
+        if (local.length > 0) {
+            for (let q of local) {
+                await fetch('/api/quotations', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(q)
+                });
+            }
+            localStorage.removeItem('q_quotations');
+            let res2 = await fetch('/api/quotations');
+            globalQuotations = await res2.json();
+        }
+        
+        renderQuotationsList();
+    } catch(e) {
+        console.error(e);
+    }
+}
+
 function saveQuotation() {
     let clientName = document.getElementById('q_client').value;
     if (!clientName) {
@@ -252,7 +280,7 @@ function saveQuotation() {
     let grandTotal = subtotal - discount;
 
     let payload = {
-        id: editingQuotationId || ('q_' + Date.now()),
+        id: editingQuotationId || '',
         q_no: document.getElementById('q_no').value,
         status: document.getElementById('q_status').value,
         client: clientName,
@@ -266,36 +294,32 @@ function saveQuotation() {
         internal_notes: document.getElementById('q_internal_notes').value,
         items: qItems,
         termins: qTermins,
-        created_at: new Date().toISOString()
     };
 
-    let quotes = JSON.parse(localStorage.getItem('q_quotations')) || [];
-    
-    if (editingQuotationId) {
-        const idx = quotes.findIndex(x => x.id === editingQuotationId);
-        if (idx > -1) quotes[idx] = payload;
-        else quotes.push(payload);
-    } else {
-        quotes.push(payload);
-    }
-    
-    localStorage.setItem('q_quotations', JSON.stringify(quotes));
-    
-    // Log Activity
-    if(window.logSysActivity && !editingQuotationId) {
-        window.logSysActivity('Lead', 'Penapict', 'Membuat penawaran baru', 'Penawaran untuk: ' + clientName + ' (' + payload.q_no + ')', 'fa-file-contract', 'purple');
-    }
-    
-    if (window.showToast) {
-        window.showToast('Penawaran berhasil disimpan!', 'fa-check-circle');
-    } else {
-        alert("Penawaran berhasil disimpan!");
-    }
-    
-    document.getElementById('quotation-modal').classList.remove('show');
-    document.body.style.overflow = '';
-    
-    renderQuotationsList();
+    fetch('/api/quotations', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    }).then(r => r.json()).then(data => {
+        // Log Activity
+        if(window.logSysActivity && !editingQuotationId) {
+            window.logSysActivity('Lead', 'Penapict', 'Membuat penawaran baru', 'Penawaran untuk: ' + clientName + ' (' + payload.q_no + ')', 'fa-file-contract', 'purple');
+        }
+        
+        if (window.showToast) {
+            window.showToast('Penawaran berhasil disimpan!', 'fa-check-circle');
+        } else {
+            alert("Penawaran berhasil disimpan!");
+        }
+        
+        document.getElementById('quotation-modal').classList.remove('show');
+        document.body.style.overflow = '';
+        
+        loadQuotations();
+    }).catch(err => {
+        alert("Gagal menyimpan penawaran");
+        console.error(err);
+    });
 }
 
 let currentFilter = 'Semua';
@@ -315,14 +339,13 @@ function handleSearch(query) {
 
 function deleteQuotation(id) {
     if(!confirm('Yakin ingin menghapus penawaran ini?')) return;
-    let quotes = JSON.parse(localStorage.getItem('q_quotations')) || [];
-    quotes = quotes.filter(q => q.id !== id);
-    localStorage.setItem('q_quotations', JSON.stringify(quotes));
-    renderQuotationsList();
+    fetch('/api/quotations/' + id, {method: 'DELETE'})
+        .then(() => loadQuotations())
+        .catch(e => console.error(e));
 }
 
 function renderQuotationsList() {
-    let quotes = JSON.parse(localStorage.getItem('q_quotations')) || [];
+    let quotes = globalQuotations;
     const container = document.getElementById('quotations-table-body'); // now used as cards container
     const tableContainer = document.getElementById('quotations-table-container');
     const emptyState = document.getElementById('empty-state');
@@ -376,7 +399,7 @@ function renderQuotationsList() {
                     </div>
                 </div>
                 <div class="action-btns" style="display: flex; gap: 8px;">
-                    <button class="btn btn-outline btn-small" onclick="alert('Link berhasil disalin!')"><i class="fa-regular fa-copy"></i> Copy Link</button>
+                    <button class="btn btn-outline btn-small" onclick="copyQuotationLink('${q.id}')"><i class="fa-regular fa-copy"></i> Copy Link</button>
                     <button class="btn btn-outline btn-small" onclick="openPreviewModal('${q.id}')"><i class="fa-solid fa-download"></i> Preview & PDF</button>
                     <button class="btn btn-outline btn-small" onclick="openQuotationModal('${q.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
                     <button class="btn btn-outline btn-small" onclick="alert('Convert ke Booking...')"><i class="fa-regular fa-calendar-check"></i> Convert to Booking</button>
@@ -384,6 +407,21 @@ function renderQuotationsList() {
                 </div>
             </div>
         `;
+    });
+}
+
+function copyQuotationLink(id) {
+    let themeParam = 'minimal';
+    const doc = document.getElementById('preview-document');
+    if (doc) {
+        if (doc.classList.contains('theme-wedding')) themeParam = 'elegance';
+        else if (doc.classList.contains('theme-navy')) themeParam = 'navy';
+    }
+
+    const url = window.location.origin + '/q/' + id + '?t=' + themeParam;
+    navigator.clipboard.writeText(url).then(() => {
+        if(window.showToast) window.showToast('Link berhasil disalin!');
+        else alert('Link berhasil disalin!');
     });
 }
 
@@ -403,7 +441,7 @@ window.showToast = function(message, iconClass = 'fa-check-circle') {
 
 // Initial Render
 document.addEventListener('DOMContentLoaded', () => {
-    renderQuotationsList();
+    loadQuotations();
     
     // Search listener
     const searchInput = document.querySelector('.search-box input');
@@ -416,7 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
 let currentPreviewId = null;
 
 function openPreviewModal(id) {
-    let quotes = JSON.parse(localStorage.getItem('q_quotations')) || [];
+    let quotes = globalQuotations;
     let q = quotes.find(x => x.id === id);
     if(!q) return;
     

@@ -67,9 +67,17 @@ Route::get('/invoice', function () {
     return view('invoice');
 });
 
+use App\Http\Controllers\QuotationController;
+
 Route::get('/quotations', function () {
     return view('quotation');
 });
+Route::get('/api/quotations', [QuotationController::class, 'getQuotations']);
+Route::post('/api/quotations', [QuotationController::class, 'addQuotation']);
+Route::delete('/api/quotations/{id}', [QuotationController::class, 'deleteQuotation']);
+
+Route::get('/q/{id}', [QuotationController::class, 'showPublic']);
+Route::post('/q/{id}/approve', [QuotationController::class, 'approveQuotation']);
 
 Route::get('/finance', function () {
     return view('finance');
