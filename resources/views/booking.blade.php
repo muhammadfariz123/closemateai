@@ -311,8 +311,8 @@
     <div class="main-content">
         <div class="topbar">
             <div class="page-title">
-                <h1>Booking & Operasional Management</h1>
-                <p>Pantau jadwal acara, pembayaran, biaya operasional, dan estimasi profit setiap klien.</p>
+                <h1 id="main_title_h1">Booking & Operasional Management</h1>
+                <p id="main_title_p">Pantau jadwal acara, pembayaran, biaya operasional, dan estimasi profit setiap klien.</p>
             </div>
             <div class="top-actions">
                                 @php
@@ -417,6 +417,123 @@
                     <!-- Table content will be rendered by renderTable() -->
                 </tbody>
             </table>
+        </div>
+        
+        <div class="panel" id="workspace_panel" style="display: none; padding: 0; background: transparent; border: none; box-shadow: none;">
+            <div style="margin-bottom: 24px;">
+                <button onclick="closeWorkspace()" style="background: none; border: none; font-size: 14px; font-weight: 600; color: var(--text-color); cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali ke daftar booking
+                </button>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                <button class="btn" style="border-radius: 20px; font-weight: 600; padding: 8px 16px; background: white; border: 1px solid var(--border-color); color: var(--text-dark);"><i class="fa-regular fa-calendar-check"></i> Ringkasan & Tagihan</button>
+                <button class="btn btn-secondary" style="border-radius: 20px; font-weight: 600; padding: 8px 16px; background: transparent;"><i class="fa-solid fa-file-lines"></i> Event Workspace</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px;">
+                <div style="background: white; border-radius: 12px; padding: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Nilai Paket</div>
+                    <div style="font-size: 18px; font-weight: 700;" id="ws_nilai_paket">Rp 0</div>
+                </div>
+                <div style="background: white; border-radius: 12px; padding: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Sudah Dibayar</div>
+                    <div style="font-size: 18px; font-weight: 700; color: var(--success);" id="ws_sudah_dibayar">Rp 0</div>
+                </div>
+                <div style="background: white; border-radius: 12px; padding: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Sisa Tagihan Klien</div>
+                    <div style="font-size: 18px; font-weight: 700; color: var(--danger);" id="ws_sisa_tagihan">Rp 0</div>
+                </div>
+                <div style="background: white; border-radius: 12px; padding: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Total Biaya Vendor (HPP)</div>
+                    <div style="font-size: 18px; font-weight: 700; color: var(--danger);" id="ws_total_hpp">Rp 0</div>
+                </div>
+                <div style="background: white; border-radius: 12px; padding: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Total Biaya Acara</div>
+                    <div style="font-size: 18px; font-weight: 700; color: var(--text-dark);" id="ws_total_biaya">Rp 0</div>
+                </div>
+            </div>
+            
+            <div style="background: white; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.02); margin-bottom: 24px; padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px;">
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Estimasi Profit Acara</div>
+                        <div style="font-size: 24px; font-weight: 700; color: var(--success);" id="ws_estimasi_profit">Rp 0</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Margin</div>
+                        <div style="font-size: 24px; font-weight: 700; color: var(--success);" id="ws_margin">0%</div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                        <span style="color: var(--text-color);">Nilai Paket</span>
+                        <span style="font-weight: 600;" id="ws_breakdown_paket">Rp 0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                        <span style="color: var(--text-color);">Biaya Operasional</span>
+                        <span style="font-weight: 600; color: var(--danger);" id="ws_breakdown_operasional">- Rp 0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                        <span style="color: var(--text-color);">Biaya Vendor Rekanan (HPP)</span>
+                        <span style="font-weight: 600; color: var(--danger);" id="ws_breakdown_hpp">- Rp 0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                        <span style="color: var(--text-color);">Pengeluaran Tercatat</span>
+                        <span style="font-weight: 600; color: var(--danger);" id="ws_breakdown_pengeluaran">- Rp 0</span>
+                    </div>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 16px;">
+                    Angka ini otomatis ikut berubah saat kamu menambah vendor rekanan atau mencatat biaya baru untuk acara ini.
+                </div>
+            </div>
+            
+            <div style="background: white; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.02); padding: 24px;">
+                <div style="display: flex; gap: 8px; margin-bottom: 24px;" id="ws_badges">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Klien</div>
+                        <div style="font-size: 14px; font-weight: 500;" id="ws_klien">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Alamat Klien</div>
+                        <div style="font-size: 14px; font-weight: 500;" id="ws_alamat">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Tanggal Acara</div>
+                        <div style="font-size: 14px; font-weight: 500;" id="ws_tanggal">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Paket</div>
+                        <div style="font-size: 14px; font-weight: 500;" id="ws_paket">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Handler</div>
+                        <div style="font-size: 14px; font-weight: 500;" id="ws_handler">-</div>
+                    </div>
+                </div>
+                
+                <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 16px;">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Add-on</div>
+                    <div id="ws_addons_list">
+                    </div>
+                </div>
+                
+                <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 16px;">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;"><i class="fa-solid fa-user-group"></i> Tim Bertugas</div>
+                    <div id="ws_team_list" style="font-size: 13px;">
+                    </div>
+                </div>
+                
+                <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Catatan</div>
+                    <div id="ws_catatan" style="font-size: 13px;">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1193,7 +1310,7 @@
                     <td>${resultLinkHtml}</td>
                     <td>
                         <div class="action-icons">
-                            <i class="fa-regular fa-folder"></i>
+                            <i class="fa-regular fa-folder" title="Buka event workspace" onclick="openWorkspace('${b.id}')"></i>
                             <i class="fa-regular fa-calendar-check"></i>
                             <i class="fa-solid fa-pen" onclick="openBookingModal('${b.id}')"></i>
                             <i class="fa-regular fa-trash-can delete" onclick="deleteBooking('${b.id}')"></i>
@@ -1214,6 +1331,114 @@
                 renderCalendar();
                 showToast('Booking dihapus', 'success');
             }
+        }
+
+        const defaultTitleH1 = "Booking & Operasional Management";
+        const defaultTitleP = "Pantau jadwal acara, pembayaran, biaya operasional, dan estimasi profit setiap klien.";
+
+        function openWorkspace(id) {
+            const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            const b = bookings.find(x => x.id === id);
+            if (!b) return;
+
+            document.querySelector('.controls-row').style.display = 'none';
+            document.getElementById('calendar_panel').style.display = 'none';
+            document.getElementById('table_panel').style.display = 'none';
+            
+            document.getElementById('main_title_h1').innerText = b.client_name || 'Tanpa Nama';
+            const dateStr = b.event_date ? new Date(b.event_date).toLocaleDateString('id-ID', {day: '2-digit', month: 'short', year: 'numeric'}) : '-';
+            document.getElementById('main_title_p').innerText = `${b.package_name || '-'} - ${dateStr}`;
+            
+            const pkgPrice = parseFloat(b.package_price) || 0;
+            const pkgQty = parseFloat(b.package_qty) || 1;
+            const paidAmount = parseFloat(b.paid_amount) || 0;
+            const discount = parseFloat(b.discount) || 0;
+            
+            let addonsTotal = 0;
+            let addonsHtml = '';
+            if (b.addons && b.addons.length > 0) {
+                b.addons.forEach(a => {
+                    const aPrice = parseFloat(a.price) || 0;
+                    addonsTotal += aPrice;
+                    addonsHtml += `<div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+                        <span>${a.name}</span>
+                        <span>Rp ${new Intl.NumberFormat('id-ID').format(aPrice)}</span>
+                    </div>`;
+                });
+            } else {
+                addonsHtml = '<div style="font-size: 13px; color: var(--text-muted);">-</div>';
+            }
+            
+            const nilaiPaket = (pkgPrice * pkgQty) + addonsTotal - discount;
+            const sisaTagihan = nilaiPaket - paidAmount;
+            
+            let totalHpp = 0;
+            let totalBiayaAcara = 0;
+            if (b.operational_costs && b.operational_costs.length > 0) {
+                b.operational_costs.forEach(c => {
+                    const costAmt = parseFloat(c.amount) || 0;
+                    if (c.type === 'HPP') totalHpp += costAmt;
+                    totalBiayaAcara += costAmt;
+                });
+            }
+            
+            const estimasiProfit = nilaiPaket - totalBiayaAcara;
+            const margin = nilaiPaket > 0 ? ((estimasiProfit / nilaiPaket) * 100).toFixed(1) : 0;
+            
+            document.getElementById('ws_nilai_paket').innerText = `Rp ${new Intl.NumberFormat('id-ID').format(nilaiPaket)}`;
+            document.getElementById('ws_sudah_dibayar').innerText = `Rp ${new Intl.NumberFormat('id-ID').format(paidAmount)}`;
+            document.getElementById('ws_sisa_tagihan').innerText = `Rp ${new Intl.NumberFormat('id-ID').format(sisaTagihan)}`;
+            document.getElementById('ws_total_hpp').innerText = `Rp ${new Intl.NumberFormat('id-ID').format(totalHpp)}`;
+            document.getElementById('ws_total_biaya').innerText = `Rp ${new Intl.NumberFormat('id-ID').format(totalBiayaAcara)}`;
+            
+            document.getElementById('ws_estimasi_profit').innerText = `Rp ${new Intl.NumberFormat('id-ID').format(estimasiProfit)}`;
+            document.getElementById('ws_margin').innerText = `${margin}%`;
+            document.getElementById('ws_breakdown_paket').innerText = `Rp ${new Intl.NumberFormat('id-ID').format(nilaiPaket)}`;
+            document.getElementById('ws_breakdown_operasional').innerText = `- Rp ${new Intl.NumberFormat('id-ID').format(totalBiayaAcara - totalHpp)}`;
+            document.getElementById('ws_breakdown_hpp').innerText = `- Rp ${new Intl.NumberFormat('id-ID').format(totalHpp)}`;
+            document.getElementById('ws_breakdown_pengeluaran').innerText = `- Rp 0`;
+            
+            const badgeColorMap = {
+                'DP 1': 'rgba(255, 199, 0, 0.1); color: #b38b00; border: 1px solid #ffc700;',
+                'DP 2': 'rgba(80, 205, 137, 0.1); color: #2d8a57; border: 1px solid #50cd89;',
+                'Lunas': 'rgba(107, 92, 216, 0.1); color: #493bb3; border: 1px solid #6b5cd8;'
+            };
+            const paymentStatusBadge = `<span class="handler-badge" style="${badgeColorMap[b.payment_status || 'DP 1']}">${b.payment_status || 'DP 1'}</span>`;
+            const productionStatusBadge = `<span class="handler-badge" style="background: rgba(243, 244, 246, 1); color: #4b5563; border: 1px solid #d1d5db;">${b.production_status || 'Pre-Event'}</span>`;
+            
+            document.getElementById('ws_badges').innerHTML = paymentStatusBadge + productionStatusBadge;
+            document.getElementById('ws_klien').innerText = `${b.client_name || '-'} · ${b.client_wa_number || '-'}`;
+            document.getElementById('ws_alamat').innerText = b.client_address || '-';
+            
+            const timeStr = (b.start_time || b.end_time) ? `${b.start_time || '00:00'}-${b.end_time || '23:59'}` : '';
+            document.getElementById('ws_tanggal').innerText = `${dateStr} ${timeStr ? '· '+timeStr : ''}`;
+            document.getElementById('ws_paket').innerText = b.package_name || '-';
+            
+            const ownerName = '{{ auth()->check() ? auth()->user()->name : 'Penapict' }}';
+            document.getElementById('ws_handler').innerText = ownerName;
+            
+            document.getElementById('ws_addons_list').innerHTML = addonsHtml;
+            
+            let teamHtml = '';
+            if (b.team_members && b.team_members.length > 0) {
+                teamHtml = b.team_members.map(t => `${t.name} (${t.role})`).join('<br>');
+            } else {
+                teamHtml = '-';
+            }
+            document.getElementById('ws_team_list').innerHTML = teamHtml;
+            document.getElementById('ws_catatan').innerText = b.notes || '-';
+            
+            document.getElementById('workspace_panel').style.display = 'block';
+        }
+
+        function closeWorkspace() {
+            document.getElementById('workspace_panel').style.display = 'none';
+            
+            document.getElementById('main_title_h1').innerText = defaultTitleH1;
+            document.getElementById('main_title_p').innerText = defaultTitleP;
+            
+            document.querySelector('.controls-row').style.display = 'flex';
+            switchView(currentView);
         }
     </script>
 </body>
