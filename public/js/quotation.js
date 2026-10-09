@@ -246,10 +246,14 @@ async function loadQuotations() {
         // Sync local storage if any
         let local = JSON.parse(localStorage.getItem('q_quotations')) || [];
         if (local.length > 0) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             for (let q of local) {
                 await fetch('/api/quotations', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
                     body: JSON.stringify(q)
                 });
             }
@@ -296,11 +300,19 @@ function saveQuotation() {
         termins: qTermins,
     };
 
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
     fetch('/api/quotations', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
         body: JSON.stringify(payload)
-    }).then(r => r.json()).then(data => {
+    }).then(async r => {
+        if (!r.ok) throw await r.text();
+        return r.json();
+    }).then(data => {
         // Log Activity
         if(window.logSysActivity && !editingQuotationId) {
             window.logSysActivity('Lead', 'Penapict', 'Membuat penawaran baru', 'Penawaran untuk: ' + clientName + ' (' + payload.q_no + ')', 'fa-file-contract', 'purple');
@@ -339,7 +351,13 @@ function handleSearch(query) {
 
 function deleteQuotation(id) {
     if(!confirm('Yakin ingin menghapus penawaran ini?')) return;
-    fetch('/api/quotations/' + id, {method: 'DELETE'})
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    fetch('/api/quotations/' + id, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
         .then(() => loadQuotations())
         .catch(e => console.error(e));
 }
