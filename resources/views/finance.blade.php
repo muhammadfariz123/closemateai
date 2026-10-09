@@ -124,6 +124,37 @@
         
         .select-filter { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; color: var(--text-dark); outline: none; background: white; cursor: pointer; }
 
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white; border-radius: 12px; width: 500px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .modal-header {
+            padding: 20px 24px; border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+        .modal-header p { font-size: 12px; color: var(--text-muted); }
+        .close-btn { font-size: 20px; color: var(--text-muted); cursor: pointer; }
+        .modal-body { padding: 24px; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; }
+        .form-control:focus { border-color: var(--primary); }
+        
+        /* Toasts */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: white; border-left: 4px solid var(--success); padding: 12px 20px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
         /* Responsive Mobile Layout */
         @media (max-width: 768px) {
             .sidebar {
@@ -316,38 +347,38 @@
         
         <div class="filter-row" style="margin-bottom: 24px;">
             <button class="btn btn-outline"><i class="fa-solid fa-download"></i> Export Laporan (CSV)</button>
-            <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Catat Pengeluaran Baru</button>
+            <button class="btn btn-primary" onclick="openExpenseModal()"><i class="fa-solid fa-plus"></i> Catat Pengeluaran Baru</button>
         </div>
         
         <div class="date-info">
-            Menampilkan data: <strong>27 September 2026 - 28 September 2026</strong>
+            Menampilkan data: <strong id="report_period">27 September 2026 - 28 September 2026</strong>
         </div>
 
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-title">TOTAL OMSET</div>
-                <div class="stat-value">Rp 0</div>
+                <div class="stat-value" id="val_omset">Rp 0</div>
                 <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
             </div>
             <div class="stat-card green">
                 <div class="stat-title">UANG MASUK</div>
-                <div class="stat-value">Rp 0</div>
+                <div class="stat-value" id="val_masuk">Rp 0</div>
                 <div class="stat-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
             </div>
             <div class="stat-card">
                 <div class="stat-title">SISA PIUTANG KLIEN</div>
-                <div class="stat-value">Rp 0</div>
+                <div class="stat-value" id="val_piutang">Rp 0</div>
                 <div class="stat-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
             </div>
             <div class="stat-card red">
                 <div class="stat-title">TOTAL PENGELUARAN</div>
-                <div class="stat-value">Rp 0</div>
+                <div class="stat-value" id="val_pengeluaran">Rp 0</div>
                 <div class="stat-desc">Pengeluaran manual + biaya operasional + vendor (HPP)</div>
                 <div class="stat-icon"><i class="fa-solid fa-arrow-trend-down"></i></div>
             </div>
             <div class="stat-card green">
                 <div class="stat-title">PROFIT BERSIH</div>
-                <div class="stat-value">Rp 0</div>
+                <div class="stat-value" id="val_profit">Rp 0</div>
                 <div class="stat-desc">Nilai paket dikurangi seluruh biaya acara</div>
                 <div class="stat-icon"><i class="fa-solid fa-piggy-bank"></i></div>
             </div>
@@ -364,11 +395,11 @@
             
             <div class="chart-placeholder">
                 <div class="y-axis">
-                    <div>0jt -</div>
-                    <div>0jt -</div>
-                    <div>0jt -</div>
-                    <div>0jt -</div>
-                    <div>0jt -</div>
+                    <div>10jt -</div>
+                    <div>8jt -</div>
+                    <div>6jt -</div>
+                    <div>4jt -</div>
+                    <div>2jt -</div>
                 </div>
                 <div class="grid-line"></div>
                 <div class="grid-line"></div>
@@ -376,8 +407,14 @@
                 <div class="grid-line"></div>
                 <div class="grid-line solid"></div>
                 
-                <div style="position: absolute; left: 50%; bottom: 20px; display: flex; flex-direction: column; align-items: center; transform: translateX(-50%);">
-                    <div style="width: 8px; height: 8px; border-radius: 50%; border: 2px solid #3b82f6; background: white; z-index: 2; margin-bottom: -4px;"></div>
+                <div style="position: absolute; left: 50%; bottom: 20px; display: flex; flex-direction: column; align-items: center; transform: translateX(-50%); width: 80%;">
+                    <div style="display: flex; align-items: flex-end; justify-content: center; width: 100%; height: 260px; position: relative;">
+                        <div id="chart_bar_masuk" style="width: 100px; height: 10%; background: var(--success); margin-right: 4px;"></div>
+                        <div id="chart_bar_keluar" style="width: 100px; height: 50%; background: var(--danger);"></div>
+                        <div style="position: absolute; width: 100%; top: 50%; border-top: 2px solid #3b82f6; display: flex; justify-content: center;">
+                            <div style="width: 8px; height: 8px; border-radius: 50%; border: 2px solid #3b82f6; background: white; margin-top: -5px;"></div>
+                        </div>
+                    </div>
                 </div>
                 
             </div>
@@ -421,7 +458,7 @@
                         <th>Nominal</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="expense_table_body">
                     <tr>
                         <td colspan="5" class="empty-row">Belum ada pengeluaran pada periode ini.</td>
                     </tr>
@@ -448,7 +485,7 @@
                         <th>Profit Margin</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="profit_table_body">
                     <tr>
                         <td colspan="6" class="empty-row">Belum ada booking untuk dihitung.</td>
                     </tr>
@@ -458,10 +495,270 @@
 
     </div>
 
+    <!-- Catat Pengeluaran Baru Modal -->
+    <div class="modal-overlay" id="expenseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">Catat Pengeluaran Baru</h2>
+                    <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Catat biaya operasional agar profit per acara terhitung otomatis.</p>
+                </div>
+                <button onclick="closeExpenseModal()" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Acara (opsional)</label>
+                    <select id="exp_acara" class="form-control">
+                        <option value="">— Pengeluaran umum —</option>
+                    </select>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Kategori</label>
+                        <select id="exp_kategori" class="form-control">
+                            <option>Fee Tim</option>
+                            <option>Sewa Alat</option>
+                            <option>Transport</option>
+                            <option>Akomodasi</option>
+                            <option>Cetak & Album</option>
+                            <option>Marketing</option>
+                            <option>Operasional</option>
+                            <option>Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tanggal</label>
+                        <input type="date" id="exp_tanggal" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Judul Pengeluaran</label>
+                    <input type="text" id="exp_judul" class="form-control" placeholder="Fee fotografer, sewa lensa, transport...">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nominal (Rp)</label>
+                    <input type="text" id="exp_nominal" class="form-control" placeholder="0" oninput="formatRupiahInput(this)">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label class="form-label">Catatan</label>
+                    <textarea id="exp_catatan" class="form-control" rows="3" placeholder=""></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                    <button class="btn btn-outline" onclick="closeExpenseModal()">Batal</button>
+                    <button class="btn btn-primary" onclick="saveExpense()">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
     <script>
         // Sidebar Collapse
         document.getElementById('btn-collapse').addEventListener('click', function() {
             document.body.classList.toggle('sidebar-collapsed');
+        });
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function formatRupiah(number) {
+            return new Intl.NumberFormat('id-ID').format(number);
+        }
+
+        function parseRupiah(str) {
+            if (!str) return 0;
+            return parseInt(str.replace(/[^0-9]/g, ''), 10) || 0;
+        }
+
+        function formatRupiahInput(input) {
+            let val = parseRupiah(input.value);
+            if (val === 0) {
+                input.value = '';
+            } else {
+                input.value = formatRupiah(val);
+            }
+        }
+
+        function openExpenseModal() {
+            const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            const select = document.getElementById('exp_acara');
+            let html = `<option value="">— Pengeluaran umum —</option>`;
+            bookings.forEach(b => {
+                html += `<option value="${b.id}">${b.client_name} · ${b.event_date || '-'}</option>`;
+            });
+            select.innerHTML = html;
+            
+            document.getElementById('exp_tanggal').valueAsDate = new Date();
+            
+            document.getElementById('exp_kategori').value = 'Fee Tim';
+            document.getElementById('exp_judul').value = '';
+            document.getElementById('exp_nominal').value = '0';
+            document.getElementById('exp_catatan').value = '';
+            
+            document.getElementById('expenseModal').style.display = 'flex';
+        }
+
+        function closeExpenseModal() {
+            document.getElementById('expenseModal').style.display = 'none';
+        }
+
+        function saveExpense() {
+            const acaraId = document.getElementById('exp_acara').value;
+            const kategori = document.getElementById('exp_kategori').value;
+            const tanggal = document.getElementById('exp_tanggal').value;
+            const judul = document.getElementById('exp_judul').value;
+            const nominal = parseRupiah(document.getElementById('exp_nominal').value);
+            const catatan = document.getElementById('exp_catatan').value;
+            
+            if (!judul || !nominal) {
+                alert("Judul dan nominal wajib diisi!");
+                return;
+            }
+            
+            const exp = {
+                id: 'exp_' + Date.now(),
+                acaraId, kategori, tanggal, judul, nominal, catatan
+            };
+            
+            let expenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+            expenses.push(exp);
+            localStorage.setItem('f_expenses', JSON.stringify(expenses));
+            
+            closeExpenseModal();
+            showToast('Pengeluaran dicatat');
+            calculateFinance();
+        }
+
+        function calculateFinance() {
+            const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            const expenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+            
+            let totalOmset = 0;
+            let uangMasuk = 0;
+            let pengeluaranManual = 0;
+            let pengeluaranOperasional = 0;
+            
+            bookings.forEach(b => {
+                totalOmset += (b.total_income || 0);
+                uangMasuk += (b.paid_amount || 0);
+                pengeluaranOperasional += (b.total_operational_cost || 0);
+            });
+            
+            expenses.forEach(e => {
+                pengeluaranManual += (e.nominal || 0);
+            });
+            
+            const sisaPiutang = totalOmset - uangMasuk;
+            const totalPengeluaran = pengeluaranOperasional + pengeluaranManual;
+            const profitBersih = totalOmset - totalPengeluaran;
+            
+            document.getElementById('val_omset').innerText = 'Rp ' + formatRupiah(totalOmset);
+            document.getElementById('val_masuk').innerText = 'Rp ' + formatRupiah(uangMasuk);
+            document.getElementById('val_piutang').innerText = 'Rp ' + formatRupiah(sisaPiutang > 0 ? sisaPiutang : 0);
+            document.getElementById('val_pengeluaran').innerText = 'Rp ' + formatRupiah(totalPengeluaran);
+            
+            const profitEl = document.getElementById('val_profit');
+            profitEl.innerText = 'Rp ' + formatRupiah(profitBersih);
+            if (profitBersih < 0) {
+                profitEl.style.color = 'var(--danger)';
+                profitEl.parentElement.classList.remove('green');
+                profitEl.parentElement.classList.add('red');
+            } else {
+                profitEl.style.color = 'var(--success)';
+                profitEl.parentElement.classList.remove('red');
+                profitEl.parentElement.classList.add('green');
+            }
+            
+            const expTbody = document.getElementById('expense_table_body');
+            if (expenses.length > 0) {
+                let expHtml = '';
+                [...expenses].reverse().forEach(e => {
+                    let acaraName = '-';
+                    if (e.acaraId) {
+                        const b = bookings.find(x => x.id === e.acaraId);
+                        if (b) acaraName = `<span style="background: rgba(107,92,216,0.1); color: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;">${b.client_name}</span>`;
+                    }
+                    expHtml += `
+                    <tr>
+                        <td>${e.tanggal || '-'}</td>
+                        <td style="font-weight: 500;">${e.judul}</td>
+                        <td><span style="color: var(--text-muted); font-size: 12px;">${e.kategori}</span></td>
+                        <td>${acaraName}</td>
+                        <td style="color: var(--danger); font-weight: 600;">- Rp ${formatRupiah(e.nominal)}</td>
+                    </tr>
+                    `;
+                });
+                expTbody.innerHTML = expHtml;
+            } else {
+                expTbody.innerHTML = `<tr><td colspan="5" class="empty-row">Belum ada pengeluaran pada periode ini.</td></tr>`;
+            }
+            
+            const profTbody = document.getElementById('profit_table_body');
+            if (bookings.length > 0) {
+                let profHtml = '';
+                bookings.forEach(b => {
+                    const linkedExpenses = expenses.filter(e => e.acaraId === b.id).reduce((sum, e) => sum + (e.nominal || 0), 0);
+                    const bookingCost = (b.total_operational_cost || 0) + linkedExpenses;
+                    const bookingIncome = b.total_income || 0;
+                    const bookingProfit = bookingIncome - bookingCost;
+                    
+                    let profitColor = 'var(--success)';
+                    if (bookingProfit < 0) profitColor = 'var(--danger)';
+                    
+                    profHtml += `
+                    <tr>
+                        <td style="font-weight: 600;">${b.client_name || '-'}</td>
+                        <td style="color: var(--text-muted);">${b.event_date || '-'}</td>
+                        <td>${b.package_name || '-'}</td>
+                        <td>Rp ${formatRupiah(bookingIncome)}</td>
+                        <td style="color: var(--danger);">Rp ${formatRupiah(bookingCost)}</td>
+                        <td style="color: ${profitColor}; font-weight: 600;">Rp ${formatRupiah(bookingProfit)}</td>
+                    </tr>
+                    `;
+                });
+                profTbody.innerHTML = profHtml;
+            } else {
+                profTbody.innerHTML = `<tr><td colspan="6" class="empty-row">Belum ada booking untuk dihitung.</td></tr>`;
+            }
+            
+            if (totalOmset > 0) {
+                const max = Math.max(uangMasuk, totalPengeluaran);
+                if (max > 0) {
+                    document.getElementById('chart_bar_masuk').style.height = `${(uangMasuk / max) * 100}%`;
+                    document.getElementById('chart_bar_keluar').style.height = `${(totalPengeluaran / max) * 100}%`;
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            calculateFinance();
+            
+            const today = new Date();
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            const formatter = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+            const firstDateStr = formatter.format(new Date(today.getFullYear(), today.getMonth(), 1));
+            const lastDateStr = formatter.format(lastDay);
+            const periodStr = `${firstDateStr} - ${lastDateStr}`;
+            
+            document.getElementById('report_period').innerText = periodStr;
+            const chartPeriodTitle = document.querySelector('.section-meta');
+            if (chartPeriodTitle) chartPeriodTitle.innerText = `Periode: ${periodStr}`;
         });
     </script>
 </body>
