@@ -464,8 +464,16 @@
                 <div class="section-title">
                     <h3>Riwayat Pengeluaran</h3>
                 </div>
-                <select class="select-filter">
-                    <option>Semua Kategori</option>
+                <select class="select-filter" id="filter_kategori" onchange="calculateFinance()">
+                    <option value="Semua Kategori">Semua Kategori</option>
+                    <option value="Fee Tim">Fee Tim</option>
+                    <option value="Sewa Alat">Sewa Alat</option>
+                    <option value="Transport">Transport</option>
+                    <option value="Akomodasi">Akomodasi</option>
+                    <option value="Cetak & Album">Cetak & Album</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Operasional">Operasional</option>
+                    <option value="Lainnya">Lainnya</option>
                 </select>
             </div>
             
@@ -521,12 +529,13 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div>
-                    <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">Catat Pengeluaran Baru</h2>
+                    <h2 id="modal_title" style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">Catat Pengeluaran Baru</h2>
                     <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Catat biaya operasional agar profit per acara terhitung otomatis.</p>
                 </div>
                 <button onclick="closeExpenseModal()" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
+                <input type="hidden" id="exp_id" value="">
                 <div class="form-group">
                     <label class="form-label">Acara (opsional)</label>
                     <select id="exp_acara" class="form-control">
@@ -625,11 +634,13 @@
             });
             select.innerHTML = html;
             
+            document.getElementById('modal_title').innerText = "Catat Pengeluaran Baru";
+            document.getElementById('exp_id').value = '';
+            document.getElementById('exp_acara').value = '';
             document.getElementById('exp_tanggal').valueAsDate = new Date();
-            
             document.getElementById('exp_kategori').value = 'Fee Tim';
             document.getElementById('exp_judul').value = '';
-            document.getElementById('exp_nominal').value = '0';
+            document.getElementById('exp_nominal').value = '';
             document.getElementById('exp_catatan').value = '';
             
             document.getElementById('expenseModal').style.display = 'flex';
@@ -640,6 +651,7 @@
         }
 
         function saveExpense() {
+            const id = document.getElementById('exp_id').value;
             const acaraId = document.getElementById('exp_acara').value;
             const kategori = document.getElementById('exp_kategori').value;
             const tanggal = document.getElementById('exp_tanggal').value;
@@ -652,17 +664,26 @@
                 return;
             }
             
-            const exp = {
-                id: 'exp_' + Date.now(),
-                acaraId, kategori, tanggal, judul, nominal, catatan
-            };
-            
             let expenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
-            expenses.push(exp);
+            
+            if (id) {
+                const index = expenses.findIndex(e => e.id === id);
+                if (index > -1) {
+                    expenses[index] = { ...expenses[index], acaraId, kategori, tanggal, judul, nominal, catatan };
+                    showToast('Pengeluaran diperbarui');
+                }
+            } else {
+                const exp = {
+                    id: 'exp_' + Date.now(),
+                    acaraId, kategori, tanggal, judul, nominal, catatan
+                };
+                expenses.push(exp);
+                showToast('Pengeluaran dicatat');
+            }
+            
             localStorage.setItem('f_expenses', JSON.stringify(expenses));
             
             closeExpenseModal();
-            showToast('Pengeluaran dicatat');
             calculateFinance();
         }
 
@@ -707,9 +728,15 @@
             }
             
             const expTbody = document.getElementById('expense_table_body');
-            if (expenses.length > 0) {
+            const filterKategori = document.getElementById('filter_kategori').value;
+            let filteredExpenses = expenses;
+            if (filterKategori !== 'Semua Kategori') {
+                filteredExpenses = expenses.filter(e => e.kategori === filterKategori);
+            }
+            
+            if (filteredExpenses.length > 0) {
                 let expHtml = '';
-                [...expenses].reverse().forEach(e => {
+                [...filteredExpenses].reverse().forEach(e => {
                     let acaraName = '-';
                     if (e.acaraId) {
                         const b = bookings.find(x => x.id === e.acaraId);
@@ -776,12 +803,14 @@
             document.querySelector('.x-axis').innerText = shortPeriod;
             
             // Basic chart update mockup
-            let max = Math.max(uangMasuk, totalPengeluaran, Math.abs(profitBersih));
+            const chartProfit = uangMasuk - totalPengeluaran; // Cash flow profit
+            let max = Math.max(uangMasuk, totalPengeluaran, Math.abs(chartProfit));
             if (max === 0) max = 1;
+            max = max * 1.2; // Add 20% padding at top so bars aren't touching the very edge
             
             let masukPct = Math.min((uangMasuk / max) * 100, 100);
             let keluarPct = Math.min((totalPengeluaran / max) * 100, 100);
-            let profitPct = Math.min((Math.abs(profitBersih) / max) * 100, 100);
+            let profitPct = Math.min((Math.abs(chartProfit) / max) * 100, 100);
             
             document.getElementById('chart_line_masuk').style.bottom = `${masukPct}%`;
             document.getElementById('chart_bar_keluar').style.height = `${keluarPct}%`;
@@ -789,8 +818,7 @@
             const dotProfit = document.getElementById('chart_dot_profit');
             const lineProfit = document.getElementById('chart_line_profit');
             
-            // If profit is negative, we just show it at 0% or flip the chart visually, but since bottom is 0:
-            if (profitBersih < 0) {
+            if (chartProfit < 0) {
                 dotProfit.style.bottom = `0%`;
                 lineProfit.style.bottom = `0%`;
                 dotProfit.style.borderColor = `var(--danger)`;
@@ -804,7 +832,28 @@
         }
 
         function editExpense(id) {
-            alert("Fitur edit akan segera hadir.");
+            const expenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+            const e = expenses.find(x => x.id === id);
+            if (!e) return;
+            
+            const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            const select = document.getElementById('exp_acara');
+            let html = `<option value="">— Pengeluaran umum —</option>`;
+            bookings.forEach(b => {
+                html += `<option value="${b.id}">${b.client_name} · ${b.event_date || '-'}</option>`;
+            });
+            select.innerHTML = html;
+            
+            document.getElementById('modal_title').innerText = "Edit Pengeluaran";
+            document.getElementById('exp_id').value = e.id;
+            document.getElementById('exp_acara').value = e.acaraId || '';
+            document.getElementById('exp_tanggal').value = e.tanggal || '';
+            document.getElementById('exp_kategori').value = e.kategori || 'Fee Tim';
+            document.getElementById('exp_judul').value = e.judul || '';
+            document.getElementById('exp_nominal').value = formatRupiah(e.nominal || 0);
+            document.getElementById('exp_catatan').value = e.catatan || '';
+            
+            document.getElementById('expenseModal').style.display = 'flex';
         }
         
         function deleteExpense(id) {
