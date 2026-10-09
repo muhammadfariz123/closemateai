@@ -278,7 +278,7 @@
         /* 3. Clean Minimalist (Black) */
         .theme-minimal { --doc-primary: #222222; --doc-secondary: #f5f5f5; --doc-text: #333; --doc-font: 'Inter', sans-serif; }
         
-        .doc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; border-bottom: 4px solid var(--doc-primary); padding-bottom: 16px; }
+        .doc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; border-bottom: 4px solid var(--doc-primary); padding-bottom: 16px; flex-wrap: wrap; gap: 20px; }
         .doc-vendor h1 { font-family: var(--doc-font); color: var(--doc-primary); font-size: 28px; font-style: italic; margin-bottom: 8px; }
         .doc-status { background: var(--doc-secondary); color: var(--doc-primary); padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; }
         
@@ -286,21 +286,21 @@
         .doc-meta h2 { font-family: var(--doc-font); letter-spacing: 2px; color: var(--doc-primary); font-size: 24px; margin-bottom: 4px; text-transform: uppercase; }
         .doc-meta p { font-size: 12px; color: #666; margin-bottom: 2px; }
         
-        .doc-info-box { background: var(--doc-secondary); padding: 20px; border-radius: 8px; margin-bottom: 32px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .doc-info-box { background: var(--doc-secondary); padding: 20px; border-radius: 8px; margin-bottom: 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; }
         .doc-info-item h4 { font-size: 11px; color: var(--doc-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
         .doc-info-item p { font-size: 14px; color: var(--doc-text); font-weight: 600; }
         
-        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; table-layout: fixed; word-wrap: break-word; }
         .doc-table th { background: var(--doc-primary); color: white; padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
         .doc-table td { padding: 12px 16px; border-bottom: 1px solid #eee; font-size: 13px; color: var(--doc-text); }
         .doc-section-title { font-weight: 700; color: var(--doc-primary); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; padding-top: 16px !important; }
         
-        .doc-totals { width: 300px; margin-left: auto; margin-bottom: 32px; }
+        .doc-totals { width: 100%; max-width: 300px; margin-left: auto; margin-bottom: 32px; }
         .doc-total-row { display: flex; justify-content: space-between; padding: 8px 16px; font-size: 14px; }
         .doc-grand-total { background: var(--doc-primary); color: white; font-weight: bold; font-size: 16px; border-radius: 4px; margin-top: 8px; }
         
         .doc-termins-title { font-size: 14px; color: var(--doc-primary); font-weight: 700; letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; }
-        .doc-termins-grid { display: flex; gap: 16px; margin-bottom: 32px; }
+        .doc-termins-grid { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 32px; }
         .doc-termin-card { border: 1px solid var(--doc-primary); padding: 16px; border-radius: 8px; flex: 1; }
         .doc-termin-card h5 { font-size: 11px; color: var(--doc-primary); text-transform: uppercase; margin-bottom: 4px; }
         .doc-termin-card p { font-size: 14px; font-weight: 700; color: var(--doc-text); margin-bottom: 4px; }
@@ -309,8 +309,8 @@
         .doc-tnc { font-size: 12px; color: #555; line-height: 1.6; margin-bottom: 48px; }
         .doc-tnc h4 { font-size: 14px; color: var(--doc-primary); font-weight: 700; letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; }
         
-        .doc-signatures { display: flex; justify-content: space-between; margin-top: 48px; }
-        .doc-sig-box { text-align: center; width: 200px; }
+        .doc-signatures { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 32px; margin-top: 48px; }
+        .doc-sig-box { text-align: center; flex: 1; min-width: 150px; max-width: 200px; }
         .doc-sig-box p { font-size: 12px; color: #666; margin-bottom: 60px; }
         .doc-sig-box .sig-line { border-bottom: 1px solid #333; font-weight: 700; padding-bottom: 8px; font-size: 14px; }
         
