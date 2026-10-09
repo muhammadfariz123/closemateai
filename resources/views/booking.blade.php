@@ -215,14 +215,14 @@
             .step-text { text-align: left; }
             .qr-placeholder { width: 100%; max-width: 240px; }
             .alert-box { flex-direction: column; align-items: flex-start; gap: 12px; }
-            
-            .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-            .toast { background: white; color: var(--text-dark); padding: 16px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 4px solid var(--success); animation: slideIn 0.3s forwards; }
-            @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-            @keyframes fadeOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
-            
-            .package-dropdown-item:hover { background: rgba(255,255,255,0.1); }
         }
+        
+        .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: white; color: var(--text-dark); padding: 16px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 4px solid var(--success); animation: slideIn 0.3s forwards; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+        
+        .package-dropdown-item:hover { background: rgba(255,255,255,0.1); }
         .table-view {
             width: 100%;
             border-collapse: collapse;
@@ -1010,7 +1010,7 @@
         
         function savePackageToLocal() {
             const name = packageInput.value.trim();
-            const price = parseFloat(packagePriceInput.value) || 0;
+            const price = parseRupiah(packagePriceInput.value) || 0;
             if (!name) return;
             
             let packages = getSavedPackages();

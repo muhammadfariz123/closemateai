@@ -59,7 +59,7 @@
                     <div>
                         <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Harga Paket (Rp)</label>
                         <input type="text" id="b_package_price" class="form-control" placeholder="0" oninput="formatRupiahInput(this); calculateBooking()">
-                        <button onclick="savePackageToLocal()" class="btn btn-secondary" style="margin-top: 8px; width: 100%; font-size: 13px; padding: 6px 12px;"><i class="fa-regular fa-floppy-disk"></i> Simpan Paket & Harga</button>
+                        <button type="button" onclick="savePackageToLocal()" class="btn btn-secondary" style="margin-top: 8px; width: 100%; font-size: 13px; padding: 6px 12px;"><i class="fa-regular fa-floppy-disk"></i> Simpan Paket & Harga</button>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Tersimpan di perangkat ini dan bisa dipakai lagi di Invoice Generator.</p>
                     </div>
                 </div>
