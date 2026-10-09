@@ -267,20 +267,19 @@
         .theme-btn.active { border-color: var(--primary); background: rgba(107, 92, 216, 0.05); color: var(--primary); }
         .theme-color-dot { width: 12px; height: 12px; border-radius: 50%; }
         
-        .preview-document-container { padding: 32px 24px; background: #f1f1f4; overflow-y: auto; overflow-x: hidden; max-height: calc(100vh - 140px); display: flex; justify-content: center; border-radius: 0 0 12px 12px; }
-        .document-wrapper { display: flex; justify-content: center; transform-origin: top center; transition: transform 0.2s ease; }
+        .preview-document-container { padding: 24px; background: #f1f1f4; overflow: auto; max-height: calc(100vh - 140px); display: flex; justify-content: center; border-radius: 0 0 12px 12px; }
         
         .document-page { 
             box-sizing: border-box; 
             width: 794px; 
-            height: 1123px; /* Exact A4 Height */
+            min-width: 794px;
+            min-height: 1123px; /* Exact A4 Height */
             background: white; 
             padding: 48px; 
             box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
             position: relative; 
             font-family: 'Inter', sans-serif;
             border-radius: 8px;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
@@ -333,20 +332,20 @@
         .doc-sig-box .sig-name { font-weight: 600; font-size: 13px; color: #222; }
         
         /* Auto scale container down without scrollbars */
-        @media (max-width: 900px) {
-            .document-wrapper { transform: scale(0.9); margin-bottom: -112px; }
+        @media (max-width: 1024px) {
+            .document-page { zoom: 0.8; }
         }
         @media (max-width: 768px) {
-            .document-wrapper { transform: scale(0.7); margin-bottom: -337px; }
+            .document-page { zoom: 0.6; }
         }
         @media (max-width: 500px) {
-            .document-wrapper { transform: scale(0.45); margin-bottom: -617px; }
+            .document-page { zoom: 0.45; }
         }
         
         @media print {
             body * { visibility: hidden; }
             #preview-document, #preview-document * { visibility: visible; }
-            #preview-document { position: absolute; left: 0; top: 0; margin: 0; padding: 0; box-shadow: none; transform: none !important; width: 794px; height: 1123px; }
+            #preview-document { position: absolute; left: 0; top: 0; margin: 0; padding: 0; box-shadow: none; zoom: 1 !important; }
         }
     </style>
 </head>
@@ -589,12 +588,11 @@
             </div>
             
             <div class="preview-document-container">
-                <div class="document-wrapper" id="document-wrapper">
-                    <div class="document-page theme-wedding" id="preview-document">
-                        <!-- Top Border -->
-                        <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
-                        
-                        <div class="doc-header">
+                <div class="document-page theme-wedding" id="preview-document">
+                    <!-- Top Border -->
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary); border-top-left-radius: 8px; border-top-right-radius: 8px;"></div>
+                    
+                    <div class="doc-header">
                             <div class="doc-vendor">
                                 <h1 id="doc_vendor_name">Penapict</h1>
                                 <div class="doc-status" id="doc_status">Draft</div>
@@ -679,9 +677,8 @@
                         </div>
                         
                         <!-- Bottom Border -->
-                        <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary); border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;"></div>
                     </div>
-                </div>
             </div>
         </div>
     </div>
