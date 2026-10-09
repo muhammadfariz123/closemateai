@@ -267,9 +267,8 @@
         .theme-btn.active { border-color: var(--primary); background: rgba(107, 92, 216, 0.05); color: var(--primary); }
         .theme-color-dot { width: 12px; height: 12px; border-radius: 50%; }
         
-        .preview-document-container { padding: 24px; background: #f1f1f4; overflow: auto; max-height: 70vh; display: flex; justify-content: center; }
-        .document-page { box-sizing: border-box; width: 794px !important; min-width: 794px !important; margin: 0 auto; background: white; padding: 48px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; font-family: 'Inter', sans-serif; }
-        /* document-inner removed */
+        .preview-document-container { padding: 24px; background: #f1f1f4; overflow-y: auto; overflow-x: hidden; max-height: 70vh; }
+        .document-page { box-sizing: border-box; width: 100%; max-width: 794px; margin: 0 auto; background: white; padding: 48px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; font-family: 'Inter', sans-serif; }
         
         /* Document Themes */
         /* 1. Wedding Elegance (Red/Pinkish) */
@@ -291,7 +290,7 @@
         .doc-info-item h4 { font-size: 11px; color: var(--doc-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
         .doc-info-item p { font-size: 14px; color: var(--doc-text); font-weight: 600; }
         
-        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; table-layout: fixed; word-wrap: break-word; }
         .doc-table th { background: var(--doc-primary); color: white; padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
         .doc-table td { padding: 12px 16px; border-bottom: 1px solid #eee; font-size: 13px; color: var(--doc-text); }
         .doc-section-title { font-weight: 700; color: var(--doc-primary); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; padding-top: 16px !important; }
@@ -315,18 +314,10 @@
         .doc-sig-box p { font-size: 12px; color: #666; margin-bottom: 60px; }
         .doc-sig-box .sig-line { border-bottom: 1px solid #333; font-weight: 700; padding-bottom: 8px; font-size: 14px; }
         
-        @media (max-width: 900px) {
-            .preview-document-container { padding: 16px; }
-            .document-page { transform: scale(0.85); transform-origin: top center; margin-bottom: -15%; }
-        }
-        @media (max-width: 600px) {
-            .document-page { transform: scale(0.6); transform-origin: top center; margin-bottom: -40%; }
-        }
-        
         @media print {
             body * { visibility: hidden; }
             #preview-document, #preview-document * { visibility: visible; }
-            #preview-document { position: absolute; left: 0; top: 0; margin: 0; padding: 0; box-shadow: none; transform: scale(1) !important; }
+            #preview-document { position: absolute; left: 0; top: 0; margin: 0; padding: 0; box-shadow: none; }
         }
     </style>
 </head>
@@ -571,7 +562,7 @@
             <div class="preview-document-container">
                 <div class="document-page theme-wedding" id="preview-document">
                     <!-- Top Border -->
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary); z-index: 2;"></div>
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
                     
                     <div class="doc-header">
                         <div class="doc-vendor">
@@ -657,7 +648,7 @@
                     </div>
                     
                     <!-- Bottom Border -->
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary); z-index: 2;"></div>
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
                 </div>
             </div>
         </div>
