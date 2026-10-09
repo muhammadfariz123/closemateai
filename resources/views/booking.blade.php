@@ -540,8 +540,8 @@
     @include('components.booking-modal')
     
     <!-- Google Calendar Sync Modal -->
-    <div class="modal-overlay" id="googleCalendarSyncModal" style="display: none;">
-        <div class="modal-content" style="width: 500px; padding: 24px; border-radius: 12px; background: white;">
+    <div id="googleCalendarSyncModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; justify-content: center; align-items: center; background: transparent;">
+        <div class="modal-content" style="width: 500px; padding: 24px; border-radius: 12px; background: white; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: 1px solid var(--border-color);">
             <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <h2 style="font-size: 16px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 8px;">
                     <i class="fa-regular fa-calendar-check" style="color: var(--primary-color);"></i> Hubungkan Jadwal Booking ke Google Calendar
