@@ -267,8 +267,9 @@
         .theme-btn.active { border-color: var(--primary); background: rgba(107, 92, 216, 0.05); color: var(--primary); }
         .theme-color-dot { width: 12px; height: 12px; border-radius: 50%; }
         
-        .preview-document-container { padding: 24px; background: #f1f1f4; overflow-y: auto; overflow-x: hidden; max-height: 70vh; }
-        .document-page { box-sizing: border-box; width: 100%; max-width: 794px; margin: 0 auto; background: white; padding: 48px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; font-family: 'Inter', sans-serif; }
+        .preview-document-container { padding: 24px; background: #f1f1f4; overflow: auto; max-height: 70vh; }
+        .document-page { box-sizing: border-box; width: 100%; max-width: 794px; margin: 0 auto; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; font-family: 'Inter', sans-serif; }
+        .document-inner { padding: 48px; width: 100%; box-sizing: border-box; overflow: hidden; }
         
         /* Document Themes */
         /* 1. Wedding Elegance (Red/Pinkish) */
@@ -314,10 +315,18 @@
         .doc-sig-box p { font-size: 12px; color: #666; margin-bottom: 60px; }
         .doc-sig-box .sig-line { border-bottom: 1px solid #333; font-weight: 700; padding-bottom: 8px; font-size: 14px; }
         
+        @media (max-width: 900px) {
+            .preview-document-container { padding: 16px; }
+            .document-page { transform: scale(0.85); transform-origin: top center; margin-bottom: -15%; }
+        }
+        @media (max-width: 600px) {
+            .document-page { transform: scale(0.6); transform-origin: top center; margin-bottom: -40%; }
+        }
+        
         @media print {
             body * { visibility: hidden; }
             #preview-document, #preview-document * { visibility: visible; }
-            #preview-document { position: absolute; left: 0; top: 0; margin: 0; padding: 0; box-shadow: none; }
+            #preview-document { position: absolute; left: 0; top: 0; margin: 0; padding: 0; box-shadow: none; transform: scale(1) !important; }
         }
     </style>
 </head>
@@ -561,8 +570,9 @@
             
             <div class="preview-document-container">
                 <div class="document-page theme-wedding" id="preview-document">
-                    <!-- Top Border -->
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
+                    <div class="document-inner">
+                        <!-- Top Border -->
+                        <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary); z-index: 2;"></div>
                     
                     <div class="doc-header">
                         <div class="doc-vendor">
@@ -648,7 +658,8 @@
                     </div>
                     
                     <!-- Bottom Border -->
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary); z-index: 2;"></div>
+                    </div> <!-- document-inner end -->
                 </div>
             </div>
         </div>
