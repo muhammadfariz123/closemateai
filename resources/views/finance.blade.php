@@ -6,6 +6,7 @@
     <title>Laporan Keuangan - CloseMateAI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         :root {
             --sidebar-bg: #1e1e2d;
@@ -163,6 +164,18 @@
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
         .toast { background: white; border-left: 4px solid var(--success); padding: 12px 20px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Flatpickr Custom Theme */
+        .flatpickr-calendar { box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important; border: 1px solid var(--border-color) !important; border-radius: 12px !important; padding: 10px !important; }
+        .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay { background: var(--primary) !important; border-color: var(--primary) !important; }
+        .flatpickr-day.inRange, .flatpickr-day.prevMonthDay.inRange, .flatpickr-day.nextMonthDay.inRange, .flatpickr-day.today.inRange, .flatpickr-day.prevMonthDay.today.inRange, .flatpickr-day.nextMonthDay.today.inRange, .flatpickr-day:hover, .flatpickr-day.prevMonthDay:hover, .flatpickr-day.nextMonthDay:hover, .flatpickr-day:focus, .flatpickr-day.prevMonthDay:focus, .flatpickr-day.nextMonthDay:focus { background: rgba(107,92,216,0.1) !important; border-color: transparent !important; }
+        
+        .flatpickr-footer { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px 4px; border-top: 1px solid var(--border-color); margin-top: 8px; }
+        .flatpickr-footer-text { font-size: 12px; color: var(--text-muted); }
+        .flatpickr-footer-btns { display: flex; gap: 8px; align-items: center; }
+        .flatpickr-btn-reset { background: none; border: none; color: var(--text-dark); font-size: 13px; font-weight: 500; cursor: pointer; padding: 4px 8px; }
+        .flatpickr-btn-apply { background: var(--primary); color: white; border: none; border-radius: 20px; font-size: 13px; font-weight: 500; padding: 6px 16px; cursor: pointer; }
+
 
         /* Responsive Mobile Layout */
         @media (max-width: 768px) {
@@ -351,7 +364,7 @@
                 <div class="filter-tab" onclick="setFilter('30 Hari Terakhir', this)">30 Hari Terakhir</div>
                 <div class="filter-tab" onclick="setFilter('Tahun Ini', this)">Tahun Ini</div>
             </div>
-            <button class="btn btn-date" onclick="openDateModal()"><i class="fa-regular fa-calendar"></i> <span id="btn_custom_range">Custom Range</span></button>
+            <button class="btn btn-date" id="btn_custom_range_wrapper"><i class="fa-regular fa-calendar"></i> <span id="btn_custom_range">Custom Range</span></button>
         </div>
         
         <div class="filter-row" style="margin-bottom: 24px;">
@@ -586,34 +599,9 @@
         </div>
     </div>
 
-    <!-- Date Range Modal -->
-    <div class="modal-overlay" id="dateModal">
-        <div class="modal-content" style="width: 400px;">
-            <div class="modal-header">
-                <div>
-                    <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">Pilih Rentang Tanggal</h2>
-                </div>
-                <button onclick="document.getElementById('dateModal').style.display='none'" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Tanggal Mulai</label>
-                    <input type="date" id="filter_start" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Tanggal Selesai</label>
-                    <input type="date" id="filter_end" class="form-control">
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
-                    <button class="btn btn-outline" onclick="document.getElementById('dateModal').style.display='none'">Batal</button>
-                    <button class="btn btn-primary" onclick="applyCustomDate()">Terapkan</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="toast-container" id="toast-container"></div>
-
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
     <script>
         let currentFilterStart = null;
         let currentFilterEnd = null;
@@ -789,7 +777,7 @@
                 [...filteredExpenses].reverse().forEach(e => {
                     let acaraName = '-';
                     if (e.acaraId) {
-                        const b = bookings.find(x => x.id === e.acaraId);
+                        const b = allBookings.find(x => x.id === e.acaraId);
                         if (b) acaraName = `<span style="background: rgba(107,92,216,0.1); color: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;">${b.client_name}</span>`;
                     }
                     expHtml += `
@@ -921,6 +909,11 @@
             if(element) element.classList.add('active');
             activeFilterType = type;
             
+            // clear flatpickr if we are using tabs
+            if (fpInstance && type !== 'Custom') {
+                fpInstance.clear();
+            }
+            
             const today = new Date();
             let start, end;
             
@@ -940,28 +933,6 @@
             
             currentFilterStart = start;
             currentFilterEnd = end;
-            updateDateText();
-            calculateFinance();
-        }
-
-        function openDateModal() {
-            document.getElementById('dateModal').style.display = 'flex';
-        }
-
-        function applyCustomDate() {
-            const startVal = document.getElementById('filter_start').value;
-            const endVal = document.getElementById('filter_end').value;
-            if(!startVal || !endVal) {
-                alert("Harap pilih tanggal mulai dan selesai");
-                return;
-            }
-            
-            document.querySelectorAll('.filter-tab').forEach(el => el.classList.remove('active'));
-            activeFilterType = 'Custom';
-            
-            currentFilterStart = new Date(startVal);
-            currentFilterEnd = new Date(endVal);
-            document.getElementById('dateModal').style.display = 'none';
             updateDateText();
             calculateFinance();
         }
@@ -1044,7 +1015,7 @@
             expenses.forEach(e => {
                 let acaraName = '';
                 if(e.acaraId) {
-                    const b = bookings.find(x => x.id === e.acaraId);
+                    const b = allBookings.find(x => x.id === e.acaraId);
                     if(b) acaraName = b.client_name;
                 }
                 const cat = e.catatan ? e.catatan.replace(/,/g, ' ') : '';
@@ -1076,8 +1047,58 @@
             showToast("Laporan diunduh");
         }
 
+        let fpInstance = null;
+
         document.addEventListener('DOMContentLoaded', () => {
             setFilter('Bulan Ini', document.querySelector('.filter-tab.active'));
+            
+            fpInstance = flatpickr("#btn_custom_range_wrapper", {
+                mode: "range",
+                showMonths: 2,
+                dateFormat: "Y-m-d",
+                onReady: function(selectedDates, dateStr, instance) {
+                    const footer = document.createElement("div");
+                    footer.className = "flatpickr-footer";
+                    footer.innerHTML = `
+                        <div class="flatpickr-footer-text" id="fp_range_text">Pilih rentang tanggal</div>
+                        <div class="flatpickr-footer-btns">
+                            <button class="flatpickr-btn-reset" type="button">Reset</button>
+                            <button class="flatpickr-btn-apply" type="button">Terapkan</button>
+                        </div>
+                    `;
+                    instance.calendarContainer.appendChild(footer);
+                    
+                    footer.querySelector('.flatpickr-btn-reset').addEventListener('click', () => {
+                        instance.clear();
+                        document.getElementById('fp_range_text').innerText = 'Pilih rentang tanggal';
+                    });
+                    
+                    footer.querySelector('.flatpickr-btn-apply').addEventListener('click', () => {
+                        if (instance.selectedDates.length === 2) {
+                            currentFilterStart = instance.selectedDates[0];
+                            currentFilterEnd = instance.selectedDates[1];
+                            document.querySelectorAll('.filter-tab').forEach(el => el.classList.remove('active'));
+                            activeFilterType = 'Custom';
+                            updateDateText();
+                            calculateFinance();
+                            instance.close();
+                        } else {
+                            alert("Harap pilih tanggal mulai dan selesai.");
+                        }
+                    });
+                },
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length === 2) {
+                        const formatter = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+                        const s = formatter.format(selectedDates[0]);
+                        const e = formatter.format(selectedDates[1]);
+                        document.getElementById('fp_range_text').innerText = `${s} - ${e}`;
+                    } else if (selectedDates.length === 1) {
+                        const formatter = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+                        document.getElementById('fp_range_text').innerText = `${formatter.format(selectedDates[0])} - ...`;
+                    }
+                }
+            });
         });
     </script>
 </body>
