@@ -1311,7 +1311,7 @@
                     <td>
                         <div class="action-icons">
                             <i class="fa-regular fa-folder" title="Buka event workspace" onclick="openWorkspace('${b.id}')"></i>
-                            <i class="fa-regular fa-calendar-check"></i>
+                            <i class="fa-regular fa-calendar-check" title="Tambah ke google calender" onclick="addToGoogleCalendar('${b.id}')"></i>
                             <i class="fa-solid fa-pen" onclick="openBookingModal('${b.id}')"></i>
                             <i class="fa-regular fa-trash-can delete" onclick="deleteBooking('${b.id}')"></i>
                         </div>
@@ -1440,6 +1440,37 @@
             document.querySelector('.controls-row').style.display = 'flex';
             const isTable = document.getElementById('btn_table_view').classList.contains('active');
             switchView(isTable ? 'table' : 'calendar');
+        }
+
+        function addToGoogleCalendar(id) {
+            const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            const b = bookings.find(x => x.id === id);
+            if (!b) return;
+            
+            const title = encodeURIComponent(`${b.client_name || 'Klien'} - ${b.package_name || 'Event'}`);
+            const details = encodeURIComponent(b.notes || '');
+            const location = encodeURIComponent(b.client_address || '');
+            
+            let dates = '';
+            if (b.event_date) {
+                const d = new Date(b.event_date);
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                const startDate = `${yyyy}${mm}${dd}`;
+                
+                const nextDay = new Date(d);
+                nextDay.setDate(nextDay.getDate() + 1);
+                const endYyyy = nextDay.getFullYear();
+                const endMm = String(nextDay.getMonth() + 1).padStart(2, '0');
+                const endDd = String(nextDay.getDate()).padStart(2, '0');
+                const endDate = `${endYyyy}${endMm}${endDd}`;
+                
+                dates = `&dates=${startDate}/${endDate}`;
+            }
+            
+            const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}${dates}&details=${details}&location=${location}`;
+            window.open(url, '_blank');
         }
     </script>
 </body>
