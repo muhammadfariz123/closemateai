@@ -1098,7 +1098,21 @@
                 
                 let eventsHtml = '';
                 dayEvents.forEach(evt => {
-                    eventsHtml += `<div class="event-pill" onclick="openBookingModal('${evt.id}')" style="cursor: pointer; margin-top: 4px; padding: 4px 8px; border-radius: 4px; background: rgba(255, 199, 0, 0.2); color: #b38b00; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${evt.client_name || 'No Name'}</div>`;
+                    let bgCol = '#ffc700';
+                    let textCol = '#fff';
+                    let borderCol = '#e0b000';
+                    
+                    if (evt.payment_status === 'DP 2') {
+                        bgCol = 'transparent';
+                        textCol = '#50cd89';
+                        borderCol = '#50cd89';
+                    } else if (evt.payment_status === 'Lunas') {
+                        bgCol = 'transparent';
+                        textCol = '#6b5cd8';
+                        borderCol = '#6b5cd8';
+                    }
+                    
+                    eventsHtml += `<div class="event-pill" onclick="openBookingModal('${evt.id}')" style="cursor: pointer; margin-top: 4px; padding: 4px 8px; border-radius: 4px; background: ${bgCol}; color: ${textCol}; border: 1px solid ${borderCol}; font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${evt.client_name || 'No Name'}</div>`;
                 });
                 
                 html += `
