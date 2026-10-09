@@ -483,6 +483,21 @@
             bookingModal.style.display = 'none';
         }
 
+        // Helper functions for Rupiah input formatting
+        function formatRupiahInput(input) {
+            let value = input.value.replace(/[^,\d]/g, '').toString();
+            if (value) {
+                input.value = new Intl.NumberFormat('id-ID').format(value);
+            } else {
+                input.value = '';
+            }
+        }
+        
+        function parseRupiah(str) {
+            if (!str) return 0;
+            return parseInt(str.toString().replace(/[^0-9]/g, '')) || 0;
+        }
+
         function addBookingAddon() {
             addonsData.push({ name: '', qty: 1, price: 0 });
             renderAddons();
@@ -507,7 +522,7 @@
                 <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center;">
                     <input type="text" class="form-control" placeholder="Nama Add-on" value="${item.name}" onchange="addonsData[${index}].name = this.value">
                     <input type="number" class="form-control" placeholder="Qty" value="${item.qty}" min="1" oninput="addonsData[${index}].qty = parseFloat(this.value) || 1; calculateBooking();" style="width: 80px;">
-                    <input type="number" class="form-control" placeholder="Harga" value="${item.price}" oninput="addonsData[${index}].price = parseFloat(this.value) || 0; calculateBooking();" style="width: 150px;">
+                    <input type="text" class="form-control" placeholder="Harga" value="${item.price ? new Intl.NumberFormat('id-ID').format(item.price) : ''}" oninput="formatRupiahInput(this); addonsData[${index}].price = parseRupiah(this.value); calculateBooking();" style="width: 150px;">
                     <button onclick="removeBookingAddon(${index})" style="background: none; border: none; color: var(--danger); cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
                 </div>
                 `;
@@ -516,7 +531,7 @@
         }
 
         function addBookingCost() {
-            costsData.push({ name: '', price: 0 });
+            costsData.push({ name: '', qty: 1, price: 0 });
             renderCosts();
             calculateBooking();
         }
@@ -538,7 +553,8 @@
                 html += `
                 <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center;">
                     <input type="text" class="form-control" placeholder="Nama Biaya (contoh: transport)" value="${item.name}" onchange="costsData[${index}].name = this.value">
-                    <input type="number" class="form-control" placeholder="Harga" value="${item.price}" oninput="costsData[${index}].price = parseFloat(this.value) || 0; calculateBooking();" style="width: 150px;">
+                    <input type="number" class="form-control" placeholder="Qty" value="${item.qty || 1}" min="1" oninput="costsData[${index}].qty = parseFloat(this.value) || 1; calculateBooking();" style="width: 80px;">
+                    <input type="text" class="form-control" placeholder="Harga" value="${item.price ? new Intl.NumberFormat('id-ID').format(item.price) : ''}" oninput="formatRupiahInput(this); costsData[${index}].price = parseRupiah(this.value); calculateBooking();" style="width: 150px;">
                     <button onclick="removeBookingCost(${index})" style="background: none; border: none; color: var(--danger); cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
                 </div>
                 `;
@@ -580,19 +596,26 @@
         }
 
         function calculateBooking() {
-            const packagePrice = parseFloat(document.getElementById('b_package_price').value) || 0;
+            const packagePrice = parseRupiah(document.getElementById('b_package_price').value);
             const packageQty = parseFloat(document.getElementById('b_package_qty').value) || 1;
-            const discount = parseFloat(document.getElementById('b_discount').value) || 0;
+            const discount = parseRupiah(document.getElementById('b_discount').value);
             
             const totalPackage = packagePrice * packageQty;
             const totalAddon = addonsData.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1)), 0);
             const totalIncome = totalPackage + totalAddon - discount;
             
-            const totalCost = costsData.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+            const totalCost = costsData.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1)), 0);
             const profit = totalIncome - totalCost;
             
             document.getElementById('b_label_total_income').innerText = formatRupiah(totalPackage + totalAddon);
             document.getElementById('b_label_total_cost').innerText = formatRupiah(totalCost);
+            
+            // Dynamic label for income
+            if (discount > 0) {
+                document.getElementById('b_label_summary_income').innerText = `Total Pendapatan (Paket + Add-On Rp ${new Intl.NumberFormat('id-ID').format(totalPackage + totalAddon)} - diskon Rp ${new Intl.NumberFormat('id-ID').format(discount)})`;
+            } else {
+                document.getElementById('b_label_summary_income').innerText = `Total Pendapatan (Paket + Add-On)`;
+            }
             
             document.getElementById('b_summary_income').innerText = formatRupiah(totalIncome);
             document.getElementById('b_summary_cost').innerText = formatRupiah(totalCost);
@@ -605,13 +628,13 @@
             btn.disabled = true;
             
             // Re-calculate to ensure variables are fresh
-            const packagePrice = parseFloat(document.getElementById('b_package_price').value) || 0;
+            const packagePrice = parseRupiah(document.getElementById('b_package_price').value);
             const packageQty = parseFloat(document.getElementById('b_package_qty').value) || 1;
-            const discount = parseFloat(document.getElementById('b_discount').value) || 0;
+            const discount = parseRupiah(document.getElementById('b_discount').value);
             const totalPackage = packagePrice * packageQty;
             const totalAddon = addonsData.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1)), 0);
             const totalIncome = totalPackage + totalAddon - discount;
-            const totalCost = costsData.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+            const totalCost = costsData.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1)), 0);
             const profit = totalIncome - totalCost;
 
             const payload = {
@@ -624,7 +647,7 @@
                 package_name: document.getElementById('b_package_name').value,
                 package_price: packagePrice,
                 package_qty: packageQty,
-                paid_amount: parseFloat(document.getElementById('b_paid_amount').value) || 0,
+                paid_amount: parseRupiah(document.getElementById('b_paid_amount').value),
                 discount: discount,
                 addons: addonsData,
                 operational_costs: costsData,
@@ -751,6 +774,78 @@
             if (e.target !== packageInput && e.target !== packageDropdown && !packageDropdown.contains(e.target)) {
                 packageDropdown.style.display = 'none';
             }
+        });
+        
+        // --- HPP TEMPLATE LOGIC ---
+        function getHppTemplates() {
+            try {
+                return JSON.parse(localStorage.getItem('hppTemplates')) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+        
+        function refreshHppTemplateDropdown() {
+            const select = document.getElementById('b_hpp_template');
+            const templates = getHppTemplates();
+            if (templates.length === 0) {
+                select.innerHTML = '<option value="">Belum ada template HPP</option>';
+            } else {
+                let html = '<option value="">Pilih Template HPP...</option>';
+                templates.forEach(t => {
+                    html += `<option value="${t.name}">${t.name}</option>`;
+                });
+                select.innerHTML = html;
+            }
+        }
+        
+        function saveHppTemplate() {
+            const name = document.getElementById('b_hpp_template_name').value.trim();
+            if (!name) {
+                showToast('Masukkan nama template', 'error');
+                return;
+            }
+            if (costsData.length === 0) {
+                showToast('Tambahkan minimal satu biaya operasional', 'error');
+                return;
+            }
+            
+            let templates = getHppTemplates();
+            const existingIndex = templates.findIndex(t => t.name.toLowerCase() === name.toLowerCase());
+            
+            if (existingIndex >= 0) {
+                templates[existingIndex].items = [...costsData];
+            } else {
+                templates.push({ name, items: [...costsData] });
+            }
+            
+            localStorage.setItem('hppTemplates', JSON.stringify(templates));
+            showToast('Template HPP disimpan');
+            document.getElementById('b_hpp_template_name').value = '';
+            refreshHppTemplateDropdown();
+        }
+        
+        function loadHppTemplate() {
+            const select = document.getElementById('b_hpp_template');
+            const name = select.value;
+            if (!name) return;
+            
+            const templates = getHppTemplates();
+            const template = templates.find(t => t.name === name);
+            if (template) {
+                // Deep copy
+                costsData = JSON.parse(JSON.stringify(template.items));
+                renderCosts();
+                calculateBooking();
+                showToast('Template HPP dimuat');
+            }
+            // Reset select
+            select.value = '';
+        }
+        
+        // Initialize dropdowns on load
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshHppTemplateDropdown();
         });
 
     </script>

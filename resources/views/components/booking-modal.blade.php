@@ -55,7 +55,7 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Harga Paket (Rp)</label>
-                        <input type="number" id="b_package_price" class="form-control" placeholder="0" oninput="calculateBooking()">
+                        <input type="text" id="b_package_price" class="form-control" placeholder="0" oninput="formatRupiahInput(this); calculateBooking()">
                         <button onclick="savePackageToLocal()" class="btn btn-secondary" style="margin-top: 8px; width: 100%; font-size: 13px; padding: 6px 12px;"><i class="fa-regular fa-floppy-disk"></i> Simpan Paket & Harga</button>
                         <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Tersimpan di perangkat ini dan bisa dipakai lagi di Invoice Generator.</p>
                     </div>
@@ -68,13 +68,13 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Sudah Dibayar (Rp)</label>
-                        <input type="number" id="b_paid_amount" class="form-control" value="0">
+                        <input type="text" id="b_paid_amount" class="form-control" value="0" oninput="formatRupiahInput(this)">
                     </div>
                 </div>
                 
                 <div>
                     <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Diskon (Rp)</label>
-                    <input type="number" id="b_discount" class="form-control" value="0" oninput="calculateBooking()">
+                    <input type="text" id="b_discount" class="form-control" value="0" oninput="formatRupiahInput(this); calculateBooking()">
                 </div>
                 
                 <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
@@ -96,6 +96,15 @@
                         <h4 style="font-size: 14px; font-weight: 600;">Biaya Operasional (HPP)</h4>
                         <button class="btn btn-secondary" onclick="addBookingCost()" style="padding: 4px 12px; font-size: 12px;"><i class="fa-solid fa-plus"></i> Tambah Biaya</button>
                     </div>
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center; background: rgba(0,0,0,0.02); padding: 8px; border-radius: 8px;">
+                        <select id="b_hpp_template" class="form-control" style="flex: 1;" onchange="loadHppTemplate()">
+                            <option value="">Belum ada template HPP</option>
+                        </select>
+                        <div style="display: flex; gap: 8px; align-items: center; flex: 1;">
+                            <input type="text" id="b_hpp_template_name" class="form-control" placeholder="Nama template, mis. Paket..." style="flex: 1;">
+                            <button class="btn btn-primary" onclick="saveHppTemplate()" style="padding: 6px 16px; font-size: 12px; border-radius: 20px;">Simpan</button>
+                        </div>
+                    </div>
                     <div id="b_costs_container">
                         <!-- Costs list -->
                     </div>
@@ -107,7 +116,7 @@
                 
                 <div style="background: rgba(80, 205, 137, 0.1); border: 1px solid rgba(80, 205, 137, 0.2); border-radius: 8px; padding: 16px;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="font-size: 13px; color: var(--text-muted);">Total Pendapatan (Paket + Add-On - Diskon)</span>
+                        <span style="font-size: 13px; color: var(--text-muted);" id="b_label_summary_income">Total Pendapatan (Paket + Add-On)</span>
                         <span style="font-size: 13px; font-weight: 600;" id="b_summary_income">Rp 0</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
