@@ -346,16 +346,16 @@
 
         <div class="filter-row">
             <div class="filter-tabs">
-                <div class="filter-tab active">Bulan Ini</div>
-                <div class="filter-tab">Bulan Lalu</div>
-                <div class="filter-tab">30 Hari Terakhir</div>
-                <div class="filter-tab">Tahun Ini</div>
+                <div class="filter-tab active" onclick="setFilter('Bulan Ini', this)">Bulan Ini</div>
+                <div class="filter-tab" onclick="setFilter('Bulan Lalu', this)">Bulan Lalu</div>
+                <div class="filter-tab" onclick="setFilter('30 Hari Terakhir', this)">30 Hari Terakhir</div>
+                <div class="filter-tab" onclick="setFilter('Tahun Ini', this)">Tahun Ini</div>
             </div>
-            <button class="btn btn-date"><i class="fa-regular fa-calendar"></i> 27 September 2026 - 28 September 2026</button>
+            <button class="btn btn-date" onclick="openDateModal()"><i class="fa-regular fa-calendar"></i> <span id="btn_custom_range">Custom Range</span></button>
         </div>
         
         <div class="filter-row" style="margin-bottom: 24px;">
-            <button class="btn btn-outline"><i class="fa-solid fa-download"></i> Export Laporan (CSV)</button>
+            <button class="btn btn-outline" onclick="exportLaporanCSV()"><i class="fa-solid fa-download"></i> Export Laporan (CSV)</button>
             <button class="btn btn-primary" onclick="openExpenseModal()"><i class="fa-solid fa-plus"></i> Catat Pengeluaran Baru</button>
         </div>
         
@@ -586,9 +586,39 @@
         </div>
     </div>
 
+    <!-- Date Range Modal -->
+    <div class="modal-overlay" id="dateModal">
+        <div class="modal-content" style="width: 400px;">
+            <div class="modal-header">
+                <div>
+                    <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">Pilih Rentang Tanggal</h2>
+                </div>
+                <button onclick="document.getElementById('dateModal').style.display='none'" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Tanggal Mulai</label>
+                    <input type="date" id="filter_start" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tanggal Selesai</label>
+                    <input type="date" id="filter_end" class="form-control">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+                    <button class="btn btn-outline" onclick="document.getElementById('dateModal').style.display='none'">Batal</button>
+                    <button class="btn btn-primary" onclick="applyCustomDate()">Terapkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container" id="toast-container"></div>
 
     <script>
+        let currentFilterStart = null;
+        let currentFilterEnd = null;
+        let activeFilterType = 'Bulan Ini';
+
         // Sidebar Collapse
         document.getElementById('btn-collapse').addEventListener('click', function() {
             document.body.classList.toggle('sidebar-collapsed');
@@ -688,8 +718,28 @@
         }
 
         function calculateFinance() {
-            const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
-            const expenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+            let allBookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            let allExpenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+            
+            // Filter by date
+            const filterStart = currentFilterStart ? new Date(currentFilterStart) : null;
+            const filterEnd = currentFilterEnd ? new Date(currentFilterEnd) : null;
+            
+            const bookings = allBookings.filter(b => {
+                if(!b.event_date) return true;
+                const d = new Date(b.event_date);
+                if(filterStart && d < filterStart) return false;
+                if(filterEnd && d > filterEnd) return false;
+                return true;
+            });
+            
+            const expenses = allExpenses.filter(e => {
+                if(!e.tanggal) return true;
+                const d = new Date(e.tanggal);
+                if(filterStart && d < filterStart) return false;
+                if(filterEnd && d > filterEnd) return false;
+                return true;
+            });
             
             let totalOmset = 0;
             let uangMasuk = 0;
@@ -866,19 +916,168 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            calculateFinance();
+        function setFilter(type, element) {
+            document.querySelectorAll('.filter-tab').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+            activeFilterType = type;
             
             const today = new Date();
-            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-            const formatter = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-            const firstDateStr = formatter.format(new Date(today.getFullYear(), today.getMonth(), 1));
-            const lastDateStr = formatter.format(lastDay);
-            const periodStr = `${firstDateStr} - ${lastDateStr}`;
+            let start, end;
             
-            document.getElementById('report_period').innerText = periodStr;
-            const chartPeriodTitle = document.querySelector('.section-meta');
-            if (chartPeriodTitle) chartPeriodTitle.innerText = `Periode: ${periodStr}`;
+            if (type === 'Bulan Ini') {
+                start = new Date(today.getFullYear(), today.getMonth(), 1);
+                end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            } else if (type === 'Bulan Lalu') {
+                start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                end = new Date(today.getFullYear(), today.getMonth(), 0);
+            } else if (type === '30 Hari Terakhir') {
+                start = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+                end = today;
+            } else if (type === 'Tahun Ini') {
+                start = new Date(today.getFullYear(), 0, 1);
+                end = new Date(today.getFullYear(), 11, 31);
+            }
+            
+            currentFilterStart = start;
+            currentFilterEnd = end;
+            updateDateText();
+            calculateFinance();
+        }
+
+        function openDateModal() {
+            document.getElementById('dateModal').style.display = 'flex';
+        }
+
+        function applyCustomDate() {
+            const startVal = document.getElementById('filter_start').value;
+            const endVal = document.getElementById('filter_end').value;
+            if(!startVal || !endVal) {
+                alert("Harap pilih tanggal mulai dan selesai");
+                return;
+            }
+            
+            document.querySelectorAll('.filter-tab').forEach(el => el.classList.remove('active'));
+            activeFilterType = 'Custom';
+            
+            currentFilterStart = new Date(startVal);
+            currentFilterEnd = new Date(endVal);
+            document.getElementById('dateModal').style.display = 'none';
+            updateDateText();
+            calculateFinance();
+        }
+
+        function updateDateText() {
+            const formatter = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+            if (currentFilterStart && currentFilterEnd) {
+                const s = formatter.format(currentFilterStart);
+                const e = formatter.format(currentFilterEnd);
+                const text = `${s} - ${e}`;
+                document.getElementById('report_period').innerText = text;
+                const chartPeriodTitle = document.querySelector('.section-meta');
+                if (chartPeriodTitle) chartPeriodTitle.innerText = `Periode: ${text}`;
+                
+                if (activeFilterType === 'Custom') {
+                    document.getElementById('btn_custom_range').innerText = text;
+                } else {
+                    document.getElementById('btn_custom_range').innerText = "Custom Range";
+                }
+            }
+        }
+
+        function exportLaporanCSV() {
+            // Get all current variables from calculateFinance logic
+            let allBookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            let allExpenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+            
+            const filterStart = currentFilterStart ? new Date(currentFilterStart) : null;
+            const filterEnd = currentFilterEnd ? new Date(currentFilterEnd) : null;
+            
+            const bookings = allBookings.filter(b => {
+                if(!b.event_date) return true;
+                const d = new Date(b.event_date);
+                if(filterStart && d < filterStart) return false;
+                if(filterEnd && d > filterEnd) return false;
+                return true;
+            });
+            
+            const expenses = allExpenses.filter(e => {
+                if(!e.tanggal) return true;
+                const d = new Date(e.tanggal);
+                if(filterStart && d < filterStart) return false;
+                if(filterEnd && d > filterEnd) return false;
+                return true;
+            });
+            
+            let totalOmset = 0;
+            let uangMasuk = 0;
+            let pengeluaranOperasional = 0;
+            let pengeluaranManual = 0;
+            
+            bookings.forEach(b => {
+                totalOmset += (b.total_income || 0);
+                uangMasuk += (b.paid_amount || 0);
+                pengeluaranOperasional += (b.total_operational_cost || 0);
+            });
+            expenses.forEach(e => pengeluaranManual += (e.nominal || 0));
+            
+            const sisaPiutang = totalOmset - uangMasuk;
+            const totalPengeluaran = pengeluaranOperasional + pengeluaranManual;
+            const profitBersih = totalOmset - totalPengeluaran;
+            const chartProfit = uangMasuk - totalPengeluaran;
+            
+            const formatter = new Intl.DateTimeFormat('id-ID', { month: 'short', year: '2-digit' });
+            const monthStr = formatter.format(currentFilterStart || new Date());
+            
+            let csv = "RINGKASAN KEUANGAN\n";
+            csv += `Total Omset,${totalOmset}\n`;
+            csv += `Uang Masuk,${uangMasuk}\n`;
+            csv += `Sisa Piutang,${sisaPiutang > 0 ? sisaPiutang : 0}\n`;
+            csv += `Total Pengeluaran,${totalPengeluaran}\n`;
+            csv += `Profit Bersih,${profitBersih}\n\n`;
+            
+            csv += "CASH FLOW BULANAN\n";
+            csv += "Bulan,Uang Masuk,Pengeluaran,Net Profit\n";
+            csv += `${monthStr},${uangMasuk},${totalPengeluaran},${chartProfit}\n\n`;
+            
+            csv += "RIWAYAT PENGELUARAN\n";
+            csv += "Tanggal,Kategori,Judul,Acara,Nominal,Catatan\n";
+            expenses.forEach(e => {
+                let acaraName = '';
+                if(e.acaraId) {
+                    const b = bookings.find(x => x.id === e.acaraId);
+                    if(b) acaraName = b.client_name;
+                }
+                const cat = e.catatan ? e.catatan.replace(/,/g, ' ') : '';
+                csv += `${e.tanggal || ''},${e.kategori},${e.judul},${acaraName},${e.nominal},${cat}\n`;
+            });
+            csv += "\n";
+            
+            csv += "PROFITABILITAS PER ACARA\n";
+            csv += "Klien,Tanggal Acara,Paket,Harga Paket,Total Biaya,Profit Margin\n";
+            bookings.forEach(b => {
+                const linkedExpenses = expenses.filter(e => e.acaraId === b.id).reduce((sum, e) => sum + (e.nominal || 0), 0);
+                const bookingCost = (b.total_operational_cost || 0) + linkedExpenses;
+                const bookingIncome = b.total_income || 0;
+                const bookingProfit = bookingIncome - bookingCost;
+                csv += `${b.client_name || ''},${b.event_date || ''},${b.package_name || ''},${bookingIncome},${bookingCost},${bookingProfit}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            const yyyymmdd = new Date().toISOString().split('T')[0];
+            link.setAttribute("download", `laporan-keuangan-${yyyymmdd}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast("Laporan diunduh");
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setFilter('Bulan Ini', document.querySelector('.filter-tab.active'));
         });
     </script>
 </body>
