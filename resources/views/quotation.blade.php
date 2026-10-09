@@ -340,11 +340,11 @@
 
         <div class="actions-bar">
             <div class="tabs">
-                <div class="tab-item active">Semua</div>
-                <div class="tab-item">Draft</div>
-                <div class="tab-item">Terkirim</div>
-                <div class="tab-item">Disetujui</div>
-                <div class="tab-item">Ditolak</div>
+                <div class="tab-item active" onclick="setFilter('Semua', this)">Semua</div>
+                <div class="tab-item" onclick="setFilter('Draft', this)">Draft</div>
+                <div class="tab-item" onclick="setFilter('Terkirim', this)">Terkirim</div>
+                <div class="tab-item" onclick="setFilter('Disetujui', this)">Disetujui</div>
+                <div class="tab-item" onclick="setFilter('Ditolak', this)">Ditolak</div>
             </div>
             
             <div class="search-add">
@@ -364,22 +364,10 @@
             <p>Belum ada penawaran. Buat penawaran pertama Anda sekarang.</p>
         </div>
         
-        <div class="table-responsive" id="quotations-table-container" style="display: none;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>No. Penawaran</th>
-                        <th>Klien & Event</th>
-                        <th>Nilai Penawaran</th>
-                        <th>Masa Berlaku</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="quotations-table-body">
-                    <!-- Dinamis render -->
-                </tbody>
-            </table>
+        <div id="quotations-table-container" style="display: none;">
+            <div id="quotations-table-body" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Dinamis render cards -->
+            </div>
         </div>
 
     </div>

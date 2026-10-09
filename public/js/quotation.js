@@ -9,6 +9,7 @@ function parseRupiahStr(rupiahString) {
 
 function formatRupiahInput(element) {
     let value = element.value.replace(/[^,\d]/g, '');
+    value = value.replace(/^0+(?=\d)/, ''); // Remove leading zeros
     let split = value.split(',');
     let sisa = split[0].length % 3;
     let rupiah = split[0].substr(0, sisa);
@@ -297,6 +298,21 @@ function saveQuotation() {
     renderQuotationsList();
 }
 
+let currentFilter = 'Semua';
+let searchQuery = '';
+
+function setFilter(status, el) {
+    currentFilter = status;
+    document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('active'));
+    if(el) el.classList.add('active');
+    renderQuotationsList();
+}
+
+function handleSearch(query) {
+    searchQuery = query.toLowerCase();
+    renderQuotationsList();
+}
+
 function deleteQuotation(id) {
     if(!confirm('Yakin ingin menghapus penawaran ini?')) return;
     let quotes = JSON.parse(localStorage.getItem('q_quotations')) || [];
@@ -307,11 +323,24 @@ function deleteQuotation(id) {
 
 function renderQuotationsList() {
     let quotes = JSON.parse(localStorage.getItem('q_quotations')) || [];
-    const tbody = document.getElementById('quotations-table-body');
+    const container = document.getElementById('quotations-table-body'); // now used as cards container
     const tableContainer = document.getElementById('quotations-table-container');
     const emptyState = document.getElementById('empty-state');
     
-    if(!tbody || !tableContainer || !emptyState) return;
+    if(!container || !tableContainer || !emptyState) return;
+    
+    // Filter
+    if(currentFilter !== 'Semua') {
+        quotes = quotes.filter(q => q.status === currentFilter);
+    }
+    
+    // Search
+    if(searchQuery) {
+        quotes = quotes.filter(q => 
+            (q.client || '').toLowerCase().includes(searchQuery) ||
+            (q.q_no || '').toLowerCase().includes(searchQuery)
+        );
+    }
     
     if (quotes.length === 0) {
         tableContainer.style.display = 'none';
@@ -322,33 +351,38 @@ function renderQuotationsList() {
     tableContainer.style.display = 'block';
     emptyState.style.display = 'none';
     
-    tbody.innerHTML = '';
+    container.innerHTML = '';
     quotes.sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).forEach(q => {
         let statusClass = 'status-draft';
         if(q.status === 'Terkirim') statusClass = 'status-terkirim';
         if(q.status === 'Disetujui') statusClass = 'status-disetujui';
         if(q.status === 'Ditolak') statusClass = 'status-ditolak';
         
-        let validDate = q.valid_until ? new Date(q.valid_until).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-';
+        let validDate = q.valid_until ? new Date(q.valid_until).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-';
+        let eventDateStr = q.event_date ? new Date(q.event_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '';
+        let venueStr = q.venue ? ' · ' + q.venue : '';
         
-        tbody.innerHTML += `
-            <tr>
-                <td><strong>${q.q_no}</strong></td>
-                <td>
-                    <div style="font-weight: 600; color: var(--text-dark);">${q.client}</div>
-                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${q.event_date ? new Date(q.event_date).toLocaleDateString('id-ID') : 'TBA'}</div>
-                </td>
-                <td style="font-weight: 600;">Rp ${q.grandTotal.toLocaleString('id-ID')}</td>
-                <td>${validDate}</td>
-                <td><span class="status-badge ${statusClass}">${q.status}</span></td>
-                <td>
-                    <div class="action-btns">
-                        <button class="btn-icon btn-view" title="Edit/Lihat" onclick="openQuotationModal('${q.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn-icon btn-send-wa" title="Kirim WA" onclick="alert('Fitur Kirim WA (Mockup)')"><i class="fa-brands fa-whatsapp"></i></button>
-                        <button class="btn-icon btn-del" title="Hapus" onclick="deleteQuotation('${q.id}')"><i class="fa-solid fa-trash-can"></i></button>
+        container.innerHTML += `
+            <div class="card" style="padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px; display: flex; justify-content: space-between; align-items: center; background: white;">
+                <div>
+                    <div style="font-weight: 600; font-size: 15px; margin-bottom: 6px; color: var(--text-dark); display: flex; align-items: center;">
+                        ${q.client} <span class="status-badge ${statusClass}" style="font-size: 10px; margin-left: 8px;">${q.status}</span>
                     </div>
-                </td>
-            </tr>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+                        ${q.q_no} · ${eventDateStr}${venueStr}
+                    </div>
+                    <div style="font-weight: 700; font-size: 15px; color: var(--text-dark);">
+                        Rp ${q.grandTotal.toLocaleString('id-ID')}
+                    </div>
+                </div>
+                <div class="action-btns" style="display: flex; gap: 8px;">
+                    <button class="btn btn-outline btn-small" onclick="alert('Link berhasil disalin!')"><i class="fa-regular fa-copy"></i> Copy Link</button>
+                    <button class="btn btn-outline btn-small" onclick="alert('Membuka PDF...')"><i class="fa-solid fa-download"></i> Preview & PDF</button>
+                    <button class="btn btn-outline btn-small" onclick="openQuotationModal('${q.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+                    <button class="btn btn-outline btn-small" onclick="alert('Convert ke Booking...')"><i class="fa-regular fa-calendar-check"></i> Convert to Booking</button>
+                    <button class="btn-icon btn-del" style="height: 32px; width: 32px;" title="Hapus" onclick="deleteQuotation('${q.id}')"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+            </div>
         `;
     });
 }
@@ -370,4 +404,10 @@ window.showToast = function(message, iconClass = 'fa-check-circle') {
 // Initial Render
 document.addEventListener('DOMContentLoaded', () => {
     renderQuotationsList();
+    
+    // Search listener
+    const searchInput = document.querySelector('.search-box input');
+    if(searchInput) {
+        searchInput.addEventListener('input', (e) => handleSearch(e.target.value));
+    }
 });
