@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quotation Generator - CloseMateAI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -259,22 +259,29 @@
             .qr-placeholder { width: 100%; max-width: 240px; }
             .alert-box { flex-direction: column; align-items: flex-start; gap: 12px; }
         }
-        /* Preview Modal Styles */
-        .preview-controls { padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 12px 12px 0 0; }
-        .theme-selectors { display: flex; gap: 12px; }
+
+        /* =====================================================
+           PREVIEW MODAL
+           ===================================================== */
+        #preview-modal .modal-content { overflow: hidden; }
+
+        .preview-controls { padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: white; border-radius: 12px 12px 0 0; flex-shrink: 0; }
+        .theme-selectors { display: flex; gap: 12px; flex-wrap: wrap; }
         .theme-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-color); background: white; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; transition: 0.2s; }
         .theme-btn:hover { background: #f9f9f9; }
         .theme-btn.active { border-color: var(--primary); background: rgba(107, 92, 216, 0.05); color: var(--primary); }
         .theme-color-dot { width: 12px; height: 12px; border-radius: 50%; }
         
-        .preview-document-container { padding: 24px; background: #f1f1f4; overflow-y: auto; max-height: calc(100vh - 140px); display: flex; justify-content: center; border-radius: 0 0 12px 12px; }
+        /* Area scroll preview: flex agar tinggi mengikuti modal & tidak overflow */
+        .preview-document-container { padding: 24px; background: #f1f1f4; overflow: auto; flex: 1 1 auto; min-height: 0; display: flex; justify-content: center; align-items: flex-start; border-radius: 0 0 12px 12px; }
         
+        /* Halaman A4 (794 x 1123 px) */
         .document-page { 
             box-sizing: border-box; 
             width: 794px; 
-            min-height: 1123px; /* Exact A4 Height */
-            background: white; 
-            padding: 48px; 
+            min-height: 1123px;
+            background: #fff; 
+            padding: 52px 48px 64px 48px; /* bawah lebih besar agar tidak menabrak garis footer */
             box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
             position: relative; 
             font-family: 'Inter', sans-serif;
@@ -282,61 +289,65 @@
             display: flex;
             flex-direction: column;
             margin: 0 auto;
-            zoom: 0.85; /* Global scale to match reference and prevent overflow */
+            flex-shrink: 0;
+            overflow: hidden;
+            zoom: 0.85; /* hanya untuk tampilan preview; export memakai klon tanpa zoom */
         }
         
         /* Document Themes */
-        .theme-wedding { --doc-primary: #a75d67; --doc-secondary: #fdf4f5; --doc-text: #333; --doc-font: 'Playfair Display', serif; }
-        .theme-navy { --doc-primary: #1b365d; --doc-secondary: #eef3f9; --doc-text: #333; --doc-font: 'Inter', sans-serif; }
-        .theme-minimal { --doc-primary: #222222; --doc-secondary: #f5f5f5; --doc-text: #333; --doc-font: 'Inter', sans-serif; }
+        .theme-wedding { --doc-primary: #b76e79; --doc-secondary: #f9eaec; --doc-border: #ecd3d7; --doc-accent-text: #7d3f48; --doc-text: #333; --doc-font: 'Cormorant Garamond', Georgia, serif; --doc-vendor-style: italic; --doc-title-weight: 600; }
+        .theme-navy   { --doc-primary: #1b365d; --doc-secondary: #eef3f9; --doc-border: #d3deec; --doc-accent-text: #1b365d; --doc-text: #333; --doc-font: 'Inter', sans-serif; --doc-vendor-style: normal; --doc-title-weight: 700; }
+        .theme-minimal{ --doc-primary: #222222; --doc-secondary: #f5f5f5; --doc-border: #dddddd; --doc-accent-text: #222222; --doc-text: #333; --doc-font: 'Inter', sans-serif; --doc-vendor-style: normal; --doc-title-weight: 700; }
         
-        .doc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 20px; }
-        .doc-vendor h1 { font-family: var(--doc-font); color: var(--doc-primary); font-size: 28px; font-style: italic; margin-bottom: 8px; }
-        .doc-status { background: var(--doc-secondary); color: var(--doc-primary); padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-block; }
+        .doc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; gap: 20px; }
+        .doc-vendor h1 { font-family: var(--doc-font); color: var(--doc-accent-text); font-size: 30px; font-style: var(--doc-vendor-style); font-weight: 600; line-height: 1.1; margin-bottom: 10px; }
+        .doc-status { background: var(--doc-secondary); color: var(--doc-primary); padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; display: inline-block; }
         
         .doc-meta { text-align: right; }
-        .doc-meta h2 { font-family: var(--doc-font); letter-spacing: 3px; color: var(--doc-primary); font-size: 20px; margin-bottom: 4px; text-transform: uppercase; }
-        .doc-meta p { font-size: 11px; color: #777; margin-bottom: 2px; }
-        .doc-meta p.doc-no-text { font-weight: 700; color: #333; font-size: 12px; margin-top: 8px; margin-bottom: 4px; }
+        .doc-meta h2 { font-family: var(--doc-font); font-weight: var(--doc-title-weight); letter-spacing: 3px; color: var(--doc-accent-text); font-size: 22px; line-height: 1.2; margin-bottom: 6px; text-transform: uppercase; white-space: nowrap; }
+        .doc-meta p { font-size: 11px; color: #777; margin-bottom: 2px; line-height: 1.4; }
+        .doc-meta p.doc-no-text { font-weight: 700; color: #222; font-size: 12px; margin-top: 8px; margin-bottom: 4px; }
         
-        .doc-info-box { background: var(--doc-secondary); padding: 18px 24px; border-radius: 8px; margin-bottom: 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-        .doc-info-item h4 { font-size: 10px; color: var(--doc-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-        .doc-info-item p { font-size: 13px; color: var(--doc-text); font-weight: 600; }
+        .doc-info-box { background: var(--doc-secondary); padding: 18px 24px; border-radius: 12px; margin-bottom: 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .doc-info-item { min-width: 0; }
+        .doc-info-item h4 { font-size: 10px; color: #777; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; font-weight: 600; }
+        .doc-info-item p { font-size: 13px; color: var(--doc-text); font-weight: 600; word-break: break-word; }
         .doc-info-item.full-width { grid-column: span 3; }
         
-        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; word-break: break-word; }
+        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; table-layout: fixed; min-width: 0; word-break: break-word; }
         .doc-table th, .doc-table td { box-sizing: border-box; }
-        .doc-table th { background: var(--doc-primary); color: white; padding: 8px 12px; font-size: 11px; text-transform: uppercase; font-weight: 600; white-space: normal; }
-        .doc-table th:first-child { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
-        .doc-table th:last-child { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
-        .doc-table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: var(--doc-text); white-space: normal; }
-        .doc-section-title { font-weight: 700; color: var(--doc-primary); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding-top: 16px !important; padding-bottom: 8px !important; }
+        .doc-table th { background: var(--doc-primary); color: white; padding: 10px 12px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; white-space: normal; border: none; text-align: left; }
+        .doc-table td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; color: var(--doc-text); white-space: normal; vertical-align: top; }
+        .doc-table tr:hover { background: transparent; }
+        .doc-section-title { font-weight: 700; color: var(--doc-accent-text); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; padding-top: 16px !important; padding-bottom: 8px !important; }
         
-        .doc-totals { width: 100%; max-width: 280px; margin-left: auto; margin-bottom: 24px; }
-        .doc-total-row { display: flex; justify-content: space-between; padding: 6px 16px; font-size: 13px; }
-        .doc-grand-total { background: var(--doc-primary); color: white; font-weight: 700; font-size: 14px; border-radius: 6px; margin-top: 8px; padding: 10px 16px; }
+        .doc-totals { width: 100%; max-width: 340px; margin-left: auto; margin-bottom: 28px; }
+        .doc-total-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; font-size: 13px; }
+        .doc-grand-total { background: var(--doc-primary); color: white; font-weight: 700; font-size: 14px; border-radius: 10px; margin-top: 8px; padding: 14px 16px; }
+        .doc-grand-total span:last-child { font-size: 16px; }
         
-        .doc-termins-title { font-size: 11px; color: var(--doc-primary); font-weight: 700; letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; }
+        .doc-termins-title { font-size: 11px; color: var(--doc-accent-text); font-weight: 700; letter-spacing: 2px; margin-bottom: 12px; text-transform: uppercase; }
         .doc-termins-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
-        .doc-termin-card { border: 1px solid rgba(167, 93, 103, 0.3); padding: 12px 14px; border-radius: 8px; flex: 1; min-width: 120px; }
-        .doc-termin-card h5 { font-size: 10px; color: var(--doc-primary); text-transform: uppercase; margin-bottom: 4px; font-weight: 700; }
+        .doc-termin-card { border: 1px solid var(--doc-border); border-top: 3px solid var(--doc-primary); padding: 12px 14px; border-radius: 10px; flex: 1 1 0; min-width: 120px; }
+        .doc-termin-card h5 { font-size: 10px; color: var(--doc-accent-text); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; font-weight: 700; }
         .doc-termin-card p { font-size: 12px; font-weight: 600; color: var(--doc-text); margin-bottom: 4px; }
-        .doc-termin-card .termin-val { font-size: 14px; color: var(--doc-primary); font-weight: 700; }
+        .doc-termin-card .termin-val { font-size: 14px; color: #222; font-weight: 700; }
         
-        .doc-tnc { font-size: 11px; color: #444; line-height: 1.6; margin-bottom: auto; }
-        .doc-tnc h4 { font-size: 11px; color: var(--doc-primary); font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+        .doc-tnc { font-size: 11px; color: #444; line-height: 1.7; margin-bottom: auto; }
+        .doc-tnc h4 { font-size: 11px; color: var(--doc-accent-text); font-weight: 700; letter-spacing: 2px; margin-bottom: 8px; text-transform: uppercase; }
         
-        .doc-signatures { display: flex; justify-content: space-between; margin-top: 32px; }
-        .doc-sig-box { text-align: center; width: 180px; }
-        .doc-sig-box p { font-size: 11px; color: #666; margin-bottom: 60px; }
+        .doc-signatures { display: flex; justify-content: space-between; gap: 24px; margin-top: 32px; padding-bottom: 8px; }
+        .doc-sig-box { text-align: center; flex: 1 1 0; max-width: 345px; }
+        .doc-sig-box p { font-size: 11px; color: #666; margin-bottom: 56px; }
         .doc-sig-box .sig-line { border-bottom: 1px solid #222; margin-bottom: 6px; }
-        .doc-sig-box .sig-name { font-weight: 600; font-size: 13px; color: #222; }
+        .doc-sig-box .sig-name { font-weight: 700; font-size: 13px; color: #222; }
         
-        /* Auto scale container down without scrollbars */
+        /* Skala preview di layar kecil (hanya tampilan, bukan export) */
         @media (max-width: 900px) {
             .document-page { zoom: 0.7; }
         }
         @media (max-width: 768px) {
+            #preview-modal.modal-overlay { padding: 16px; }
             .document-page { zoom: 0.55; }
         }
         @media (max-width: 500px) {
@@ -346,7 +357,7 @@
         @media print {
             body * { visibility: hidden; }
             #preview-document, #preview-document * { visibility: visible; }
-            #preview-document { position: absolute; left: 0; top: 0; margin: 0; padding: 0; box-shadow: none; zoom: 1 !important; }
+            #preview-document { position: absolute; left: 0; top: 0; margin: 0; padding: 52px 48px 64px 48px; box-shadow: none; zoom: 1 !important; }
         }
     </style>
 </head>
@@ -577,7 +588,7 @@
             <div class="preview-controls">
                 <div style="font-weight: 600; font-size: 16px;">Preview Penawaran</div>
                 <div class="theme-selectors">
-                    <button class="theme-btn active" onclick="setDocTheme('theme-wedding', this)"><div class="theme-color-dot" style="background: #a75d67;"></div> Wedding Elegance</button>
+                    <button class="theme-btn active" onclick="setDocTheme('theme-wedding', this)"><div class="theme-color-dot" style="background: #b76e79;"></div> Wedding Elegance</button>
                     <button class="theme-btn" onclick="setDocTheme('theme-navy', this)"><div class="theme-color-dot" style="background: #1b365d;"></div> Royal Navy</button>
                     <button class="theme-btn" onclick="setDocTheme('theme-minimal', this)"><div class="theme-color-dot" style="background: #222222;"></div> Clean Minimalist</button>
                 </div>
@@ -591,95 +602,95 @@
             <div class="preview-document-container">
                 <div class="document-page theme-wedding" id="preview-document">
                     <!-- Top Border -->
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary); border-top-left-radius: 8px; border-top-right-radius: 8px;"></div>
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
                     
                     <div class="doc-header">
-                            <div class="doc-vendor">
-                                <h1 id="doc_vendor_name">Penapict</h1>
-                                <div class="doc-status" id="doc_status">Draft</div>
-                            </div>
-                            <div class="doc-meta">
-                                <h2>PENAWARAN HARGA</h2>
-                                <p style="letter-spacing: 2px;">QUOTATION</p>
-                                <p class="doc-no-text" id="doc_no">No. QT-0000</p>
-                                <p id="doc_dates">Terbit: - · Berlaku s/d -</p>
-                            </div>
+                        <div class="doc-vendor">
+                            <h1 id="doc_vendor_name">Penapict</h1>
+                            <div class="doc-status" id="doc_status">Draft</div>
                         </div>
-                        
-                        <div class="doc-info-box">
-                            <div class="doc-info-item">
-                                <h4>NAMA KLIEN</h4>
-                                <p id="doc_client_name">-</p>
-                            </div>
-                            <div class="doc-info-item">
-                                <h4>WHATSAPP</h4>
-                                <p id="doc_client_phone">-</p>
-                            </div>
-                            <div class="doc-info-item">
-                                <h4>TANGGAL ACARA</h4>
-                                <p id="doc_event_date">-</p>
-                            </div>
-                            <div class="doc-info-item full-width">
-                                <h4>LOKASI / VENUE</h4>
-                                <p id="doc_venue">-</p>
-                            </div>
+                        <div class="doc-meta">
+                            <h2>PENAWARAN HARGA</h2>
+                            <p style="letter-spacing: 2px;">QUOTATION</p>
+                            <p class="doc-no-text" id="doc_no">No. QT-0000</p>
+                            <p id="doc_dates">Terbit: - · Berlaku s/d -</p>
                         </div>
-                        
-                        <table class="doc-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 45%;">ITEM / LAYANAN</th>
-                                    <th style="text-align: center; width: 10%;">QTY</th>
-                                    <th style="text-align: right; width: 20%;">HARGA SATUAN</th>
-                                    <th style="text-align: right; width: 25%;">TOTAL</th>
-                                </tr>
-                            </thead>
-                            <tbody id="doc_items_tbody">
-                                <!-- Items rendered here -->
-                            </tbody>
-                        </table>
-                        
-                        <div class="doc-totals">
-                            <div class="doc-total-row">
-                                <span style="color: #666;">Subtotal</span>
-                                <span style="font-weight: 600;" id="doc_subtotal">Rp 0</span>
-                            </div>
-                            <div class="doc-total-row">
-                                <span style="color: #666;">Diskon</span>
-                                <span style="font-weight: 600;" id="doc_discount">- Rp 0</span>
-                            </div>
-                            <div class="doc-total-row doc-grand-total">
-                                <span>GRAND TOTAL</span>
-                                <span id="doc_grand_total">Rp 0</span>
-                            </div>
-                        </div>
-                        
-                        <div class="doc-termins-title">JADWAL PEMBAYARAN</div>
-                        <div class="doc-termins-grid" id="doc_termins_grid">
-                            <!-- Termins here -->
-                        </div>
-                        
-                        <div class="doc-tnc">
-                            <h4>SYARAT & KETENTUAN</h4>
-                            <div id="doc_tnc_text" style="white-space: pre-wrap;"></div>
-                        </div>
-                        
-                        <div class="doc-signatures">
-                            <div class="doc-sig-box">
-                                <p>Hormat kami,</p>
-                                <div class="sig-line"></div>
-                                <div class="sig-name" id="doc_sig_vendor">Penapict</div>
-                            </div>
-                            <div class="doc-sig-box">
-                                <p>Disetujui oleh,</p>
-                                <div class="sig-line"></div>
-                                <div class="sig-name" id="doc_sig_client">-</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Bottom Border -->
-                        <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary); border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;"></div>
                     </div>
+                    
+                    <div class="doc-info-box">
+                        <div class="doc-info-item">
+                            <h4>NAMA KLIEN</h4>
+                            <p id="doc_client_name">-</p>
+                        </div>
+                        <div class="doc-info-item">
+                            <h4>WHATSAPP</h4>
+                            <p id="doc_client_phone">-</p>
+                        </div>
+                        <div class="doc-info-item">
+                            <h4>TANGGAL ACARA</h4>
+                            <p id="doc_event_date">-</p>
+                        </div>
+                        <div class="doc-info-item full-width">
+                            <h4>LOKASI / VENUE</h4>
+                            <p id="doc_venue">-</p>
+                        </div>
+                    </div>
+                    
+                    <table class="doc-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 45%;">ITEM / LAYANAN</th>
+                                <th style="text-align: center; width: 10%;">QTY</th>
+                                <th style="text-align: right; width: 20%;">HARGA SATUAN</th>
+                                <th style="text-align: right; width: 25%;">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doc_items_tbody">
+                            <!-- Items rendered here -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="doc-totals">
+                        <div class="doc-total-row">
+                            <span style="color: #666;">Subtotal</span>
+                            <span style="font-weight: 600;" id="doc_subtotal">Rp 0</span>
+                        </div>
+                        <div class="doc-total-row">
+                            <span style="color: #666;">Diskon</span>
+                            <span style="font-weight: 600;" id="doc_discount">- Rp 0</span>
+                        </div>
+                        <div class="doc-total-row doc-grand-total">
+                            <span>GRAND TOTAL</span>
+                            <span id="doc_grand_total">Rp 0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="doc-termins-title">JADWAL PEMBAYARAN</div>
+                    <div class="doc-termins-grid" id="doc_termins_grid">
+                        <!-- Termins here -->
+                    </div>
+                    
+                    <div class="doc-tnc">
+                        <h4>SYARAT & KETENTUAN</h4>
+                        <div id="doc_tnc_text" style="white-space: pre-wrap;"></div>
+                    </div>
+                    
+                    <div class="doc-signatures">
+                        <div class="doc-sig-box">
+                            <p>Hormat kami,</p>
+                            <div class="sig-line"></div>
+                            <div class="sig-name" id="doc_sig_vendor">Penapict</div>
+                        </div>
+                        <div class="doc-sig-box">
+                            <p>Disetujui oleh,</p>
+                            <div class="sig-line"></div>
+                            <div class="sig-name" id="doc_sig_client">-</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bottom Border -->
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -715,5 +726,146 @@
     </script>
     <script src="/js/activity-logger.js"></script>
     <script src="/js/quotation.js?v=7"></script>
+
+    <!-- =====================================================
+         EXPORT PNG & PDF (satu halaman A4, tanpa offset)
+         Dimuat SETELAH quotation.js sehingga menggantikan
+         downloadDocPNG() dan downloadDocPDF() bawaan.
+         Hanya mengubah cara render hasil download;
+         logika simpan/hitung/preview tidak disentuh.
+         ===================================================== -->
+    <script>
+    (function () {
+        const PAGE_W = 794;    // lebar A4 @96dpi
+        const PAGE_H = 1123;   // tinggi A4 @96dpi
+        let exporting = false;
+
+        function notify(msg) {
+            try {
+                if (typeof showToast === 'function') { showToast(msg); return; }
+            } catch (e) {}
+            console.log(msg);
+        }
+
+        function getFileBase() {
+            const el = document.getElementById('doc_no');
+            let name = el ? el.textContent.replace(/^\s*No\.?\s*/i, '').trim() : '';
+            name = name.replace(/[^\w\-]+/g, '_');
+            return 'Penawaran_' + (name || 'Quotation');
+        }
+
+        /**
+         * Render dokumen ke canvas memakai KLON di luar modal:
+         * - tanpa zoom / transform / scroll container → tidak ada offset
+         * - lebar tetap 794px, posisi 0,0
+         */
+        async function renderDocCanvas() {
+            const src = document.getElementById('preview-document');
+            if (!src) throw new Error('Elemen preview tidak ditemukan');
+
+            if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
+
+            const holder = document.createElement('div');
+            holder.style.cssText = 'position:fixed;left:0;top:0;width:' + PAGE_W + 'px;background:#fff;z-index:-1;pointer-events:none;';
+
+            const clone = src.cloneNode(true);
+            clone.removeAttribute('id');
+            clone.style.zoom = '1';
+            clone.style.width = PAGE_W + 'px';
+            clone.style.minHeight = PAGE_H + 'px';
+            clone.style.margin = '0';
+            clone.style.borderRadius = '0';
+            clone.style.boxShadow = 'none';
+            clone.style.transform = 'none';
+            clone.style.overflow = 'hidden';
+
+            holder.appendChild(clone);
+            document.body.appendChild(holder);
+
+            try {
+                // beri waktu browser menata layout klon
+                await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+                const height = Math.max(PAGE_H, clone.scrollHeight);
+                const canvas = await html2canvas(clone, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    width: PAGE_W,
+                    height: height,
+                    windowWidth: PAGE_W,
+                    windowHeight: height,
+                    x: 0,
+                    y: 0,
+                    scrollX: 0,
+                    scrollY: 0,
+                    logging: false
+                });
+                return canvas;
+            } finally {
+                holder.remove();
+            }
+        }
+
+        function triggerDownload(href, filename) {
+            const a = document.createElement('a');
+            a.href = href;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+
+        window.downloadDocPNG = async function () {
+            if (exporting) return;
+            exporting = true;
+            try {
+                notify('Menyiapkan PNG...');
+                const canvas = await renderDocCanvas();
+                canvas.toBlob(function (blob) {
+                    const url = URL.createObjectURL(blob);
+                    triggerDownload(url, getFileBase() + '.png');
+                    setTimeout(() => URL.revokeObjectURL(url), 2000);
+                }, 'image/png');
+            } catch (err) {
+                console.error(err);
+                notify('Gagal membuat PNG');
+            } finally {
+                exporting = false;
+            }
+        };
+
+        window.downloadDocPDF = async function () {
+            if (exporting) return;
+            exporting = true;
+            try {
+                notify('Menyiapkan PDF...');
+                const canvas = await renderDocCanvas();
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+
+                const pageW = pdf.internal.pageSize.getWidth();   // 210
+                const pageH = pdf.internal.pageSize.getHeight();  // 297
+
+                // Muat ke SATU halaman: skala mengikuti rasio, rata tengah
+                let w = pageW;
+                let h = canvas.height * pageW / canvas.width;
+                if (h > pageH) {
+                    h = pageH;
+                    w = canvas.width * pageH / canvas.height;
+                }
+                const x = (pageW - w) / 2;
+
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, 0, w, h, undefined, 'FAST');
+                pdf.save(getFileBase() + '.pdf');
+            } catch (err) {
+                console.error(err);
+                notify('Gagal membuat PDF');
+            } finally {
+                exporting = false;
+            }
+        };
+    })();
+    </script>
 </body>
 </html>
