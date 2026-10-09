@@ -12,7 +12,10 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <div>
                         <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Nama Klien</label>
-                        <input type="text" id="b_client_name" class="form-control" placeholder="Pilih dari lead Booked atau ketik manual">
+                        <input type="text" id="b_client_name" class="form-control" placeholder="Pilih dari lead Booked atau ketik manual" oninput="toggleHandlerBadge()">
+                        <div id="b_handler_badge" style="display: none; margin-top: 8px; padding: 4px 10px; background: rgba(107, 92, 216, 0.1); color: #6b5cd8; border-radius: 20px; font-size: 11px;">
+                            <i class="fa-regular fa-user"></i> Handler: <span id="b_handler_name">{{ auth()->check() ? auth()->user()->name : 'Penapict' }}</span>
+                        </div>
                     </div>
                     <div>
                         <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">No. WhatsApp</label>
