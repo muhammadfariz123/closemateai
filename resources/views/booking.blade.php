@@ -1166,10 +1166,8 @@
                 if (b.payment_status === 'DP 2') badgeClass = 'badge-dp2';
                 if (b.payment_status === 'Lunas') badgeClass = 'badge-lunas';
                 
-                let handlersHtml = '';
-                if (b.team_members && b.team_members.length > 0) {
-                    handlersHtml = b.team_members.map(t => `<span class="handler-badge">${t.name}</span>`).join(' ');
-                }
+                const ownerName = '{{ auth()->check() ? auth()->user()->name : 'Penapict' }}';
+                let handlersHtml = `<span class="handler-badge">${ownerName}</span>`;
                 
                 let resultLinkHtml = '-';
                 if (b.result_link) {
