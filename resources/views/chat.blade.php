@@ -300,6 +300,7 @@
                             <h3 style="display: flex; align-items: center; gap: 8px;">
                                 <span id="headerClientName">Bekti</span>
                                 <i class="fa-solid fa-pen" style="color: var(--text-muted); cursor: pointer; font-size: 14px;" onclick="editLeadName()"></i>
+                                <span id="headerTakeoverBadge" style="display: none; background: var(--danger); color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 700;">HUMAN TAKEOVER ACTIVE</span>
                                 <i class="fa-solid fa-circle-info mobile-info-btn" style="color: var(--primary); cursor: pointer; font-size: 16px; margin-left: auto; display: none;" onclick="toggleMobileDetails()"></i>
                             </h3>
                             <p id="headerWaInfo" style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px; display: none;">WA Name: - | -</p>
@@ -363,10 +364,13 @@
             </div>
 
             <!-- Right Panel: Lead Details -->
-            <div class="chat-details">
-                <div class="details-header">
-                    <h2>Lead Details</h2>
-                    <p>Informasi klien & catatan internal</p>
+            <div class="chat-details" id="chatDetailsPanel">
+                <div class="details-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h2>Lead Details</h2>
+                        <p>Informasi klien & catatan internal</p>
+                    </div>
+                    <button class="btn-icon mobile-close-details" style="display: none; border: none; background: transparent; cursor: pointer; font-size: 20px; color: var(--text-muted);" onclick="toggleMobileDetails()"><i class="fa-solid fa-circle-xmark"></i></button>
                 </div>
                 
                 <div id="leadDetailsEmpty" style="height: 70%; display: flex; align-items: center; justify-content: center; color: #a1a5b7; font-size: 13px; font-weight: 500; text-align: center;">
@@ -980,6 +984,7 @@
             const bannerActive = document.getElementById('chatBannerActive');
             const tag = document.getElementById('tagTakeoverStatus');
             const label = document.getElementById('takeoverText');
+            const headerBadge = document.getElementById('headerTakeoverBadge');
             
             if(isTakeover) {
                 if(banner) banner.style.display = 'flex';
@@ -989,6 +994,7 @@
                     tag.innerText = 'HUMAN TAKEOVER';
                 }
                 if(label) label.style.color = 'var(--danger)';
+                if(headerBadge && window.innerWidth <= 992) headerBadge.style.display = 'inline-block';
                 if(showToastAlert) showToast('Mode Human Takeover Aktif. AI dihentikan.', 'fa-user-shield');
             } else {
                 if(banner) banner.style.display = 'none';
@@ -998,6 +1004,7 @@
                     tag.innerText = 'AI Active';
                 }
                 if(label) label.style.color = 'var(--text-muted)';
+                if(headerBadge) headerBadge.style.display = 'none';
                 if(showToastAlert) showToast('AI kembali aktif', 'fa-robot');
             }
         }
@@ -1084,37 +1091,8 @@
 
         function toggleMobileDetails() {
             let details = document.getElementById('chatDetailsPanel');
-            if (details.style.display === 'block') {
-                details.style.display = '';
-                details.style.position = '';
-                details.style.zIndex = '';
-            } else {
-                details.style.display = 'block';
-                details.style.position = 'fixed';
-                details.style.top = '0';
-                details.style.left = '0';
-                details.style.width = '100%';
-                details.style.height = '100%';
-                details.style.zIndex = '2000'; // above everything
-                
-                // Add a close button if not exists
-                if(!document.getElementById('mobileDetailsCloseBtn')) {
-                    let closeBtn = document.createElement('button');
-                    closeBtn.id = 'mobileDetailsCloseBtn';
-                    closeBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> Kembali ke Chat';
-                    closeBtn.style.padding = '16px';
-                    closeBtn.style.background = 'white';
-                    closeBtn.style.color = 'var(--text-dark)';
-                    closeBtn.style.border = 'none';
-                    closeBtn.style.borderBottom = '1px solid var(--border-color)';
-                    closeBtn.style.width = '100%';
-                    closeBtn.style.textAlign = 'left';
-                    closeBtn.style.fontSize = '14px';
-                    closeBtn.style.fontWeight = '600';
-                    closeBtn.style.cursor = 'pointer';
-                    closeBtn.onclick = toggleMobileDetails;
-                    details.insertBefore(closeBtn, details.firstChild);
-                }
+            if (details) {
+                details.classList.toggle('open');
             }
         }
 

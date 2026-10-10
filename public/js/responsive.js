@@ -27,8 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
             backBtn.style.border = 'none';
             backBtn.style.background = 'var(--bg-light)';
             
-            // Insert it at the start of .chat-header > .client-info
-            const clientInfo = document.querySelector('.chat-header .client-info');
+            // Insert it at the start of .chat-header > .chat-header-user
+            const clientInfo = document.querySelector('.chat-header-user');
             if (clientInfo) {
                 clientInfo.style.display = 'flex';
                 clientInfo.style.alignItems = 'center';

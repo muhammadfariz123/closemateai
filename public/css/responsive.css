@@ -113,6 +113,7 @@
     .chat-container {
         flex-direction: column;
         position: relative;
+        overflow: hidden;
     }
     .chat-sidebar {
         width: 100% !important;
@@ -131,6 +132,25 @@
     }
     .chat-main.active {
         display: flex !important;
+    }
+    
+    /* Right Panel (Lead Details) off-canvas on mobile */
+    .chat-details {
+        position: fixed !important;
+        top: 0;
+        right: -100%;
+        width: 100% !important;
+        height: 100vh !important;
+        z-index: 2000;
+        background: white;
+        transition: right 0.3s ease;
+        display: block !important; /* Override the inline display: none */
+    }
+    .chat-details.open {
+        right: 0 !important;
+    }
+    .mobile-close-details {
+        display: block !important;
     }
     
     /* Ensure chat items on mobile have a full width layout */
