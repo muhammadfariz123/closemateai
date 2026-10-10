@@ -672,89 +672,109 @@ Terima kasih banyak! 🤍</textarea>
                 <div class="section-title"><i class="fa-regular fa-eye"></i> LIVE PREVIEW INVOICE</div>
                 
                 <!-- Paper Invoice -->
-                <div class="invoice-paper theme-minimalist" id="invoice-preview">
-                    <div class="inv-header">
+                <div class="invoice-paper theme-minimalist" id="invoice-preview" style="background: white; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border-radius: 12px; margin-top: 20px;">
+                    <!-- HEADER -->
+                    <div class="inv-header" style="border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
                         <div style="display: flex; align-items: center; gap: 16px;">
-                            <div id="previewLogoContainer" style="width: 48px; height: 48px; border-radius: 50%; background: #f1f1f4; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                            <div id="previewLogoContainer" style="width: 56px; height: 56px; border-radius: 50%; background: #f1f1f4; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; border: 1px solid #e4e6ef;">
                                 <img id="previewLogoImg" src="" style="max-height: 100%; max-width: 100%; display: none;">
                                 <i class="fa-regular fa-image" id="previewLogoPlaceholder" style="color: #a1a5b7; font-size: 20px;"></i>
                             </div>
                             <div>
-                                <div class="inv-logo-text" id="previewNamaVendor" style="margin-bottom: 0;">PENAPICT</div>
-                                <div style="font-size: 10px; color: #888; margin-top: 4px;" id="previewAlamatVendor">Rumah sakit no 13 panjer</div>
+                                <div class="inv-logo-text" id="previewNamaVendor" style="margin-bottom: 4px; font-size: 20px; font-weight: 600; color: #222;">PENAPICT</div>
+                                <div style="font-size: 10px; color: #888;" id="previewAlamatVendor">Rumah sakit no 13 panjer</div>
                             </div>
                         </div>
-                        <div class="inv-meta">
-                            <h2>INVOICE</h2>
-                            <p>No: <span id="previewNoInvoice">INV-202610-001</span></p>
-                            <p>1 Oktober 2026</p>
+                        <div class="inv-meta" style="text-align: right;">
+                            <h2 style="font-size: 24px; font-weight: 300; letter-spacing: 2px; color: #555; margin-bottom: 8px;">INVOICE</h2>
+                            <p style="font-size: 10px; color: #888; margin-bottom: 2px;">No. <span id="previewNoInvoice">INV-202610-001</span></p>
+                            <p style="font-size: 10px; color: #888;">10 Oktober 2026</p>
                         </div>
                     </div>
                     
-                    <div class="inv-desc-row">
+                    <!-- KEPADA / TANGGAL ACARA -->
+                    <div class="inv-desc-row" style="margin-bottom: 24px; display: flex; justify-content: space-between;">
                         <div class="inv-bill-to">
-                            <p>KEPADA:</p>
-                            <h4 id="previewNamaKlien">RIAN & AMAL</h4>
-                            <p style="text-transform: none; margin-top: 4px;" id="previewAlamatKlien">-</p>
+                            <p style="font-size: 9px; font-weight: 600; color: #999; margin-bottom: 8px; text-transform: uppercase;">KEPADA</p>
+                            <h4 id="previewNamaKlien" style="font-size: 15px; font-weight: 500; color: #333; margin-bottom: 4px;">fariz</h4>
+                            <p style="font-size: 11px; color: #888;" id="previewAlamatKlien">+6285878067644</p>
                         </div>
                         <div class="inv-bill-to" style="text-align: right;">
-                            <p>TANGGAL ACARA:</p>
-                            <h4 style="font-weight: 500;" id="previewTglAcara">-</h4>
+                            <p style="font-size: 9px; font-weight: 600; color: #999; margin-bottom: 8px; text-transform: uppercase;">TANGGAL ACARA</p>
+                            <h4 style="font-size: 15px; font-weight: 500; color: #333; margin-bottom: 4px;" id="previewTglAcara">Sabtu, 10 Oktober 2026</h4>
+                            <p style="font-size: 11px; color: #888;">Uang Muka / DP 1</p>
                         </div>
                     </div>
                     
-                    <table class="inv-table" style="margin-bottom: 0;">
+                    <!-- TABEL -->
+                    <table class="inv-table" style="margin-bottom: 16px; width: 100%; border-collapse: collapse;">
                         <thead>
-                            <tr>
-                                <th>DESKRIPSI</th>
-                                <th class="text-right">HARGA</th>
+                            <tr style="background: #f8f9fa;">
+                                <th style="text-align: left; padding: 12px 16px; font-size: 10px; font-weight: 600; color: #666; text-transform: uppercase;">DESKRIPSI</th>
+                                <th style="text-align: right; padding: 12px 16px; font-size: 10px; font-weight: 600; color: #666; text-transform: uppercase;">HARGA</th>
                             </tr>
                         </thead>
                         <tbody id="previewTableBody">
                             <tr>
-                                <td>Paket Utama</td>
-                                <td class="text-right">Rp 10.000.000</td>
+                                <td style="padding: 16px; border-bottom: 1px solid #f1f1f4;">
+                                    <div style="font-size: 13px; font-weight: 500; color: #333; margin-bottom: 4px;">Penawaran QT-20261010-236</div>
+                                    <div style="font-size: 10px; color: #888;">Paket Utama</div>
+                                </td>
+                                <td style="text-align: right; padding: 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #333;">Rp 9.000</td>
                             </tr>
                         </tbody>
                     </table>
                     
-                    <div class="inv-totals" style="padding-top: 10px;">
-                        <div class="inv-totals-grid" style="grid-template-columns: 1fr auto; row-gap: 8px;">
-                            <div style="color: #888;">Subtotal Paket</div>
-                            <div id="previewSubtotal">Rp 10.000.000</div>
+                    <!-- TOTALS -->
+                    <div class="inv-totals" style="display: flex; justify-content: flex-end; margin-bottom: 24px; padding-right: 16px;">
+                        <div style="width: 280px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 11px;">
+                                <div style="color: #666;">Subtotal Paket</div>
+                                <div id="previewSubtotal" style="color: #333;">Rp 9.000</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 11px;">
+                                <div style="color: #666;">Total Add-on</div>
+                                <div id="previewAddon" style="color: #333;">Rp 0</div>
+                            </div>
+                            <!-- Grand Total -->
+                            <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid #eee; font-size: 12px; font-weight: 700;">
+                                <div style="color: #333;">GRAND TOTAL</div>
+                                <div id="previewGrandTotal" style="color: #333;">Rp 9.000</div>
+                            </div>
                             
-                            <div style="color: #888;">Total Add-on</div>
-                            <div id="previewAddon">Rp 0</div>
-                            
-                            <div style="color: #888;">Diskon</div>
-                            <div id="previewDiskon">- Rp 500.000</div>
-                            
-                            <div class="bold" style="padding-top: 8px; border-top: 1px solid #eee;">GRAND TOTAL</div>
-                            <div class="bold" style="padding-top: 8px; border-top: 1px solid #eee;" id="previewGrandTotal">Rp 9.500.000</div>
-                            
-                            <div style="margin-top: 10px;" class="highlight-bg left">Uang Muka / DP 1</div>
-                            <div style="margin-top: 10px;" class="highlight-bg right" id="previewDP1">Rp 3.000.000</div>
-                            
-                            <div class="bold" style="margin-top: 4px;">Sisa Tagihan</div>
-                            <div class="bold" style="margin-top: 4px;" id="previewSisaTagihan">Rp 6.500.000</div>
+                            <!-- DP Info Box -->
+                            <div style="background: #f8f9fa; border-radius: 8px; padding: 12px; margin-top: 16px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 11px;">
+                                    <div style="color: #666;">Uang Muka / DP 1</div>
+                                    <div id="previewDP1" style="color: #333;">Rp 3.000.000</div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600;">
+                                    <div style="color: #666;">Sisa Tagihan</div>
+                                    <div id="previewSisaTagihan" style="color: #333; font-size: 13px;">Rp 0</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="inv-payment">
-                        <p style="text-transform: uppercase; font-size: 10px;">Metode Pembayaran:</p>
-                        <h5>BNI 0431063867 - a.n Umi Salamah</h5>
+                    <!-- METODE PEMBAYARAN -->
+                    <div class="inv-payment" style="border: 1px solid #f1f1f4; border-radius: 8px; padding: 16px; margin-bottom: 32px;">
+                        <p style="text-transform: uppercase; font-size: 9px; font-weight: 600; color: #999; margin-bottom: 8px;">METODE PEMBAYARAN</p>
+                        <h5 style="font-size: 12px; font-weight: 400; color: #555; margin: 0;"><strong style="color: #333;">BNI</strong> - 0431063867 - a.n Umi Salamah</h5>
                     </div>
                     
-                    <div class="inv-footer">
-                        <div style="flex: 1; padding-right: 40px;">
-                            <p style="font-weight: 600; margin-bottom: 4px; color: #333;">SYARAT & KETENTUAN:</p>
-                            <p>1. Booking tanggal dianggap sah setelah DP masuk.</p>
-                            <p>2. Pelunasan dilakukan H-7 sebelum acara.</p>
-                            <p>3. DP yang sudah masuk tidak dapat dikembalikan.</p>
-                        </div>
-                        <div class="inv-signature">
-                            <div style="margin-bottom: 40px; font-weight: 600; font-size: 11px; color: #333;">PENAPICT</div>
-                            <p>Tanda Tangan</p>
+                    <!-- SYARAT KETENTUAN -->
+                    <div class="inv-footer" style="display: block;">
+                        <div style="margin-bottom: 24px;">
+                            <p style="font-weight: 700; font-size: 10px; margin-bottom: 12px; color: #555;">SYARAT & KETENTUAN</p>
+                            <!-- Line divider and signature -->
+                            <div style="border-top: 1px solid #eee; padding-top: 24px; display: flex; justify-content: flex-end;">
+                                <div class="inv-signature" style="text-align: center; width: 150px;">
+                                    <div style="margin-bottom: 40px; font-weight: 400; font-style: italic; font-size: 14px; color: #333;" id="previewTtdNama">Fariz hidayat</div>
+                                    <div style="border-top: 1px solid #ccc; padding-top: 8px;">
+                                        <p style="font-size: 9px; color: #888; margin: 0;">Tanda Tangan</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1092,8 +1112,11 @@ Jika pembayaran sudah dilakukan, mohon abaikan pesan ini atau kirimkan buktinya 
             let totalAddon = 0;
             let tbHtml = `
                 <tr>
-                    <td>${pktUtama}</td>
-                    <td class="text-right">${formatRupiah(hrgaUtama)}</td>
+                    <td style="padding: 16px; border-bottom: 1px solid #f1f1f4;">
+                        <div style="font-size: 13px; font-weight: 500; color: #333; margin-bottom: 4px;">${pktUtama}</div>
+                        <div style="font-size: 10px; color: #888;">Paket Utama</div>
+                    </td>
+                    <td style="text-align: right; padding: 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #333;">${formatRupiah(hrgaUtama)}</td>
                 </tr>`;
                 
             // Get Addons
@@ -1107,8 +1130,11 @@ Jika pembayaran sudah dilakukan, mohon abaikan pesan ini atau kirimkan buktinya 
                 
                 tbHtml += `
                 <tr>
-                    <td>${name}${disc > 0 ? '<br><span style="color: #888; font-size: 10px;">Diskon: '+formatRupiah(disc)+'</span>' : ''}</td>
-                    <td class="text-right">${formatRupiah(net)}</td>
+                    <td style="padding: 16px; border-bottom: 1px solid #f1f1f4;">
+                        <div style="font-size: 13px; font-weight: 500; color: #333; margin-bottom: 4px;">${name}</div>
+                        <div style="font-size: 10px; color: #888;">Add-on${disc > 0 ? ' &bull; Diskon: ' + formatRupiah(disc) : ''}</div>
+                    </td>
+                    <td style="text-align: right; padding: 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #333;">${formatRupiah(net)}</td>
                 </tr>`;
             });
             
@@ -1124,11 +1150,12 @@ Jika pembayaran sudah dilakukan, mohon abaikan pesan ini atau kirimkan buktinya 
             document.getElementById('previewTableBody').innerHTML = tbHtml;
             document.getElementById('previewSubtotal').innerText = formatRupiah(subtotal);
             document.getElementById('previewAddon').innerText = formatRupiah(totalAddon);
-            document.getElementById('previewDiskon').innerText = '- ' + formatRupiah(diskon);
+            
+            // Diskon logic - if no discount, maybe hide it? In the image, diskon is subtracted from Grand Total but not explicitly shown as a separate row above subtotal. Oh wait, it's just GRAND TOTAL.
+            // Let's just update grand total
             document.getElementById('previewGrandTotal').innerText = formatRupiah(grandTotal);
             
             // Mock DP calculation (just keeping the existing UI values but calculating Sisa)
-            // Ideally DP is pulled from another input, but for this step we calculate Sisa Tagihan
             const dp1Str = document.getElementById('previewDP1').innerText.replace(/[^0-9]/g, '');
             const dp1 = parseInt(dp1Str) || 3000000;
             const sisa = grandTotal - dp1;
