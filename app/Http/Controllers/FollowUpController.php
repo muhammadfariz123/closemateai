@@ -50,6 +50,19 @@ class FollowUpController extends Controller
         return response()->json(['success' => true, 'message' => 'Pengaturan follow-up berjenjang disimpan']);
     }
 
+    public function toggleSettings(Request $request)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        
+        $isActive = $request->fu_is_active ? 1 : 0;
+        $user->update([
+            'fu_is_active' => $isActive
+        ]);
+
+        $statusText = $isActive ? 'diaktifkan' : 'dinonaktifkan';
+        return response()->json(['success' => true, 'message' => "Sistem otomatis memperbarui: Follow-up otomatis $statusText"]);
+    }
+
     public function processManual(Request $request, $level)
     {
         $user = auth()->user() ?? \App\Models\User::first();

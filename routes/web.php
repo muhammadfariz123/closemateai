@@ -66,6 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/leads', function () { return view('leads'); });
     Route::get('/followup', [\App\Http\Controllers\FollowUpController::class, 'index']);
     Route::post('/api/followup/settings', [\App\Http\Controllers\FollowUpController::class, 'saveSettings']);
+    Route::post('/api/followup/toggle', [\App\Http\Controllers\FollowUpController::class, 'toggleSettings']);
     Route::post('/api/followup/process/{level}', [\App\Http\Controllers\FollowUpController::class, 'processManual']);
     Route::get('/booking', function () { return view('booking'); });
     Route::get('/invoice', function () { return view('invoice'); });

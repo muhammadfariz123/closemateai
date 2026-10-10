@@ -325,7 +325,7 @@
                         <div style="font-size: 12px; color: var(--text-muted);">Lead berstatus "Follow-up" akan dihubungi sesuai jadwal di bawah</div>
                     </div>
                     <label class="switch">
-                        <input type="checkbox" id="fu_is_active" {{ $settings['fu_is_active'] ? 'checked' : '' }}>
+                        <input type="checkbox" id="fu_is_active" {{ $settings['fu_is_active'] ? 'checked' : '' }} onchange="toggleFollowUpActive(this.checked)">
                         <span class="slider"></span>
                     </label>
                 </div>
@@ -564,6 +564,29 @@
         function updateDayCustom(level, value) {
             const pills = document.querySelectorAll(`#days_${level}_selector .day-pill`);
             pills.forEach(p => p.classList.remove('active'));
+        }
+        
+        function toggleFollowUpActive(isActive) {
+            fetch('/api/followup/toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ fu_is_active: isActive })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message);
+                } else {
+                    showToast("Gagal mengubah status", true);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast("Terjadi kesalahan jaringan", true);
+            });
         }
 
         function saveSettings() {

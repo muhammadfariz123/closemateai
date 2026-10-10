@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('production:reminders')->dailyAt('08:00');
+Schedule::command('app:process-follow-ups')->dailyAt('09:00');
