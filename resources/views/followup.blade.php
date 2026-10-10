@@ -14,9 +14,6 @@
         .toast i { color: var(--success); font-size: 20px; }
         .toast-content { display: flex; flex-direction: column; }
         .toast-content span { font-size: 14px; font-weight: 600; }
-        
-        .toast.toast-error { border-left-color: var(--danger); }
-        .toast.toast-error i { color: var(--danger); }
         :root {
             --sidebar-bg: #1e1e2d;
             --sidebar-text: #cbd5e1;
@@ -527,20 +524,26 @@
             });
         }
 
-        function showToast(message, type = 'success') {
+        function showToast(message, isError = false) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            
-            // Apply error class if type is 'error'
-            toast.className = `toast show ${type === 'error' ? 'toast-error' : ''}`;
-            const icon = type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check';
-            
-            toast.innerHTML = `
-                <i class="fa-solid ${icon}"></i>
-                <div class="toast-content">
-                    <span>${message}</span>
-                </div>
-            `;
+            toast.className = 'toast show';
+            if (isError) {
+                toast.style.borderLeftColor = 'var(--text-dark)';
+                toast.innerHTML = `
+                    <i class="fa-solid fa-circle-exclamation" style="color: var(--text-dark);"></i>
+                    <div class="toast-content">
+                        <span>${message}</span>
+                    </div>
+                `;
+            } else {
+                toast.innerHTML = `
+                    <i class="fa-solid fa-circle-check"></i>
+                    <div class="toast-content">
+                        <span>${message}</span>
+                    </div>
+                `;
+            }
             container.appendChild(toast);
             
             setTimeout(() => {
@@ -585,9 +588,7 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    showToast(data.message, 'success');
-                } else {
-                    showToast(data.message, 'error');
+                    showToast(data.message);
                 }
             })
             .catch(err => {
@@ -607,12 +608,24 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    showToast(data.message, 'success');
+                    showToast(data.message);
                     setTimeout(() => {
                         window.location.reload();
                     }, 1000);
                 } else {
-                    showToast(data.message, 'error');
+                    if (data.wa_connected === false) {
+                        showToast(data.message, true);
+                        // Update status pill to disconnected
+                        const pill = document.querySelector('.status-pill');
+                        if (pill) {
+                            pill.style.backgroundColor = '#f1f1f4';
+                            pill.style.color = 'var(--text-muted)';
+                            pill.style.borderColor = '#e4e6ef';
+                            pill.innerHTML = `<div class="status-dot" style="background-color: var(--text-muted);"></div>WhatsApp Disconnected`;
+                        }
+                    } else {
+                        showToast(data.message, true);
+                    }
                 }
             })
             .catch(err => {

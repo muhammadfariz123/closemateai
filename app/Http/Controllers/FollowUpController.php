@@ -53,11 +53,34 @@ class FollowUpController extends Controller
     public function processManual(Request $request, $level)
     {
         $user = auth()->user() ?? \App\Models\User::first();
-
-        if ($user->wa_status != 'connected') {
-            return response()->json(['success' => false, 'message' => 'WhatsApp belum terhubung']);
+        if (!$user->fonnte_token) {
+            return response()->json(['success' => false, 'message' => 'WhatsApp belum terhubung', 'wa_connected' => false]);
         }
-        
+
+        // Check Fonnte API real status
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(10)->withHeaders([
+                'Authorization' => $user->fonnte_token
+            ])->post('https://api.fonnte.com/device');
+            $data = $response->json();
+            
+            if (!isset($data['device_status']) || $data['device_status'] !== 'connect') {
+                if ($user->wa_status == 'connected') {
+                    $user->wa_status = 'disconnected';
+                    $user->save();
+                }
+                return response()->json(['success' => false, 'message' => 'WhatsApp belum terhubung', 'wa_connected' => false]);
+            } else {
+                if ($user->wa_status != 'connected') {
+                    $user->wa_status = 'connected';
+                    $user->save();
+                }
+            }
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Gagal mengecek status WhatsApp', 'wa_connected' => false]);
+        }
+
+        // If connected, proceed with sending
         $status_from = '';
         $status_to = '';
         $label = '';
@@ -67,43 +90,49 @@ class FollowUpController extends Controller
             $status_from = 'Follow Up';
             $status_to = 'Done Follow-up 1';
             $label = 'Follow Up';
-            $template = $user->fu_1_template;
+            $template = $user->fu_1_template ?? 'Halo Kak {nama}, mau tanya apakah ada yang ingin didiskusikan lagi terkait paket {paket} untuk tanggal {tanggal}? 😊';
         } else if ($level == 2) {
             $status_from = 'Done Follow-up 1';
             $status_to = 'Done Follow-up 2';
             $label = 'Done Follow-up 1';
-            $template = $user->fu_2_template;
+            $template = $user->fu_2_template ?? 'Halo Kak {nama}, sekadar mengabarkan bahwa slot tanggal {tanggal} sedang ada beberapa calon pengantin lain yang menanyakan. Apakah Kakak mau keep slot dulu?';
         } else if ($level == 3) {
             $status_from = 'Done Follow-up 2';
-            $status_to = 'Done Follow-up 2';
+            $status_to = 'Done Follow-up 2'; 
             $label = 'Done Follow-up 2';
-            $template = $user->fu_3_template;
+            $template = $user->fu_3_template ?? 'Halo Kak {nama}, apakah ada opsi penyesuaian budget atau isi paket {paket} yang ingin disesuaikan dengan kebutuhan Kakak?';
         }
 
         $chats = \App\Models\Chat::where('status', $status_from)->get();
         $count = $chats->count();
-        $sent_count = 0;
-        $skipped_count = 0;
+        $sentCount = 0;
         
         if ($count > 0) {
+            // Log main activity first
+            $mainActivity = \App\Models\SystemActivity::create([
+                'title' => "Proses follow-up label " . $label,
+                'desc' => "Sedang memproses...",
+                'type' => 'follow_up',
+                'user_id' => $user->id,
+                'actor' => 'Sistem'
+            ]);
+
             foreach($chats as $chat) {
-                // Determine message text (replace {nama}, {paket}, {tanggal})
-                $msg = str_replace(
-                    ['{nama}', '{paket}', '{tanggal}'], 
-                    [$chat->client_name ?? '', $chat->package ?? '', $chat->event_date ?? ''], 
-                    $template
-                );
+                $message = $template;
+                $message = str_replace('{nama}', $chat->client_name ?: $chat->client_wa_number, $message);
+                $message = str_replace('{paket}', $chat->package ?: '-', $message);
+                $message = str_replace('{tanggal}', $chat->event_date ?: '-', $message);
 
                 try {
                     \Illuminate\Support\Facades\Http::withHeaders([
-                        'Authorization' => $user->fonnte_token,
+                        'Authorization' => $user->fonnte_token
                     ])->asForm()->post('https://api.fonnte.com/send', [
                         'target' => $chat->client_wa_number,
-                        'message' => $msg,
+                        'message' => $message,
                     ]);
-                    $sent_count++;
+                    $sentCount++;
 
-                    // Log individual activity FIRST
+                    // Log individual send
                     \App\Models\SystemActivity::create([
                         'title' => "Follow-up terkirim ke " . ($chat->client_name ?: $chat->client_wa_number),
                         'desc' => "Label \"$status_from\" -> \"$status_to\"",
@@ -116,21 +145,16 @@ class FollowUpController extends Controller
                         $chat->update(['status' => $status_to]);
                     }
                 } catch (\Exception $e) {
-                    $skipped_count++;
-                    \Illuminate\Support\Facades\Log::error("FollowUp Fonnte Send Error: " . $e->getMessage());
+                    // skip this one
                 }
             }
             
-            // Log batch activity LAST
-            \App\Models\SystemActivity::create([
-                'title' => "Proses follow-up label " . $label,
-                'desc' => "$sent_count pesan terkirim, $skipped_count dilewati dari $count kontak",
-                'type' => 'follow_up',
-                'user_id' => $user->id,
-                'actor' => 'Sistem'
+            $skipped = $count - $sentCount;
+            $mainActivity->update([
+                'desc' => "$sentCount pesan terkirim, $skipped dilewati dari $count kontak"
             ]);
         }
 
-        return response()->json(['success' => true, 'message' => "$sent_count pesan diproses"]);
+        return response()->json(['success' => true, 'message' => "$sentCount pesan diproses", 'wa_connected' => true]);
     }
 }
