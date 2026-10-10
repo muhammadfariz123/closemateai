@@ -1,54 +1,108 @@
 /* Global Responsive CSS for CloseMateAI */
 @media (max-width: 992px) {
-    /* Hide some less critical top-actions */
     .top-actions .status-pill { display: none !important; }
 }
 
 @media (max-width: 768px) {
     body {
         overflow-x: hidden;
+        flex-direction: column;
     }
     
-    .sidebar {
-        transform: translateX(-100%);
-        z-index: 1000;
-        width: 260px;
-        box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+    /* Topbar becomes fixed at the top */
+    .topbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 100;
+        background: white;
+        padding: 12px 16px;
+        border-bottom: none !important;
     }
-    .sidebar.show {
-        transform: translateX(0);
+    
+    /* Sidebar becomes a horizontal scrollable menu below Topbar */
+    .sidebar {
+        position: fixed;
+        top: 65px; /* Adjust based on topbar height */
+        left: 0;
+        width: 100%;
+        height: 55px;
+        transform: none !important;
+        z-index: 99;
+        background: white; /* White background like the reference */
+        border-bottom: 1px solid var(--border-color);
+        padding: 0;
+        box-shadow: none;
+    }
+    
+    .sidebar-header {
+        display: none !important;
+    }
+    
+    .nav-menu {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        padding: 8px 16px !important;
+        white-space: nowrap;
+        height: 100%;
+        align-items: center;
+        gap: 4px;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Hide the scrollbar for webkit (Chrome/Safari) */
+    .nav-menu::-webkit-scrollbar {
+        display: none;
+    }
+    .nav-menu {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    
+    .nav-item {
+        background: transparent !important;
+        color: var(--text-muted) !important;
+        border: none;
+        padding: 8px 14px !important;
+        border-radius: 20px !important;
+        font-size: 13px !important;
+        margin-bottom: 0 !important;
+        display: flex;
+        align-items: center;
+        gap: 6px !important;
+    }
+    
+    .nav-item.active {
+        background: rgba(107, 92, 216, 0.1) !important;
+        color: var(--primary) !important;
+        font-weight: 600 !important;
+    }
+    
+    .nav-item:hover {
+        background: var(--bg-light) !important;
+        color: var(--text-dark) !important;
+    }
+    
+    #btn-collapse, .mobile-menu-btn {
+        display: none !important;
     }
     
     .main-content {
         margin-left: 0 !important;
-        width: 100vw;
+        margin-top: 120px; /* 65px + 55px */
+        width: 100%;
+        height: calc(100vh - 120px);
     }
     
-    .topbar {
-        padding: 12px 16px;
-    }
-    
-    .topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    /* Make topbar flex with hamburger */
-    .topbar > div:first-child { /* The title and hamburger container */
-        display: flex;
-        align-items: center;
-    }
-
-    .mobile-menu-btn {
-        display: block !important;
-    }
-    
-    .page-title h1 { font-size: 18px; }
+    .page-title h1 { font-size: 18px; margin-bottom: 2px; }
     
     /* Layouts with sidebars inside main (like Chat) */
     .chat-container {
         flex-direction: column;
+        position: relative;
     }
     .chat-sidebar {
         width: 100% !important;
@@ -59,7 +113,7 @@
         display: none !important;
         width: 100% !important;
         height: 100%;
-        position: absolute;
+        position: absolute; /* cover the chat-sidebar */
         top: 0;
         left: 0;
         z-index: 100;
@@ -69,12 +123,13 @@
         display: flex !important;
     }
     
-    /* For other generic responsive fixes */
-    .stats-grid {
-        grid-template-columns: 1fr !important;
+    /* Ensure chat items on mobile have a full width layout */
+    .chat-item {
+        width: 100%;
     }
-    
-    .projects-grid, .leads-grid, .dashboard-grid {
+
+    /* For other generic responsive fixes */
+    .stats-grid, .projects-grid, .leads-grid, .dashboard-grid {
         grid-template-columns: 1fr !important;
     }
 
@@ -82,5 +137,17 @@
     .table-responsive {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+        width: 100%;
+    }
+    
+    .card {
+        width: 100% !important;
+        overflow-x: hidden;
+    }
+    
+    /* Modals should be full width with some padding */
+    .modal-content {
+        width: 95% !important;
+        margin: 20px auto !important;
     }
 }
