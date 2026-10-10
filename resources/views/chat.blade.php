@@ -299,7 +299,7 @@
                         <div class="chat-header-info" style="flex: 1; min-width: 0;">
                             <h3 style="display: flex; align-items: center; gap: 8px;">
                                 <span id="headerClientName">Bekti</span>
-                                <i class="fa-solid fa-pen" style="color: var(--text-muted); cursor: pointer; font-size: 14px;" onclick="editLeadName()"></i>
+                                <i class="fa-solid fa-pen" style="color: var(--text-muted); cursor: pointer; font-size: 14px;" onclick="openEditModal()"></i>
                                 <span id="headerTakeoverBadge" style="display: none; background: var(--danger); color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 700;">HUMAN TAKEOVER ACTIVE</span>
                                 <i class="fa-solid fa-circle-info mobile-info-btn" style="color: var(--primary); cursor: pointer; font-size: 16px; margin-left: auto; display: none;" onclick="toggleMobileDetails()"></i>
                             </h3>
@@ -446,7 +446,7 @@
     
     
     <!-- Edit Modal -->
-    <div id="editContactModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div id="editContactModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; align-items: center; justify-content: center;">
         <div style="background: white; width: 400px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
             <div style="display: flex; justify-content: space-between; margin-bottom: 16px; align-items: center;">
                 <h3 style="font-size: 16px; font-weight: 600;">Edit Kontak Klien</h3>
