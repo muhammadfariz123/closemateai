@@ -396,41 +396,48 @@
                     </div>
                     <div class="acc-body">
                         <label class="form-label">Logo Vendor (JPG/PNG, maks 5MB)</label>
-                        <div class="upload-box form-group">
-                            <i class="fa-regular fa-image"></i> Unggah Logo
+                        <div id="logoUploadContainer" style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px;">
+                            <div id="logoPreviewThumbnail" style="display: none; width: 48px; height: 48px; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; justify-content: center; align-items: center; background: #fafafa;">
+                                <img id="logoImgThumbnail" src="" style="max-width: 100%; max-height: 100%;">
+                            </div>
+                            <div class="upload-box form-group" id="btnUploadBox" style="margin-bottom: 0; flex: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 10px; border: 1px dashed var(--border-color); border-radius: 8px; color: #555; font-size: 14px;" onclick="document.getElementById('logoInput').click()">
+                                <i class="fa-solid fa-arrow-up-from-bracket" style="margin-right: 8px;"></i> Unggah Logo
+                            </div>
+                            <span id="btnHapusLogo" style="display: none; color: var(--text-muted); cursor: pointer; font-size: 13px;" onclick="hapusLogo()">Hapus</span>
+                            <input type="file" id="logoInput" style="display: none;" accept="image/png, image/jpeg" onchange="previewLogoFile(this)">
                         </div>
                         
                         <div class="form-row form-group">
                             <div>
                                 <label class="form-label">Nama Vendor</label>
-                                <input type="text" class="form-control" value="PENAPICT">
+                                <input type="text" class="form-control" value="PENAPICT" id="inputNamaVendor" oninput="syncPreview('inputNamaVendor', 'previewNamaVendor')">
                             </div>
                             <div>
                                 <label class="form-label">Alamat Perusahaan</label>
-                                <input type="text" class="form-control" value="Rumah sakit no 13 panjer">
+                                <input type="text" class="form-control" value="Rumah sakit no 13 panjer" id="inputAlamatVendor" oninput="syncPreview('inputAlamatVendor', 'previewAlamatVendor')">
                             </div>
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">Nomor Invoice (Kustom)</label>
-                            <input type="text" class="form-control" value="INV-202610-006">
+                            <input type="text" class="form-control" value="INV-202610-001" id="inputNoInvoice" oninput="syncPreview('inputNoInvoice', 'previewNoInvoice')">
                         </div>
                         
-                        <div class="info-text">Kosongkan untuk memakai nomor otomatis berurutan: <strong>INV-202610-006</strong></div>
+                        <div class="info-text">Kosongkan untuk memakai nomor otomatis berurutan: <strong id="previewAutoInvoice">INV-202610-001</strong></div>
                         
                         <div class="form-row form-group" style="align-items: flex-end;">
                             <div style="grid-column: 1 / 2; margin-top: 12px;">
-                                <select class="form-control">
-                                    <option>INV - {YYYY}{MM} - {SEQ5}</option>
+                                <select class="form-control" id="inputFormatInvoice">
+                                    <option value="INV-{YYYY}{MM}-{SEQ3}">INV-{YYYY}{MM}-{SEQ3}</option>
                                 </select>
                             </div>
                             <div style="grid-column: 2 / 3; margin-top: 12px;">
-                                <button class="btn btn-secondary" style="width: 100%;"><i class="fa-regular fa-floppy-disk"></i> Simpan Format</button>
+                                <button class="btn btn-secondary" style="width: 100%; border: 1px solid var(--primary); color: var(--primary);" id="btnSimpanFormat" onclick="simpanFormat()"><i class="fa-solid fa-check" id="iconFormat" style="display:none; margin-right:4px;"></i> <span id="textFormat">Simpan Format</span></button>
                             </div>
                         </div>
                         <div class="info-text" style="font-size: 10px; color: #ccc;">YY/YYYY, MM, DD, SEQ3/SEQ4/SEQ5</div>
                         
-                        <button class="btn btn-secondary" style="width: 100%; margin-top: 16px;"><i class="fa-regular fa-floppy-disk"></i> Simpan Informasi Bisnis</button>
+                        <button class="btn btn-secondary" style="width: 100%; margin-top: 16px; border: 1px solid var(--border-color); font-weight: 500;" id="btnSimpanBisnis" onclick="simpanBisnis()"><i class="fa-regular fa-floppy-disk" id="iconBisnis"></i> <span id="textBisnis">Simpan Informasi Bisnis</span></button>
                     </div>
                 </div>
 
@@ -672,12 +679,15 @@ Terima kasih banyak! 🤍</textarea>
                 <div class="invoice-paper theme-minimalist" id="invoice-preview">
                     <div class="inv-header">
                         <div>
-                            <div class="inv-logo-text">PENAPICT</div>
-                            <div style="font-size: 10px; color: #888; margin-top: 4px;">Rumah sakit no 13 panjer</div>
+                            <div id="previewLogoContainer" style="display: none; margin-bottom: 8px;">
+                                <img id="previewLogoImg" src="" style="max-height: 40px; max-width: 120px;">
+                            </div>
+                            <div class="inv-logo-text" id="previewNamaVendor">PENAPICT</div>
+                            <div style="font-size: 10px; color: #888; margin-top: 4px;" id="previewAlamatVendor">Rumah sakit no 13 panjer</div>
                         </div>
                         <div class="inv-meta">
                             <h2>INVOICE</h2>
-                            <p>No: INV-202610-006</p>
+                            <p>No: <span id="previewNoInvoice">INV-202610-001</span></p>
                             <p>1 Oktober 2026</p>
                         </div>
                     </div>
@@ -865,6 +875,103 @@ Jika pembayaran sudah dilakukan, mohon abaikan pesan ini atau kirimkan buktinya 
                 }
             });
         });
+
+        // Live Preview functions
+        function syncPreview(inputId, previewId) {
+            const inputVal = document.getElementById(inputId).value;
+            const previewEl = document.getElementById(previewId);
+            
+            if (previewEl) {
+                previewEl.innerText = inputVal;
+            }
+            
+            // Khusus untuk input Nomor Invoice Kustom
+            if(inputId === 'inputNoInvoice') {
+                const autoInvoiceEl = document.getElementById('previewAutoInvoice');
+                if (autoInvoiceEl) {
+                    autoInvoiceEl.innerText = inputVal || "INV-202610-001";
+                }
+                if (!inputVal && previewEl) {
+                    previewEl.innerText = "INV-202610-001"; // fallback ke otomatis jika kosong
+                }
+            }
+        }
+
+        function previewLogoFile(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Update preview di dalam form (thumbnail)
+                    document.getElementById('logoPreviewThumbnail').style.display = 'flex';
+                    document.getElementById('logoImgThumbnail').src = e.target.result;
+                    document.getElementById('btnUploadBox').style.display = 'none';
+                    document.getElementById('btnHapusLogo').style.display = 'inline';
+                    
+                    // Update preview di panel invoice live preview
+                    document.getElementById('previewLogoContainer').style.display = 'block';
+                    document.getElementById('previewLogoImg').src = e.target.result;
+                    // Sembunyikan teks nama vendor karena logo dipakai
+                    document.getElementById('previewNamaVendor').style.display = 'none';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function hapusLogo() {
+            document.getElementById('logoInput').value = '';
+            document.getElementById('logoPreviewThumbnail').style.display = 'none';
+            document.getElementById('logoImgThumbnail').src = '';
+            document.getElementById('btnUploadBox').style.display = 'flex';
+            document.getElementById('btnHapusLogo').style.display = 'none';
+            
+            document.getElementById('previewLogoContainer').style.display = 'none';
+            document.getElementById('previewLogoImg').src = '';
+            document.getElementById('previewNamaVendor').style.display = 'block';
+        }
+
+        function simpanFormat() {
+            const btn = document.getElementById('btnSimpanFormat');
+            const icon = document.getElementById('iconFormat');
+            const text = document.getElementById('textFormat');
+            
+            btn.style.background = 'rgba(80, 205, 137, 0.1)';
+            btn.style.borderColor = 'var(--success)';
+            btn.style.color = 'var(--success)';
+            
+            icon.style.display = 'inline-block';
+            text.innerText = 'Tersimpan';
+            
+            // Kembalikan ke normal setelah 2 detik
+            setTimeout(() => {
+                btn.style.background = 'transparent';
+                btn.style.borderColor = 'var(--primary)';
+                btn.style.color = 'var(--primary)';
+                icon.style.display = 'none';
+                text.innerText = 'Simpan Format';
+            }, 2000);
+        }
+
+        function simpanBisnis() {
+            const btn = document.getElementById('btnSimpanBisnis');
+            const icon = document.getElementById('iconBisnis');
+            const text = document.getElementById('textBisnis');
+            
+            btn.style.background = 'rgba(80, 205, 137, 0.1)';
+            btn.style.borderColor = 'var(--success)';
+            btn.style.color = 'var(--success)';
+            
+            icon.className = 'fa-solid fa-check';
+            text.innerText = 'Tersimpan';
+            
+            // Kembalikan ke normal setelah 2 detik
+            setTimeout(() => {
+                btn.style.background = 'transparent';
+                btn.style.borderColor = 'var(--border-color)';
+                btn.style.color = 'var(--text-dark)';
+                icon.className = 'fa-regular fa-floppy-disk';
+                text.innerText = 'Simpan Informasi Bisnis';
+            }, 2000);
+        }
     </script>
     <script src="/js/responsive.js"></script>
 </body>
