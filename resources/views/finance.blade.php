@@ -604,6 +604,19 @@
         let currentFilterStart = null;
         let currentFilterEnd = null;
         let activeFilterType = 'Bulan Ini';
+        let globalBookingsFinance = [];
+
+        async function fetchBookingsFinance() {
+            try {
+                const res = await fetch('/api/bookings');
+                if (res.ok) {
+                    globalBookingsFinance = await res.json();
+                    calculateFinance();
+                }
+            } catch(e) {
+                console.error("Error fetching bookings for finance:", e);
+            }
+        }
 
         // Sidebar Collapse
         document.getElementById('btn-collapse').addEventListener('click', function() {
@@ -642,7 +655,7 @@
         }
 
         function openExpenseModal() {
-            const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            const bookings = globalBookingsFinance;
             const select = document.getElementById('exp_acara');
             let html = `<option value="">— Pengeluaran umum —</option>`;
             bookings.forEach(b => {
@@ -708,7 +721,7 @@
         }
 
         function calculateFinance() {
-            let allBookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            let allBookings = globalBookingsFinance;
             let allExpenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
             
             // Filter by date
@@ -1052,6 +1065,7 @@
         let fpInstance = null;
 
         document.addEventListener('DOMContentLoaded', () => {
+            fetchBookingsFinance();
             setFilter('Bulan Ini', document.querySelector('.filter-tab.active'));
             
             fpInstance = flatpickr("#btn_custom_range_wrapper", {
