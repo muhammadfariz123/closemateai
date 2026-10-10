@@ -325,35 +325,183 @@
             </div>
         </div>
 
-        <div class="project-card">
-            <div class="project-header">
-                <div class="project-top">
-                    <div class="project-title">Test</div>
-                    <button class="btn-outline"><i class="fa-solid fa-link"></i> Copy Client Progress Link</button>
-                </div>
-                <div class="project-meta">
-                    <div class="meta-item"><i class="fa-regular fa-calendar"></i> 12 Okt 2026</div>
-                    <div class="badge badge-danger-soft">Terlambat 24 hari</div>
-                    <i class="fa-solid fa-pencil icon-btn-small"></i>
-                </div>
-                <div class="badge badge-info-soft">In Production</div>
-            </div>
-            <div class="project-body">
-                Belum ada track produksi. Tambahkan track pertama.
-            </div>
-            <div class="project-footer">
-                <div class="badge-gray">Revisi: 0x</div>
-                <button class="btn-primary"><i class="fa-solid fa-plus"></i> Tambah Track Baru</button>
-            </div>
+        <div id="projects_container" style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Rendered by JS -->
         </div>
 
     </div>
 
+    <div class="toast-container" id="toast-container"></div>
+
+    <style>
+        .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
+        .toast { background: white; border-radius: 8px; padding: 16px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-left: 4px solid var(--success); display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: var(--text-dark); animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1); transition: opacity 0.3s, transform 0.3s; }
+        .toast i { color: var(--success); font-size: 18px; }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+
     <script>
+        let globalBookings = [];
+        const csrfToken = '{{ csrf_token() }}';
+
         // Sidebar Collapse
         document.getElementById('btn-collapse').addEventListener('click', function() {
             document.body.classList.toggle('sidebar-collapsed');
         });
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        async function loadProjects() {
+            try {
+                let res = await fetch('/api/bookings');
+                globalBookings = await res.json();
+                renderProjects();
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function formatDateDisplay(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            const formatter = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            return formatter.format(d);
+        }
+
+        function renderProjects() {
+            const container = document.getElementById('projects_container');
+            if (globalBookings.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-muted);">Belum ada project booking.</div>';
+                return;
+            }
+
+            let html = '';
+            globalBookings.forEach(b => {
+                let deadlineHtml = '';
+                
+                if (b._isEditingDeadline) {
+                    deadlineHtml = `
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="date" id="deadline_input_${b.id}" value="${b.production_deadline || ''}" style="padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px; outline: none;">
+                        <button onclick="saveDeadline(${b.id})" style="background: var(--success); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-check"></i></button>
+                        <button onclick="cancelDeadlineEdit(${b.id})" style="background: white; border: 1px solid var(--border-color); color: var(--text-muted); padding: 5px 10px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    `;
+                } else {
+                    if (b.production_deadline) {
+                        const d = new Date(b.production_deadline);
+                        d.setHours(0,0,0,0);
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        const diffTime = d - today;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                        
+                        if (diffDays < 0) {
+                            deadlineHtml = `<div class="badge badge-danger-soft">Terlambat ${Math.abs(diffDays)} hari</div>`;
+                        } else if (diffDays === 0) {
+                            deadlineHtml = `<div class="badge badge-danger-soft" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2);">Hari ini</div>`;
+                        } else {
+                            deadlineHtml = `<div class="badge badge-gray">H-${diffDays}</div>`;
+                        }
+                    } else {
+                        deadlineHtml = `<div class="badge badge-gray" style="font-size: 11px;">Belum set deadline</div>`;
+                    }
+                    
+                    deadlineHtml += `<i class="fa-solid fa-pencil icon-btn-small" style="margin-left: 4px;" onclick="editDeadline(${b.id})"></i>`;
+                }
+
+                html += `
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-top">
+                            <div class="project-title">${b.client_name || 'Tanpa Nama'}</div>
+                            <button class="btn-outline"><i class="fa-solid fa-link"></i> Copy Client Progress Link</button>
+                        </div>
+                        <div class="project-meta">
+                            <div class="meta-item"><i class="fa-regular fa-calendar"></i> ${formatDateDisplay(b.event_date)}</div>
+                            <div style="display: flex; gap: 8px; align-items: center; min-height: 28px;">
+                                ${deadlineHtml}
+                            </div>
+                        </div>
+                        <div class="badge badge-info-soft">${b.production_status || 'In Production'}</div>
+                    </div>
+                    <div class="project-body">
+                        Belum ada track produksi. Tambahkan track pertama.
+                    </div>
+                    <div class="project-footer">
+                        <div class="badge-gray">Revisi: 0x</div>
+                        <button class="btn-primary"><i class="fa-solid fa-plus"></i> Tambah Track Baru</button>
+                    </div>
+                </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function editDeadline(id) {
+            const b = globalBookings.find(x => x.id === id);
+            if(b) {
+                b._isEditingDeadline = true;
+                renderProjects();
+            }
+        }
+
+        function cancelDeadlineEdit(id) {
+            const b = globalBookings.find(x => x.id === id);
+            if(b) {
+                b._isEditingDeadline = false;
+                renderProjects();
+            }
+        }
+
+        async function saveDeadline(id) {
+            const b = globalBookings.find(x => x.id === id);
+            if(!b) return;
+            
+            const inputVal = document.getElementById('deadline_input_' + id).value;
+            b.production_deadline = inputVal;
+            b._isEditingDeadline = false;
+            renderProjects();
+            
+            try {
+                await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({
+                        id: b.id,
+                        production_deadline: inputVal
+                    })
+                });
+                
+                showToast("Deadline project diperbarui.");
+                if(window.logSysActivity) {
+                    window.logSysActivity('Handler', '{{ auth()->check() ? auth()->user()->business_name : "Sistem" }}', 'Memperbarui deadline project', 'Klien: ' + b.client_name, 'fa-clock', 'orange');
+                }
+            } catch(e) {
+                console.error(e);
+                alert("Gagal menyimpan deadline");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProjects();
+        });
     </script>
+    <script src="/js/activity-logger.js"></script>
 </body>
 </html>
