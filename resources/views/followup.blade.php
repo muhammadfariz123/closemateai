@@ -14,6 +14,9 @@
         .toast i { color: var(--success); font-size: 20px; }
         .toast-content { display: flex; flex-direction: column; }
         .toast-content span { font-size: 14px; font-weight: 600; }
+        
+        .toast.toast-error { border-left-color: var(--danger); }
+        .toast.toast-error i { color: var(--danger); }
         :root {
             --sidebar-bg: #1e1e2d;
             --sidebar-text: #cbd5e1;
@@ -524,12 +527,16 @@
             });
         }
 
-        function showToast(message) {
+        function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = 'toast show';
+            
+            // Apply error class if type is 'error'
+            toast.className = `toast show ${type === 'error' ? 'toast-error' : ''}`;
+            const icon = type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check';
+            
             toast.innerHTML = `
-                <i class="fa-solid fa-circle-check"></i>
+                <i class="fa-solid ${icon}"></i>
                 <div class="toast-content">
                     <span>${message}</span>
                 </div>
@@ -578,7 +585,9 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    showToast(data.message);
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.message, 'error');
                 }
             })
             .catch(err => {
@@ -598,10 +607,12 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    showToast(data.message);
+                    showToast(data.message, 'success');
                     setTimeout(() => {
                         window.location.reload();
                     }, 1000);
+                } else {
+                    showToast(data.message, 'error');
                 }
             })
             .catch(err => {
