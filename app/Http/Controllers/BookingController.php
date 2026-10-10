@@ -38,7 +38,8 @@ class BookingController extends Controller
             'start_time', 'end_time', 'package_name', 'package_price', 'package_qty', 
             'paid_amount', 'discount', 'addons', 'operational_costs', 'total_income', 
             'total_operational_cost', 'net_profit', 'payment_date', 'payment_status', 
-            'production_status', 'result_link', 'team_members', 'notes', 'production_deadline'
+            'production_status', 'result_link', 'team_members', 'notes', 'production_deadline',
+            'production_tracks'
         ];
         
         foreach ($fields as $field) {

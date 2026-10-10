@@ -14,5 +14,6 @@ class Booking extends Model
         'team_members' => 'array',
         'event_date' => 'date',
         'payment_date' => 'date',
+        'production_tracks' => 'array',
     ];
 }

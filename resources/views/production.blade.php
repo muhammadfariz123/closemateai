@@ -331,9 +331,108 @@
 
     </div>
 
+    <div class="modal-overlay" id="trackModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h3>Tambah Track Produksi</h3>
+                    <p id="modalClientName">Kelola progres pasca-acara untuk Test.</p>
+                </div>
+                <button class="modal-close" onclick="closeTrackModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="trackBookingId">
+                <input type="hidden" id="trackEditId">
+                
+                <div class="form-group">
+                    <label>Kategori Task</label>
+                    <select class="form-control" id="trackKategori">
+                        <option>Photo Editing</option>
+                        <option>Video Editing</option>
+                        <option>Album Design</option>
+                        <option>Cinematic Highlight</option>
+                        <option>Same Day Edit</option>
+                        <option>MUA Trial</option>
+                        <option>Printing</option>
+                        <option>Lainnya (ketik manual)</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nama PIC</label>
+                        <input type="text" class="form-control" id="trackPicName" placeholder="Contoh: bekti">
+                    </div>
+                    <div class="form-group">
+                        <label>Nomor WA PIC</label>
+                        <input type="text" class="form-control" id="trackPicWa" placeholder="0812xxxxxxx">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Stage Saat Ini</label>
+                    <select class="form-control" id="trackStage">
+                        <option>Sortir</option>
+                        <option>Coloring</option>
+                        <option>Retouch</option>
+                        <option>QC</option>
+                        <option>Delivery</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tanggal Deadline Task</label>
+                        <input type="date" class="form-control" id="trackDeadline">
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Reminder WA</label>
+                        <input type="date" class="form-control" id="trackReminder">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Pesan Reminder ke WA PIC</label>
+                    <textarea class="form-control" id="trackMessage" rows="3" placeholder="Halo {pic}, jangan lupa {kategori} untuk {klien}. Deadline {deadline} ya 🙏"></textarea>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: -4px;">Placeholder tersedia: {pic} {klien} {kategori} {stage} {deadline} {link}. Kosongkan untuk memakai pesan default.</div>
+                </div>
+                <div class="form-group">
+                    <label>Link Project (Drive/Dropbox)</label>
+                    <input type="url" class="form-control" id="trackLink" placeholder="https://drive.google.com/...">
+                </div>
+                <div class="form-group">
+                    <label>Catatan Internal</label>
+                    <textarea class="form-control" id="trackInternal" rows="2" placeholder="Catatan untuk tim produksi..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Catatan Revisi (Project)</label>
+                    <textarea class="form-control" id="trackRevision" rows="2" placeholder="Permintaan revisi dari klien..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-light" onclick="closeTrackModal()">Batal</button>
+                <button class="btn-primary" onclick="saveTrack()">Simpan Task</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container" id="toast-container"></div>
 
     <style>
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.2s; padding: 20px; }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal { background: white; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; transform: translateY(20px); transition: 0.3s; }
+        .modal-overlay.active .modal { transform: translateY(0); }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; position: sticky; top: 0; background: white; z-index: 2; }
+        .modal-title h3 { font-size: 18px; font-weight: 600; }
+        .modal-title p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+        .modal-close { background: transparent; border: none; font-size: 16px; color: var(--text-muted); cursor: pointer; padding: 4px; }
+        .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 13px; font-weight: 500; color: var(--text-dark); }
+        .form-control { padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; }
+        .form-control:focus { border-color: var(--primary); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; position: sticky; bottom: 0; background: white; z-index: 2; }
+        .btn-light { background: white; border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-dark); }
+        .btn-light:hover { background: var(--bg-light); }
+        
         .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
         .toast { background: white; border-radius: 8px; padding: 16px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-left: 4px solid var(--success); display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: var(--text-dark); animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1); transition: opacity 0.3s, transform 0.3s; }
         .toast i { color: var(--success); font-size: 18px; }
@@ -421,6 +520,37 @@
                     deadlineHtml += `<i class="fa-solid fa-pencil icon-btn-small" style="margin-left: 4px;" onclick="editDeadline(${b.id})"></i>`;
                 }
 
+                let bodyHtml = '';
+                if(b.production_tracks && b.production_tracks.length > 0) {
+                    let tracksHtml = '';
+                    b.production_tracks.forEach(t => {
+                        let deadlineText = t.deadline_task ? formatDateDisplay(t.deadline_task) : 'Belum diatur';
+                        let reminderText = t.reminder_date ? formatDateDisplay(t.reminder_date) : 'Belum diatur';
+                        
+                        tracksHtml += `
+                        <div style="background-color: #fafafa; border-radius: 8px; margin-bottom: 12px; padding: 16px; border: 1px solid var(--border-color);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="font-weight: 600; font-size: 14px; color: var(--text-dark);">${t.kategori || ''}</div>
+                                    <div class="badge badge-gray" style="font-size: 11px;">${t.stage || ''}</div>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <i class="fa-solid fa-trash icon-btn-small" style="color: var(--danger);" onclick="deleteTrack(${b.id}, '${t.id}')"></i>
+                                </div>
+                            </div>
+                            <div style="font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
+                                <div>PIC: ${t.pic_name || '-'} &middot; ${t.pic_wa || '-'}</div>
+                                <div>Deadline: ${deadlineText}</div>
+                                <div>Reminder: ${reminderText}</div>
+                            </div>
+                        </div>
+                        `;
+                    });
+                    bodyHtml = `<div class="project-body" style="padding: 24px; border-bottom: 1px solid var(--border-color);">${tracksHtml}</div>`;
+                } else {
+                    bodyHtml = `<div class="project-body" style="padding: 24px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 14px;">Belum ada track produksi. Tambahkan track pertama.</div>`;
+                }
+
                 html += `
                 <div class="project-card">
                     <div class="project-header">
@@ -436,12 +566,10 @@
                         </div>
                         <div class="badge badge-info-soft">${b.production_status || 'In Production'}</div>
                     </div>
-                    <div class="project-body">
-                        Belum ada track produksi. Tambahkan track pertama.
-                    </div>
+                    ${bodyHtml}
                     <div class="project-footer">
                         <div class="badge-gray">Revisi: 0x</div>
-                        <button class="btn-primary"><i class="fa-solid fa-plus"></i> Tambah Track Baru</button>
+                        <button class="btn-primary" onclick="openTrackModal(${b.id}, '${b.client_name ? b.client_name.replace(/'/g, "\\'") : ''}')"><i class="fa-solid fa-plus"></i> Tambah Track Baru</button>
                     </div>
                 </div>
                 `;
@@ -495,6 +623,103 @@
             } catch(e) {
                 console.error(e);
                 alert("Gagal menyimpan deadline");
+            }
+        }
+
+        function openTrackModal(bookingId, clientName) {
+            document.getElementById('trackBookingId').value = bookingId;
+            document.getElementById('trackEditId').value = '';
+            document.getElementById('modalClientName').innerText = `Kelola progres pasca-acara untuk ${clientName || 'Tanpa Nama'}.`;
+            
+            // Clear inputs
+            document.getElementById('trackKategori').selectedIndex = 0;
+            document.getElementById('trackPicName').value = '';
+            document.getElementById('trackPicWa').value = '';
+            document.getElementById('trackStage').selectedIndex = 0;
+            document.getElementById('trackDeadline').value = '';
+            document.getElementById('trackReminder').value = '';
+            document.getElementById('trackMessage').value = '';
+            document.getElementById('trackLink').value = '';
+            document.getElementById('trackInternal').value = '';
+            document.getElementById('trackRevision').value = '';
+            
+            document.getElementById('trackModal').classList.add('active');
+        }
+
+        function closeTrackModal() {
+            document.getElementById('trackModal').classList.remove('active');
+        }
+
+        async function saveTrack() {
+            const bookingId = document.getElementById('trackBookingId').value;
+            const b = globalBookings.find(x => x.id == bookingId);
+            if(!b) return;
+
+            const track = {
+                id: Date.now().toString(),
+                kategori: document.getElementById('trackKategori').value,
+                pic_name: document.getElementById('trackPicName').value,
+                pic_wa: document.getElementById('trackPicWa').value,
+                stage: document.getElementById('trackStage').value,
+                deadline_task: document.getElementById('trackDeadline').value,
+                reminder_date: document.getElementById('trackReminder').value,
+                reminder_message: document.getElementById('trackMessage').value,
+                link: document.getElementById('trackLink').value,
+                internal_notes: document.getElementById('trackInternal').value,
+                revision_notes: document.getElementById('trackRevision').value,
+            };
+
+            if(!b.production_tracks) b.production_tracks = [];
+            b.production_tracks.push(track);
+            
+            closeTrackModal();
+            renderProjects();
+            
+            try {
+                await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({
+                        id: b.id,
+                        production_tracks: b.production_tracks
+                    })
+                });
+                showToast("Task produksi tersimpan.");
+                if(window.logSysActivity) {
+                    window.logSysActivity('Handler', '{{ auth()->check() ? auth()->user()->business_name : "Sistem" }}', 'Menambah track produksi', 'Kategori: ' + track.kategori, 'fa-list-check', 'info');
+                }
+            } catch(e) {
+                console.error(e);
+                alert("Gagal menyimpan task");
+            }
+        }
+
+        async function deleteTrack(bookingId, trackId) {
+            if(!confirm('Hapus task ini?')) return;
+            const b = globalBookings.find(x => x.id == bookingId);
+            if(!b) return;
+            
+            b.production_tracks = (b.production_tracks || []).filter(t => t.id !== trackId);
+            renderProjects();
+            
+            try {
+                await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({
+                        id: b.id,
+                        production_tracks: b.production_tracks
+                    })
+                });
+                showToast("Task produksi dihapus.");
+            } catch(e) {
+                console.error(e);
             }
         }
 
