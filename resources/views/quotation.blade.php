@@ -726,7 +726,7 @@
         });
     </script>
     <script src="/js/activity-logger.js"></script>
-    <script src="/js/quotation.js?v=7"></script>
+    <script src="/js/quotation.js?v={{ time() }}"></script>
 
     <!-- =====================================================
          EXPORT PNG & PDF (satu halaman A4, tanpa offset)

@@ -13,11 +13,17 @@ class QuotationController extends Controller
     // API for vendor dashboard
     public function getQuotations()
     {
-        return response()->json(Quotation::orderBy('created_at', 'desc')->get());
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) return response()->json([]);
+
+        return response()->json(Quotation::where('user_id', $user->id)->orderBy('created_at', 'desc')->get());
     }
 
     public function addQuotation(Request $request)
     {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) return response()->json(['success' => false], 401);
+
         $data = $request->all();
         // Since we had localStorage with string dates or empty dates, handle them
         if (empty($data['event_date'])) $data['event_date'] = null;
@@ -26,6 +32,8 @@ class QuotationController extends Controller
         if (empty($data['id']) || str_starts_with($data['id'], 'q_')) {
             $data['id'] = Str::uuid()->toString();
         }
+
+        $data['user_id'] = $user->id;
 
         $quotation = Quotation::updateOrCreate(
             ['id' => $data['id']],
@@ -37,7 +45,10 @@ class QuotationController extends Controller
 
     public function deleteQuotation($id)
     {
-        Quotation::where('id', $id)->delete();
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) return response()->json(['success' => false], 401);
+
+        Quotation::where('user_id', $user->id)->where('id', $id)->delete();
         return response()->json(['success' => true]);
     }
 
@@ -59,12 +70,9 @@ class QuotationController extends Controller
             $quotation->status = 'Disetujui';
             $quotation->save();
             
-            // Get first user for default user_id if needed
-            $user = \App\Models\User::first();
-            
             // Generate Booking
             $booking = Booking::create([
-                'user_id' => $user ? $user->id : null,
+                'user_id' => $quotation->user_id,
                 'client_name' => $quotation->client,
                 'client_wa_number' => $quotation->phone,
                 'event_date' => $quotation->event_date,
