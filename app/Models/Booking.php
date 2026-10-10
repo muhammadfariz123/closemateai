@@ -16,4 +16,14 @@ class Booking extends Model
         'payment_date' => 'date',
         'production_tracks' => 'array',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = (string) \Illuminate\Support\Str::uuid();
+            }
+        });
+    }
 }

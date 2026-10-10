@@ -297,7 +297,7 @@
                     <div class="stat-icon"><i class="fa-regular fa-paste"></i></div>
                     <div class="stat-title">Project In-Production</div>
                 </div>
-                <div class="stat-value">1</div>
+                <div class="stat-value" id="stat-in-production">1</div>
             </div>
             
             <div class="stat-card orange">
@@ -305,7 +305,7 @@
                     <div class="stat-icon"><i class="fa-regular fa-clock"></i></div>
                     <div class="stat-title">Task Mendekati Deadline (H-3)</div>
                 </div>
-                <div class="stat-value">0</div>
+                <div class="stat-value" id="stat-h3">0</div>
             </div>
             
             <div class="stat-card red">
@@ -313,7 +313,7 @@
                     <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
                     <div class="stat-title">Red Alert Overdue Task</div>
                 </div>
-                <div class="stat-value">0</div>
+                <div class="stat-value" id="stat-overdue">0</div>
             </div>
             
             <div class="stat-card cyan">
@@ -321,7 +321,7 @@
                     <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
                     <div class="stat-title">Workload PIC</div>
                 </div>
-                <div class="stat-desc" style="margin-top: 8px;">Belum ada task aktif.</div>
+                <div class="stat-desc" id="stat-workload" style="margin-top: 8px;">Belum ada task aktif.</div>
             </div>
         </div>
 
@@ -485,46 +485,61 @@
                 return;
             }
 
+            let statInProduction = 0;
+            let statH3 = 0;
+            let statOverdue = 0;
+            let picWorkload = {};
+
             let html = '';
             globalBookings.forEach(b => {
-                let deadlineHtml = '';
+                if(b.production_status !== 'Selesai') statInProduction++;
                 
-                if (b._isEditingDeadline) {
-                    deadlineHtml = `
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="date" id="deadline_input_${b.id}" value="${b.production_deadline || ''}" style="padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px; outline: none;">
-                        <button onclick="saveDeadline(${b.id})" style="background: var(--success); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-check"></i></button>
-                        <button onclick="cancelDeadlineEdit(${b.id})" style="background: white; border: 1px solid var(--border-color); color: var(--text-muted); padding: 5px 10px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
-                    `;
-                } else {
-                    if (b.production_deadline) {
-                        const d = new Date(b.production_deadline);
-                        d.setHours(0,0,0,0);
-                        const today = new Date();
-                        today.setHours(0,0,0,0);
-                        const diffTime = d - today;
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                        
-                        if (diffDays < 0) {
-                            deadlineHtml = `<div class="badge badge-danger-soft">Terlambat ${Math.abs(diffDays)} hari</div>`;
-                        } else if (diffDays === 0) {
-                            deadlineHtml = `<div class="badge badge-danger-soft" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2);">Hari ini</div>`;
-                        } else {
-                            deadlineHtml = `<div class="badge badge-gray">H-${diffDays}</div>`;
-                        }
-                    } else {
-                        deadlineHtml = `<div class="badge badge-gray" style="font-size: 11px;">Belum set deadline</div>`;
-                    }
-                    
-                    deadlineHtml += `<i class="fa-solid fa-pencil icon-btn-small" style="margin-left: 4px;" onclick="editDeadline(${b.id})"></i>`;
-                }
-
+                let revisionCount = 0;
                 let bodyHtml = '';
                 if(b.production_tracks && b.production_tracks.length > 0) {
                     let tracksHtml = '';
                     b.production_tracks.forEach(t => {
+                        if(t.revision_notes && t.revision_notes.trim() !== '') {
+                            revisionCount++;
+                        }
+                        
+                        // stats logic
+                        if (t.deadline_task) {
+                            const d = new Date(t.deadline_task);
+                            d.setHours(0,0,0,0);
+                            const today = new Date();
+                            today.setHours(0,0,0,0);
+                            const diffDays = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+                            
+                            if (diffDays < 0 && t.stage !== 'Delivery') {
+                                statOverdue++;
+                            } else if (diffDays >= 0 && diffDays <= 3 && t.stage !== 'Delivery') {
+                                statH3++;
+                            }
+                        }
+                        
+                        if (t.pic_name && t.stage !== 'Delivery') {
+                            const pName = t.pic_name.toLowerCase().trim();
+                            if(!picWorkload[pName]) picWorkload[pName] = 0;
+                            picWorkload[pName]++;
+                        }
+                        
                         let deadlineText = t.deadline_task ? formatDateDisplay(t.deadline_task) : 'Belum diatur';
+                        
+                        let deadlineWarning = '';
+                        if (t.deadline_task) {
+                            const d = new Date(t.deadline_task);
+                            d.setHours(0,0,0,0);
+                            const today = new Date();
+                            today.setHours(0,0,0,0);
+                            const diffDays = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+                            if (diffDays === 0) {
+                                deadlineWarning = ' <span style="color: #f59e0b; font-weight: 500;">(Deadline hari ini)</span>';
+                            } else if (diffDays < 0) {
+                                deadlineWarning = ` <span style="color: var(--danger); font-weight: 500;">(Terlambat ${Math.abs(diffDays)} hari)</span>`;
+                            }
+                        }
+                        
                         let reminderText = t.reminder_date ? formatDateDisplay(t.reminder_date) : 'Belum diatur';
                         
                         tracksHtml += `
@@ -541,7 +556,7 @@
                             </div>
                             <div style="font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
                                 <div>PIC: ${t.pic_name || '-'} &middot; ${t.pic_wa || '-'}</div>
-                                <div>Deadline: ${deadlineText}</div>
+                                <div>Deadline: ${deadlineText}${deadlineWarning}</div>
                                 <div>Reminder: ${reminderText}</div>
                             </div>
                         </div>
@@ -557,7 +572,7 @@
                     <div class="project-header">
                         <div class="project-top">
                             <div class="project-title">${b.client_name || 'Tanpa Nama'}</div>
-                            <button class="btn-outline"><i class="fa-solid fa-link"></i> Copy Client Progress Link</button>
+                            <button class="btn-outline" onclick="copyClientLink('${b.uuid}')"><i class="fa-solid fa-link"></i> Copy Client Progress Link</button>
                         </div>
                         <div class="project-meta">
                             <div class="meta-item"><i class="fa-regular fa-calendar"></i> ${formatDateDisplay(b.event_date)}</div>
@@ -569,7 +584,7 @@
                     </div>
                     ${bodyHtml}
                     <div class="project-footer">
-                        <div class="badge-gray">Revisi: 0x</div>
+                        <div class="badge-gray">Revisi: ${revisionCount}x</div>
                         <button class="btn-primary" onclick="openTrackModal(${b.id}, '${b.client_name ? b.client_name.replace(/'/g, "\\'") : ''}')"><i class="fa-solid fa-plus"></i> Tambah Track Baru</button>
                     </div>
                 </div>
@@ -577,6 +592,24 @@
             });
 
             container.innerHTML = html;
+            
+            // update stats UI
+            document.getElementById('stat-in-production').innerText = statInProduction;
+            document.getElementById('stat-h3').innerText = statH3;
+            document.getElementById('stat-overdue').innerText = statOverdue;
+            
+            let workloadText = [];
+            for (const [pic, count] of Object.entries(picWorkload)) {
+                workloadText.push(`${pic}: ${count} Task`);
+            }
+            document.getElementById('stat-workload').innerText = workloadText.length > 0 ? workloadText.join(' | ') : 'Belum ada task aktif.';
+        }
+
+        function copyClientLink(uuid) {
+            const url = window.location.origin + '/progress/' + uuid;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast("Link progres klien disalin.");
+            });
         }
 
         function editDeadline(id) {

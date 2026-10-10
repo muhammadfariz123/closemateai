@@ -29,6 +29,7 @@ Route::get('/api/public/calendar/{token}.ics', [CalendarController::class, 'expo
 Route::get('/q/{id}', [QuotationController::class, 'showPublic']);
 Route::post('/q/{id}/approve', [QuotationController::class, 'approveQuotation']);
 Route::match(['get', 'post'], '/api/public/wa/{secret}', [WebhookController::class, 'handle']);
+Route::get('/progress/{uuid}', [App\Http\Controllers\ProgressController::class, 'showPublic']);
 
 // Protected Routes
 Route::middleware('auth')->group(function () {
