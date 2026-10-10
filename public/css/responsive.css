@@ -159,4 +159,40 @@
         width: 95% !important;
         margin: 20px auto !important;
     }
+    
+    /* Global fix: prevent horizontal cutoffs on cards, buttons, items */
+    .card, .panel, .project-card, .list-item, div[style*="justify-content: space-between"] {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        height: auto !important;
+    }
+    
+    .actions-bar, .action-btns, .button-group, .top-actions, div[style*="display: flex; gap: 8px"] {
+        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+    }
+    
+    .action-btns .btn, .actions-bar .btn {
+        flex: 1 1 auto;
+        text-align: center;
+        white-space: nowrap; /* Or normal if we want them to wrap text */
+        margin-bottom: 4px;
+    }
+    
+    .tab-container, .filter-bar, .actions-bar {
+        white-space: normal !important;
+    }
+    
+    /* Make sure flex rows in items become columns */
+    .item-row, .termin-row, .form-grid {
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+    
+    .item-calc-row {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+    }
 }
