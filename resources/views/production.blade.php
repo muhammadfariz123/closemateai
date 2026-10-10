@@ -766,6 +766,10 @@
             if(editId) {
                 const idx = b.production_tracks.findIndex(x => x.id == editId);
                 if(idx !== -1) {
+                    const oldTrack = b.production_tracks[idx];
+                    if (oldTrack.reminder_date === track.reminder_date && oldTrack.reminder_message === track.reminder_message) {
+                        track.reminder_sent = oldTrack.reminder_sent;
+                    }
                     b.production_tracks[idx] = track;
                 }
             } else {
