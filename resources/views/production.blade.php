@@ -535,6 +535,7 @@
                                     <div class="badge badge-gray" style="font-size: 11px;">${t.stage || ''}</div>
                                 </div>
                                 <div style="display: flex; gap: 8px;">
+                                    <i class="fa-solid fa-pencil icon-btn-small" onclick="editTrack(${b.id}, '${t.id}')"></i>
                                     <i class="fa-solid fa-trash icon-btn-small" style="color: var(--danger);" onclick="deleteTrack(${b.id}, '${t.id}')"></i>
                                 </div>
                             </div>
@@ -650,13 +651,38 @@
             document.getElementById('trackModal').classList.remove('active');
         }
 
+        function editTrack(bookingId, trackId) {
+            const b = globalBookings.find(x => x.id == bookingId);
+            if(!b || !b.production_tracks) return;
+            const t = b.production_tracks.find(x => x.id == trackId);
+            if(!t) return;
+            
+            document.getElementById('trackBookingId').value = bookingId;
+            document.getElementById('trackEditId').value = trackId;
+            document.getElementById('modalClientName').innerText = `Edit progres pasca-acara untuk ${b.client_name || 'Tanpa Nama'}.`;
+            
+            document.getElementById('trackKategori').value = t.kategori || '';
+            document.getElementById('trackPicName').value = t.pic_name || '';
+            document.getElementById('trackPicWa').value = t.pic_wa || '';
+            document.getElementById('trackStage').value = t.stage || '';
+            document.getElementById('trackDeadline').value = t.deadline_task || '';
+            document.getElementById('trackReminder').value = t.reminder_date || '';
+            document.getElementById('trackMessage').value = t.reminder_message || '';
+            document.getElementById('trackLink').value = t.link || '';
+            document.getElementById('trackInternal').value = t.internal_notes || '';
+            document.getElementById('trackRevision').value = t.revision_notes || '';
+            
+            document.getElementById('trackModal').classList.add('active');
+        }
+
         async function saveTrack() {
             const bookingId = document.getElementById('trackBookingId').value;
+            const editId = document.getElementById('trackEditId').value;
             const b = globalBookings.find(x => x.id == bookingId);
             if(!b) return;
 
             const track = {
-                id: Date.now().toString(),
+                id: editId ? editId : Date.now().toString(),
                 kategori: document.getElementById('trackKategori').value,
                 pic_name: document.getElementById('trackPicName').value,
                 pic_wa: document.getElementById('trackPicWa').value,
@@ -670,7 +696,15 @@
             };
 
             if(!b.production_tracks) b.production_tracks = [];
-            b.production_tracks.push(track);
+            
+            if(editId) {
+                const idx = b.production_tracks.findIndex(x => x.id == editId);
+                if(idx !== -1) {
+                    b.production_tracks[idx] = track;
+                }
+            } else {
+                b.production_tracks.push(track);
+            }
             
             closeTrackModal();
             renderProjects();
