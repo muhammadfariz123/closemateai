@@ -70,10 +70,18 @@ class QuotationController extends Controller
                 'event_date' => $quotation->event_date,
                 'package_name' => 'Penawaran ' . $quotation->q_no,
                 'package_price' => $quotation->grandTotal,
-                'payment_status' => 'Belum Lunas',
-                'production_status' => 'Persiapan',
+                'package_qty' => 1,
+                'discount' => 0,
+                'total_income' => $quotation->grandTotal,
+                'net_profit' => $quotation->grandTotal,
+                'payment_status' => 'DP 1',
+                'production_status' => 'Pre-Event',
                 'paid_amount' => 0,
                 'client_address' => $quotation->venue,
+                'notes' => 'Dibuat dari penawaran ' . $quotation->q_no . ' \u00B7 Lokasi: ' . ($quotation->venue ?? ''),
+                'addons' => [],
+                'operational_costs' => [],
+                'team_members' => [],
             ]);
         }
         

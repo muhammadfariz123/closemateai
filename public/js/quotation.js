@@ -689,34 +689,17 @@ window.convertToBooking = async function(id) {
         });
         
         // 2. Prepare Booking Payload
-        let packageName = '';
-        let packagePrice = 0;
+        let packageName = 'Penawaran ' + q.q_no;
+        let packagePrice = parseFloat(q.grandTotal) || 0;
         let packageQty = 1;
-        let addonsData = [];
         
-        if (q.items && q.items.length > 0) {
-            packageName = q.items[0].name || '';
-            packagePrice = parseFloat(q.items[0].price) || 0;
-            packageQty = parseFloat(q.items[0].qty) || 1;
-            
-            if (q.items.length > 1) {
-                addonsData = q.items.slice(1).map(item => ({
-                    name: item.name || '',
-                    qty: item.qty || 1,
-                    price: item.price || 0
-                }));
-            }
-        }
-        
-        const totalPackage = packagePrice * packageQty;
-        const totalAddon = addonsData.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1)), 0);
-        const discount = parseFloat(q.discount) || 0;
-        const totalIncome = totalPackage + totalAddon - discount;
+        let venueStr = q.venue || '';
+        let notesText = `Dibuat dari penawaran ${q.q_no} \u00B7 Lokasi: ${venueStr}`;
         
         const bookingPayload = {
             client_name: q.client || '',
             client_wa_number: q.phone || '',
-            client_address: q.client_address || '',
+            client_address: venueStr,
             event_date: q.event_date || '',
             start_time: q.event_time || '',
             end_time: '',
@@ -724,18 +707,18 @@ window.convertToBooking = async function(id) {
             package_price: packagePrice,
             package_qty: packageQty,
             paid_amount: 0,
-            discount: discount,
-            addons: addonsData,
+            discount: 0,
+            addons: [],
             operational_costs: [],
-            total_income: totalIncome,
+            total_income: packagePrice,
             total_operational_cost: 0,
-            net_profit: totalIncome,
+            net_profit: packagePrice,
             payment_date: '',
             payment_status: 'DP 1',
             production_status: 'Pre-Event',
             result_link: '',
             team_members: [],
-            notes: q.notes || ''
+            notes: notesText
         };
         
         // 3. Post to Bookings
