@@ -494,6 +494,39 @@
             globalBookings.forEach(b => {
                 if(b.production_status !== 'Selesai') statInProduction++;
                 
+                let deadlineHtml = '';
+                
+                if (b._isEditingDeadline) {
+                    deadlineHtml = `
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="date" id="deadline_input_${b.id}" value="${b.production_deadline || ''}" style="padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px; outline: none;">
+                        <button onclick="saveDeadline(${b.id})" style="background: var(--success); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-check"></i></button>
+                        <button onclick="cancelDeadlineEdit(${b.id})" style="background: white; border: 1px solid var(--border-color); color: var(--text-muted); padding: 5px 10px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    `;
+                } else {
+                    if (b.production_deadline) {
+                        const d = new Date(b.production_deadline);
+                        d.setHours(0,0,0,0);
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        const diffTime = d - today;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                        
+                        if (diffDays < 0) {
+                            deadlineHtml = `<div class="badge badge-danger-soft">Terlambat ${Math.abs(diffDays)} hari</div>`;
+                        } else if (diffDays === 0) {
+                            deadlineHtml = `<div class="badge badge-danger-soft" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2);">Hari ini</div>`;
+                        } else {
+                            deadlineHtml = `<div class="badge badge-gray">H-${diffDays}</div>`;
+                        }
+                    } else {
+                        deadlineHtml = `<div class="badge badge-gray" style="font-size: 11px;">Belum set deadline</div>`;
+                    }
+                    
+                    deadlineHtml += `<i class="fa-solid fa-pencil icon-btn-small" style="margin-left: 4px;" onclick="editDeadline(${b.id})"></i>`;
+                }
+
                 let revisionCount = 0;
                 let bodyHtml = '';
                 if(b.production_tracks && b.production_tracks.length > 0) {
