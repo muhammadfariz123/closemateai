@@ -73,7 +73,9 @@ class ProcessFollowUps extends Command
                         'desc' => "Sedang memproses otomatis...",
                         'type' => 'follow_up',
                         'user_id' => $user->id,
-                        'actor' => 'Sistem'
+                        'actor' => 'Sistem',
+                        'icon' => 'fa-clock-rotate-left',
+                        'color' => 'purple'
                     ]);
 
                     foreach ($dueChats as $chat) {
@@ -96,7 +98,9 @@ class ProcessFollowUps extends Command
                                 'desc' => "Label \"" . $config['from'] . "\" -> \"" . $config['to'] . "\"",
                                 'type' => 'follow_up',
                                 'user_id' => $user->id,
-                                'actor' => 'Sistem'
+                                'actor' => 'Sistem',
+                                'icon' => 'fa-paper-plane',
+                                'color' => 'orange'
                             ]);
 
                             if ($config['from'] != $config['to']) {

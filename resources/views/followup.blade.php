@@ -481,10 +481,15 @@
                 @if($activities->count() > 0)
                     <div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 0;">
                         @foreach($activities as $act)
-                            <div style="padding: 16px; border-bottom: 1px solid var(--border-color);">
-                                <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">{{ $act->title }}</div>
-                                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">{{ $act->description }}</div>
-                                <div style="font-size: 11px; color: var(--text-muted);">{{ \Carbon\Carbon::parse($act->created_at)->format('d/m/Y, H.i.s') }}</div>
+                            <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; gap: 12px; align-items: flex-start;">
+                                <div style="color: var(--{{ $act->color ?? 'primary' }}); background: rgba(0,0,0,0.05); padding: 8px; border-radius: 8px; font-size: 14px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fa-solid {{ $act->icon ?? 'fa-clock-rotate-left' }}"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">{{ $act->title }}</div>
+                                    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">{{ $act->desc }}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">{{ \Carbon\Carbon::parse($act->created_at)->format('d/m/Y, H.i.s') }}</div>
+                                </div>
                             </div>
                         @endforeach
                     </div>

@@ -127,7 +127,9 @@ class FollowUpController extends Controller
                 'desc' => "Sedang memproses...",
                 'type' => 'follow_up',
                 'user_id' => $user->id,
-                'actor' => 'Sistem'
+                'actor' => 'Sistem',
+                'icon' => 'fa-clock-rotate-left',
+                'color' => 'purple'
             ]);
 
             foreach($chats as $chat) {
@@ -151,7 +153,9 @@ class FollowUpController extends Controller
                         'desc' => "Label \"$status_from\" -> \"$status_to\"",
                         'type' => 'follow_up',
                         'user_id' => $user->id,
-                        'actor' => 'Sistem'
+                        'actor' => 'Sistem',
+                        'icon' => 'fa-paper-plane',
+                        'color' => 'orange'
                     ]);
 
                     if ($status_from != $status_to) {
