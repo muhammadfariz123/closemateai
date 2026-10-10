@@ -664,7 +664,7 @@
                     document.getElementById('b_client_name').value = b.client_name || '';
                     document.getElementById('b_client_wa').value = b.client_wa_number || '';
                     document.getElementById('b_client_address').value = b.client_address || '';
-                    document.getElementById('b_event_date').value = b.event_date || '';
+                    document.getElementById('b_event_date').value = b.event_date ? b.event_date.substring(0, 10) : '';
                     document.getElementById('b_start_time').value = b.start_time || '';
                     document.getElementById('b_end_time').value = b.end_time || '';
                     document.getElementById('b_package_name').value = b.package_name || '';
@@ -672,7 +672,7 @@
                     document.getElementById('b_package_qty').value = b.package_qty || '1';
                     document.getElementById('b_paid_amount').value = b.paid_amount ? new Intl.NumberFormat('id-ID').format(b.paid_amount) : '0';
                     document.getElementById('b_discount').value = b.discount ? new Intl.NumberFormat('id-ID').format(b.discount) : '0';
-                    document.getElementById('b_payment_date').value = b.payment_date || '';
+                    document.getElementById('b_payment_date').value = b.payment_date ? b.payment_date.substring(0, 10) : '';
                     document.getElementById('b_payment_status').value = b.payment_status || 'DP 1';
                     
                     // Production Status Custom Logic
