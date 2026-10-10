@@ -3,10 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Follow-Up Otomatis - CloseMateAI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: white; color: var(--text-dark); padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 12px; transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-left: 4px solid var(--success); }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast i { color: var(--success); font-size: 20px; }
+        .toast-content { display: flex; flex-direction: column; }
+        .toast-content span { font-size: 14px; font-weight: 600; }
         :root {
             --sidebar-bg: #1e1e2d;
             --sidebar-text: #cbd5e1;
@@ -318,7 +325,7 @@
                         <div style="font-size: 12px; color: var(--text-muted);">Lead berstatus "Follow-up" akan dihubungi sesuai jadwal di bawah</div>
                     </div>
                     <label class="switch">
-                        <input type="checkbox">
+                        <input type="checkbox" id="fu_is_active" {{ $settings['fu_is_active'] ? 'checked' : '' }}>
                         <span class="slider"></span>
                     </label>
                 </div>
@@ -335,27 +342,37 @@
                 </div>
                 
                 <label class="form-label">Jadwal kirim (hari setelah lead masuk)</label>
-                <div class="days-selector">
-                    <div class="day-pill active">1</div>
-                    <div class="day-pill">2</div>
-                    <div class="day-pill">3</div>
-                    <div class="day-pill">5</div>
-                    <div class="day-pill">7</div>
-                    <div class="day-pill">14</div>
-                    <div class="day-pill">30</div>
-                    <input type="text" class="day-input" value="1">
+                <div class="days-selector" id="days_1_selector">
+                    @foreach([1, 2, 3, 5, 7, 14, 30] as $day)
+                        <div class="day-pill {{ $settings['fu_1_days'] == $day ? 'active' : '' }}" onclick="selectDay(1, {{ $day }})">{{ $day }}</div>
+                    @endforeach
+                    <input type="text" class="day-input" id="fu_1_days" value="{{ $settings['fu_1_days'] }}" onchange="updateDayCustom(1, this.value)">
                     <span class="day-text">hari</span>
                 </div>
                 
-                <label class="form-label">Kontak (0)</label>
-                <div class="empty-box">Belum ada kontak</div>
+                <label class="form-label">Kontak ({{ $fu1_contacts->count() }})</label>
+                @if($fu1_contacts->count() > 0)
+                    <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 20px; max-height: 150px; overflow-y: auto;">
+                        @foreach($fu1_contacts as $c)
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--bg-light);">
+                                <div>
+                                    <div style="font-size: 13px; font-weight: 600;">{{ $c->client_name ?: $c->client_wa_number }}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">{{ $c->client_wa_number }}</div>
+                                </div>
+                                <div style="font-size: 11px; background: rgba(255,199,0,0.1); color: var(--warning); padding: 2px 8px; border-radius: 12px; font-weight: 600;">On Going</div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="empty-box">Belum ada kontak</div>
+                @endif
                 
                 <label class="form-label">Template Pesan</label>
-                <textarea class="form-control">Halo Kak {nama}, mau tanya apakah ada yang ingin didiskusikan lagi terkait paket {paket} untuk tanggal {tanggal}? 😊</textarea>
+                <textarea class="form-control" id="fu_1_template">{{ $settings['fu_1_template'] }}</textarea>
                 
                 <div class="action-row">
-                    <button class="btn btn-secondary"><i class="fa-regular fa-paper-plane"></i> Proses</button>
-                    <span class="action-text">0 siap dikirimi</span>
+                    <button class="btn btn-secondary" onclick="processManual(1)"><i class="fa-regular fa-paper-plane"></i> Proses</button>
+                    <span class="action-text">{{ $fu1_contacts->count() }} siap dikirimi</span>
                 </div>
             </div>
 
@@ -370,27 +387,37 @@
                 </div>
                 
                 <label class="form-label">Jadwal kirim (hari setelah lead masuk)</label>
-                <div class="days-selector">
-                    <div class="day-pill">1</div>
-                    <div class="day-pill">2</div>
-                    <div class="day-pill active">3</div>
-                    <div class="day-pill">5</div>
-                    <div class="day-pill">7</div>
-                    <div class="day-pill">14</div>
-                    <div class="day-pill">30</div>
-                    <input type="text" class="day-input" value="3">
+                <div class="days-selector" id="days_2_selector">
+                    @foreach([1, 2, 3, 5, 7, 14, 30] as $day)
+                        <div class="day-pill {{ $settings['fu_2_days'] == $day ? 'active' : '' }}" onclick="selectDay(2, {{ $day }})">{{ $day }}</div>
+                    @endforeach
+                    <input type="text" class="day-input" id="fu_2_days" value="{{ $settings['fu_2_days'] }}" onchange="updateDayCustom(2, this.value)">
                     <span class="day-text">hari</span>
                 </div>
                 
-                <label class="form-label">Kontak (0)</label>
-                <div class="empty-box">Belum ada kontak</div>
+                <label class="form-label">Kontak ({{ $fu2_contacts->count() }})</label>
+                @if($fu2_contacts->count() > 0)
+                    <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 20px; max-height: 150px; overflow-y: auto;">
+                        @foreach($fu2_contacts as $c)
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--bg-light);">
+                                <div>
+                                    <div style="font-size: 13px; font-weight: 600;">{{ $c->client_name ?: $c->client_wa_number }}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">{{ $c->client_wa_number }}</div>
+                                </div>
+                                <div style="font-size: 11px; background: rgba(255,199,0,0.1); color: var(--warning); padding: 2px 8px; border-radius: 12px; font-weight: 600;">On Going</div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="empty-box">Belum ada kontak</div>
+                @endif
                 
                 <label class="form-label">Template Pesan</label>
-                <textarea class="form-control">Halo Kak {nama}, sekadar mengabarkan bahwa slot tanggal {tanggal} sedang ada beberapa calon pengantin lain yang menanyakan. Apakah Kakak mau keep slot dulu?</textarea>
+                <textarea class="form-control" id="fu_2_template">{{ $settings['fu_2_template'] }}</textarea>
                 
                 <div class="action-row">
-                    <button class="btn btn-secondary"><i class="fa-regular fa-paper-plane"></i> Proses</button>
-                    <span class="action-text">0 siap dikirimi</span>
+                    <button class="btn btn-secondary" onclick="processManual(2)"><i class="fa-regular fa-paper-plane"></i> Proses</button>
+                    <span class="action-text">{{ $fu2_contacts->count() }} siap dikirimi</span>
                 </div>
             </div>
 
@@ -405,31 +432,41 @@
                 </div>
                 
                 <label class="form-label">Jadwal kirim (hari setelah lead masuk)</label>
-                <div class="days-selector">
-                    <div class="day-pill">1</div>
-                    <div class="day-pill">2</div>
-                    <div class="day-pill">3</div>
-                    <div class="day-pill">5</div>
-                    <div class="day-pill active">7</div>
-                    <div class="day-pill">14</div>
-                    <div class="day-pill">30</div>
-                    <input type="text" class="day-input" value="7">
+                <div class="days-selector" id="days_3_selector">
+                    @foreach([1, 2, 3, 5, 7, 14, 30] as $day)
+                        <div class="day-pill {{ $settings['fu_3_days'] == $day ? 'active' : '' }}" onclick="selectDay(3, {{ $day }})">{{ $day }}</div>
+                    @endforeach
+                    <input type="text" class="day-input" id="fu_3_days" value="{{ $settings['fu_3_days'] }}" onchange="updateDayCustom(3, this.value)">
                     <span class="day-text">hari</span>
                 </div>
                 
-                <label class="form-label">Kontak (0)</label>
-                <div class="empty-box">Belum ada kontak</div>
+                <label class="form-label">Kontak ({{ $fu3_contacts->count() }})</label>
+                @if($fu3_contacts->count() > 0)
+                    <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 20px; max-height: 150px; overflow-y: auto;">
+                        @foreach($fu3_contacts as $c)
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--bg-light);">
+                                <div>
+                                    <div style="font-size: 13px; font-weight: 600;">{{ $c->client_name ?: $c->client_wa_number }}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">{{ $c->client_wa_number }}</div>
+                                </div>
+                                <div style="font-size: 11px; background: rgba(255,199,0,0.1); color: var(--warning); padding: 2px 8px; border-radius: 12px; font-weight: 600;">On Going</div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="empty-box">Belum ada kontak</div>
+                @endif
                 
                 <label class="form-label">Template Pesan</label>
-                <textarea class="form-control">Halo Kak {nama}, apakah ada opsi penyesuaian budget atau isi paket {paket} yang ingin disesuaikan dengan kebutuhan Kakak?</textarea>
+                <textarea class="form-control" id="fu_3_template">{{ $settings['fu_3_template'] }}</textarea>
                 
                 <div class="action-row">
-                    <button class="btn btn-secondary"><i class="fa-regular fa-paper-plane"></i> Proses</button>
-                    <span class="action-text">0 siap dikirimi</span>
+                    <button class="btn btn-secondary" onclick="processManual(3)"><i class="fa-regular fa-paper-plane"></i> Proses</button>
+                    <span class="action-text">{{ $fu3_contacts->count() }} siap dikirimi</span>
                 </div>
             </div>
             
-            <button class="btn btn-primary" style="margin-bottom: 24px;"><i class="fa-regular fa-floppy-disk"></i> Simpan Pengaturan</button>
+            <button class="btn btn-primary" style="margin-bottom: 24px;" onclick="saveSettings()"><i class="fa-regular fa-floppy-disk"></i> Simpan Pengaturan</button>
             
             <!-- History -->
             <div class="fu-card" style="background: rgba(255,255,255,0.5);">
@@ -440,33 +477,138 @@
                         <p>Catatan pengiriman follow-up dan perubahan label (termasuk Warm Lead)</p>
                     </div>
                 </div>
-                <div class="empty-box" style="margin-bottom: 0;">Belum ada aktivitas follow-up</div>
+                
+                @if($activities->count() > 0)
+                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 0;">
+                        @foreach($activities as $act)
+                            <div style="padding: 16px; border-bottom: 1px solid var(--border-color);">
+                                <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">{{ $act->title }}</div>
+                                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">{{ $act->description }}</div>
+                                <div style="font-size: 11px; color: var(--text-muted);">{{ \Carbon\Carbon::parse($act->created_at)->format('d/m/Y, H.i.s') }}</div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="empty-box" style="margin-bottom: 0;">Belum ada aktivitas follow-up</div>
+                @endif
             </div>
 
         </div>
     </div>
+    
+    <div class="toast-container" id="toast-container"></div>
 
     <script>
         // Fitur Sidebar Collapse
         const btnCollapse = document.getElementById('btn-collapse');
-        btnCollapse.addEventListener('click', () => {
-            document.body.classList.toggle('sidebar-collapsed');
-        });
+        if (btnCollapse) {
+            btnCollapse.addEventListener('click', () => {
+                document.body.classList.toggle('sidebar-collapsed');
+            });
+        }
 
         // Profile Dropdown Toggle
         const profileBtn = document.getElementById('profile-btn');
         const profileDropdown = document.getElementById('profile-dropdown');
         
-        profileBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            profileDropdown.classList.toggle('show');
-        });
-        
-        document.addEventListener('click', () => {
-            if (profileDropdown.classList.contains('show')) {
-                profileDropdown.classList.remove('show');
-            }
-        });
+        if (profileBtn && profileDropdown) {
+            profileBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('show');
+            });
+            
+            document.addEventListener('click', () => {
+                if (profileDropdown.classList.contains('show')) {
+                    profileDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast show';
+            toast.innerHTML = `
+                <i class="fa-solid fa-circle-check"></i>
+                <div class="toast-content">
+                    <span>${message}</span>
+                </div>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        function selectDay(level, day) {
+            document.getElementById(`fu_${level}_days`).value = day;
+            const pills = document.querySelectorAll(`#days_${level}_selector .day-pill`);
+            pills.forEach(p => p.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function updateDayCustom(level, value) {
+            const pills = document.querySelectorAll(`#days_${level}_selector .day-pill`);
+            pills.forEach(p => p.classList.remove('active'));
+        }
+
+        function saveSettings() {
+            const data = {
+                fu_is_active: document.getElementById('fu_is_active').checked,
+                fu_1_days: document.getElementById('fu_1_days').value,
+                fu_1_template: document.getElementById('fu_1_template').value,
+                fu_2_days: document.getElementById('fu_2_days').value,
+                fu_2_template: document.getElementById('fu_2_template').value,
+                fu_3_days: document.getElementById('fu_3_days').value,
+                fu_3_template: document.getElementById('fu_3_template').value,
+            };
+
+            fetch('/api/followup/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Gagal menyimpan pengaturan.");
+            });
+        }
+
+        function processManual(level) {
+            fetch(`/api/followup/process/${level}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message);
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Gagal memproses follow-up.");
+            });
+        }
     </script>
     <script src="/js/responsive.js"></script>
 </body>
