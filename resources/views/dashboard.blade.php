@@ -447,17 +447,23 @@
                 if (data.feed && data.feed.length > 0) {
                     let html = '';
                     data.feed.forEach(item => {
+                        let actorDisplay = item.actor ? `<div style="font-size: 11px; font-weight: 500; color: var(--text-dark); text-align: right;">${item.actor}</div>` : '';
+                        
+                        // Limit title length to prevent wrapping issues if too long, similar to Image 1
+                        let displayTitle = item.title.length > 35 ? item.title.substring(0, 35) + '...' : item.title;
+                        
                         html += `
-                        <div style="display: flex; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+                        <div style="display: flex; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); align-items: center;">
                             <div style="min-width: 32px; width: 32px; height: 32px; border-radius: 50%; background-color: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; color: ${item.color}; font-size: 14px;">
                                 <i class="${item.icon}"></i>
                             </div>
-                            <div style="flex: 1;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                    <h4 style="font-size: 13px; font-weight: 600; color: var(--text-dark);">${item.title}</h4>
-                                    <span style="font-size: 11px; color: var(--text-muted);">${item.time}</span>
-                                </div>
-                                <p style="font-size: 12px; color: var(--text-muted); margin: 0;">${item.desc}</p>
+                            <div style="flex: 1; min-width: 0;">
+                                <h4 style="font-size: 13px; font-weight: 600; color: var(--text-dark); margin: 0 0 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${displayTitle}</h4>
+                                <p style="font-size: 12px; color: var(--text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.desc}</p>
+                            </div>
+                            <div style="text-align: right; min-width: 60px;">
+                                ${actorDisplay}
+                                <div style="font-size: 10px; color: var(--text-muted);">${item.time}</div>
                             </div>
                         </div>`;
                     });

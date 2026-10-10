@@ -72,6 +72,7 @@ class DashboardController extends Controller
                 else $colorCode = '#a1a5b7';
                 
                 return [
+                    'actor' => $act->actor,
                     'title' => $act->title,
                     'desc' => $act->desc,
                     'icon' => $icon,
