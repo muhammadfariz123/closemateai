@@ -100,9 +100,10 @@
     
     .main-content {
         margin-left: 0 !important;
-        margin-top: 120px; /* 65px + 55px */
+        margin-top: 0 !important;
+        padding-top: 130px !important; /* Fix huge white space */
         width: 100%;
-        height: calc(100vh - 120px);
+        height: 100vh;
     }
     
     .page-title h1 { font-size: 18px; margin-bottom: 2px; }
