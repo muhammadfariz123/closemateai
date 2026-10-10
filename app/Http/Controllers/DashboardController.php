@@ -48,11 +48,20 @@ class DashboardController extends Controller
             ->whereDate('created_at', $today)
             ->count();
             
-        $activities = \App\Models\SystemActivity::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->take(10)
-            ->get()
-            ->map(function($act) {
+        try {
+            $activities = \App\Models\SystemActivity::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->take(10)
+                ->get();
+        } catch (\Illuminate\Database\QueryException $e) {
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            $activities = \App\Models\SystemActivity::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->take(10)
+                ->get();
+        }
+
+        $activities = $activities->map(function($act) {
                 // Map to frontend feed format
                 $icon = $act->icon ?: 'fa-solid fa-bell';
                 $color = $act->color ?: 'purple';
