@@ -44,7 +44,7 @@ class DashboardController extends Controller
         $messagesSentToday = Message::whereHas('chat', function($q) use ($user) {
                 $q->where('user_id', $user->id);
             })
-            ->where('sender_type', 'ai')
+            ->where('sender', 'ai')
             ->whereDate('created_at', $today)
             ->count();
             
@@ -76,8 +76,8 @@ class DashboardController extends Controller
                     'desc' => $act->desc,
                     'icon' => $icon,
                     'color' => $colorCode,
-                    'time' => $act->created_at->diffForHumans(),
-                    'timestamp' => $act->created_at->timestamp
+                    'time' => $act->created_at ? $act->created_at->diffForHumans() : '',
+                    'timestamp' => $act->created_at ? $act->created_at->timestamp : 0
                 ];
             });
             
