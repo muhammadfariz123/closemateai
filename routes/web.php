@@ -10,6 +10,7 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\SystemActivityController;
 
 // Public Auth Routes
 Route::get('/', function () {
@@ -37,6 +38,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/bookings', [BookingController::class, 'getBookings']);
     Route::post('/api/bookings', [BookingController::class, 'addBooking']);
     Route::delete('/api/bookings/{id}', [BookingController::class, 'deleteBooking']);
+
+    Route::get('/api/activities', [SystemActivityController::class, 'getActivities']);
+    Route::post('/api/activities', [SystemActivityController::class, 'addActivity']);
 
     Route::get('/chat', function () { return view('chat'); });
     Route::get('/knowledge', [KnowledgeFileController::class, 'index']);

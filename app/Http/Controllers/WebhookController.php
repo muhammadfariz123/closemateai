@@ -72,6 +72,16 @@ class WebhookController extends Controller
             'message' => $messageText
         ]);
 
+        \App\Models\SystemActivity::create([
+            'user_id' => $user->id,
+            'type' => 'Chat Masuk',
+            'actor' => 'Sistem',
+            'title' => 'Pesan baru dari ' . $name,
+            'desc' => \Illuminate\Support\Str::limit($messageText, 40),
+            'icon' => 'fa-regular fa-comment',
+            'color' => 'blue'
+        ]);
+
         // 5. Cek apakah Human Takeover aktif
         if ($chat->is_human_takeover) {
             return response()->json(['status' => true, 'message' => 'Human takeover active, AI paused']);
@@ -134,6 +144,16 @@ class WebhookController extends Controller
             // Increment reply count
             $chat->ai_reply_count += 1;
             $chat->save();
+
+            \App\Models\SystemActivity::create([
+                'user_id' => $user->id,
+                'type' => 'Balasan AI',
+                'actor' => 'Sistem',
+                'title' => 'AI membalas ' . $chat->client_name,
+                'desc' => \Illuminate\Support\Str::limit($responseText, 40),
+                'icon' => 'fa-solid fa-robot',
+                'color' => 'purple'
+            ]);
         } else {
             // Jika AI gagal memberikan balasan, kirim pesan error agar tidak silent fail
             $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, "Mohon maaf, layanan AI kami sedang mengalami gangguan koneksi. (Sistem: Gagal memproses prompt)");

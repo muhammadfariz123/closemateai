@@ -339,18 +339,26 @@
             { type: 'Lead', actor: 'Sistem', title: 'Lead baru: Frz', desc: '+628987654321', time: '08 Okt, 12.22', icon: 'fa-bolt', color: 'purple' }
         ];
 
-        let sysActivities = JSON.parse(localStorage.getItem('sys_activities'));
-        if (!sysActivities || sysActivities.length === 0) {
-            sysActivities = mockActivities;
-            localStorage.setItem('sys_activities', JSON.stringify(sysActivities));
-        }
+        let sysActivities = [];
 
         let currentMainFilter = 'Semua';
         let currentSubFilter = 'Semua Anggota';
 
-        function renderActivities() {
-            // refresh data from localStorage in case it changed in another tab
-            sysActivities = JSON.parse(localStorage.getItem('sys_activities')) || [];
+        async function fetchActivities() {
+            try {
+                const res = await fetch('/api/activities');
+                sysActivities = await res.json();
+                renderActivities(false);
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function renderActivities(shouldFetch = true) {
+            if (shouldFetch) {
+                fetchActivities();
+                return;
+            }
             
             const container = document.getElementById('activity_container');
             const countEl = document.getElementById('activity_count');
@@ -360,7 +368,7 @@
                 
                 let matchSub = true;
                 if (currentSubFilter === 'Penapict (Owner)') {
-                    matchSub = (a.actor === 'Penapict');
+                    matchSub = (a.actor !== 'Sistem');
                 } else if (currentSubFilter === 'Sistem / AI') {
                     matchSub = (a.actor === 'Sistem');
                 }
@@ -377,6 +385,13 @@
             
             let html = '';
             filtered.forEach(a => {
+                let timeStr = a.time;
+                if (a.created_at) {
+                    const d = new Date(a.created_at);
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                    timeStr = `${d.getDate().toString().padStart(2, '0')} ${months[d.getMonth()]}, ${d.getHours().toString().padStart(2, '0')}.${d.getMinutes().toString().padStart(2, '0')}`;
+                }
+                
                 html += `
                 <div class="activity-item">
                     <div class="activity-icon icon-${a.color}">
@@ -388,7 +403,7 @@
                     </div>
                     <div class="activity-meta">
                         <span>${a.actor}</span>
-                        <small>${a.time}</small>
+                        <small>${timeStr}</small>
                     </div>
                 </div>
                 `;

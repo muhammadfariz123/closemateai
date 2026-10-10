@@ -48,51 +48,31 @@ class DashboardController extends Controller
             ->whereDate('created_at', $today)
             ->count();
             
-        // Quick Activity Feed
-        // We will fetch recent messages and new chats as feed items
-        $recentMessages = Message::with('chat')
-            ->whereHas('chat', function($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })
+        $activities = \App\Models\SystemActivity::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->take(10)
             ->get()
-            ->map(function($msg) {
-                if ($msg->sender_type == 'ai') {
-                    $title = "AI membalas " . ($msg->chat->client_name ?: $msg->chat->client_wa_number);
-                    $icon = "fa-solid fa-robot";
-                    $color = "var(--primary)";
-                } else {
-                    $title = "Pesan baru dari " . ($msg->chat->client_name ?: $msg->chat->client_wa_number);
-                    $icon = "fa-regular fa-comment";
-                    $color = "#009EF7";
-                }
+            ->map(function($act) {
+                // Map to frontend feed format
+                $icon = $act->icon ?: 'fa-solid fa-bell';
+                $color = $act->color ?: 'purple';
+                if ($color == 'purple') $colorCode = 'var(--primary)';
+                else if ($color == 'green') $colorCode = '#50cd89';
+                else if ($color == 'orange') $colorCode = '#ffc700';
+                else if ($color == 'blue') $colorCode = '#009EF7';
+                else $colorCode = '#a1a5b7';
+                
                 return [
-                    'title' => $title,
-                    'desc' => \Illuminate\Support\Str::limit($msg->content, 40),
+                    'title' => $act->title,
+                    'desc' => $act->desc,
                     'icon' => $icon,
-                    'color' => $color,
-                    'time' => $msg->created_at->diffForHumans(),
-                    'timestamp' => $msg->created_at->timestamp
+                    'color' => $colorCode,
+                    'time' => $act->created_at->diffForHumans(),
+                    'timestamp' => $act->created_at->timestamp
                 ];
             });
             
-        $recentChats = Chat::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->take(5)
-            ->get()
-            ->map(function($chat) {
-                return [
-                    'title' => "Lead baru: " . ($chat->client_name ?: $chat->client_wa_number),
-                    'desc' => $chat->client_wa_number,
-                    'icon' => "fa-solid fa-user-plus",
-                    'color' => "#50cd89",
-                    'time' => $chat->created_at->diffForHumans(),
-                    'timestamp' => $chat->created_at->timestamp
-                ];
-            });
-            
-        $feed = collect($recentMessages)->concat($recentChats)->sortByDesc('timestamp')->take(10)->values();
+        $feed = collect($activities)->values();
 
         return response()->json([
             'total_conversations' => $totalConversations,
