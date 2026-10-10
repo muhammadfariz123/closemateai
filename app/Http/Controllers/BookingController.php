@@ -15,6 +15,14 @@ class BookingController extends Controller
         $bookings = Booking::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
+            
+        // Fallback for old bookings without UUID
+        foreach ($bookings as $b) {
+            if (empty($b->uuid)) {
+                $b->uuid = (string) \Illuminate\Support\Str::uuid();
+                $b->save();
+            }
+        }
 
         return response()->json($bookings);
     }
