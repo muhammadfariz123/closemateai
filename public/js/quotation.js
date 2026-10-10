@@ -700,7 +700,7 @@ window.convertToBooking = async function(id) {
             client_name: q.client || '',
             client_wa_number: q.phone || '',
             client_address: venueStr,
-            event_date: q.event_date || '',
+            event_date: q.event_date ? q.event_date.substring(0, 10) : '',
             start_time: q.event_time || '',
             end_time: '',
             package_name: packageName,
