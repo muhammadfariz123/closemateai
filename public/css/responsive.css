@@ -53,13 +53,21 @@
         -webkit-overflow-scrolling: touch;
     }
     
-    /* Hide the scrollbar for webkit (Chrome/Safari) */
+    /* Show a thin nice scrollbar for webkit (Chrome/Safari) */
     .nav-menu::-webkit-scrollbar {
-        display: none;
+        height: 4px;
+        display: block;
+    }
+    .nav-menu::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .nav-menu::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
     }
     .nav-menu {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
     }
     
     .nav-item {
