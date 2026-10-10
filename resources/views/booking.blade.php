@@ -10,7 +10,7 @@
     <style>
         :root {
             --sidebar-bg: #1e1e2d;
-            --sidebar-text: #a1a5b7;
+            --sidebar-text: #cbd5e1;
             --sidebar-active-bg: rgba(107, 92, 216, 0.2);
             --sidebar-active-text: #6b5cd8;
             --primary: #6b5cd8;
@@ -268,6 +268,7 @@
         .action-icons i:hover { color: var(--primary-color); }
         .action-icons i.delete:hover { color: var(--danger); }
     </style>
+    <link rel="stylesheet" href="/css/responsive.css">
 </head>
 <body>
 
@@ -309,6 +310,7 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="topbar">
+            <button class="mobile-menu-btn" style="display:none; background:none; border:none; font-size:20px; cursor:pointer; margin-right:16px; color:var(--text-dark);"><i class="fa-solid fa-bars"></i></button>
             <div class="page-title">
                 <h1 id="main_title_h1">Booking & Operasional Management</h1>
                 <p id="main_title_p">Pantau jadwal acara, pembayaran, biaya operasional, dan estimasi profit setiap klien.</p>
@@ -1625,5 +1627,6 @@
         }
     </script>
     <script src="/js/activity-logger.js"></script>
+    <script src="/js/responsive.js"></script>
 </body>
 </html>

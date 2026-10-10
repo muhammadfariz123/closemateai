@@ -1,0 +1,86 @@
+/* Global Responsive CSS for CloseMateAI */
+@media (max-width: 992px) {
+    /* Hide some less critical top-actions */
+    .top-actions .status-pill { display: none !important; }
+}
+
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+    }
+    
+    .sidebar {
+        transform: translateX(-100%);
+        z-index: 1000;
+        width: 260px;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+    }
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        width: 100vw;
+    }
+    
+    .topbar {
+        padding: 12px 16px;
+    }
+    
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Make topbar flex with hamburger */
+    .topbar > div:first-child { /* The title and hamburger container */
+        display: flex;
+        align-items: center;
+    }
+
+    .mobile-menu-btn {
+        display: block !important;
+    }
+    
+    .page-title h1 { font-size: 18px; }
+    
+    /* Layouts with sidebars inside main (like Chat) */
+    .chat-container {
+        flex-direction: column;
+    }
+    .chat-sidebar {
+        width: 100% !important;
+        height: 100%;
+        border-right: none;
+    }
+    .chat-main {
+        display: none !important;
+        width: 100% !important;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 100;
+        background: white;
+    }
+    .chat-main.active {
+        display: flex !important;
+    }
+    
+    /* For other generic responsive fixes */
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .projects-grid, .leads-grid, .dashboard-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* For data tables to scroll horizontally instead of squishing */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
