@@ -33,11 +33,16 @@ class SystemActivityController extends Controller
         $user = auth()->user();
         if (!$user) return response()->json(['success' => false], 401);
 
+        $actor = $request->input('actor');
+        if ($actor !== 'Sistem') {
+            $actor = $user->business_name ?: 'Owner';
+        }
+
         try {
             $activity = SystemActivity::create([
                 'user_id' => $user->id,
                 'type' => $request->input('type'),
-                'actor' => $request->input('actor'),
+                'actor' => $actor,
                 'title' => $request->input('title'),
                 'desc' => $request->input('desc'),
                 'icon' => $request->input('icon'),
@@ -48,7 +53,7 @@ class SystemActivityController extends Controller
             $activity = SystemActivity::create([
                 'user_id' => $user->id,
                 'type' => $request->input('type'),
-                'actor' => $request->input('actor'),
+                'actor' => $actor,
                 'title' => $request->input('title'),
                 'desc' => $request->input('desc'),
                 'icon' => $request->input('icon'),
