@@ -198,105 +198,74 @@
         .invoice-paper.theme-classic .highlight-bg { background: #f0e3cc; padding: 8px 12px; margin: -8px -12px; border-radius: 4px; display: inline-block; width: calc(100% + 24px); box-sizing: border-box; color: #876839; }
         .invoice-paper.theme-classic .inv-payment { background: transparent; padding: 0; }
 
-        /* Responsive Mobile Layout */
+        /* Responsive Mobile Layout for Invoice Generator */
+        @media (max-width: 992px) {
+            .invoice-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+            .top-actions .status-pill { display: none !important; }
+            .actions-row { flex-wrap: wrap; gap: 12px; }
+            .design-options { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
+            .design-card { min-width: 140px; flex-shrink: 0; }
+        }
+
         @media (max-width: 768px) {
-            .sidebar {
-                width: 100% !important;
-                height: 64px !important;
-                position: fixed;
-                top: 72px; /* Height of topbar */
-                left: 0;
-                z-index: 90;
-                background: white;
-                border-bottom: 1px solid var(--border-color);
-                box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            }
-            .sidebar-header { display: none; }
-            
-            .nav-menu {
-                display: flex;
-                flex-direction: row;
-                overflow-x: auto;
-                padding: 10px 16px;
-                gap: 8px;
-                -webkit-overflow-scrolling: touch;
-                height: 64px;
-                align-items: center;
-            }
-                        .nav-menu::-webkit-scrollbar { 
-                height: 4px; /* Scrollbar horizontal yang tipis */
-                display: block;
-            }
-            .nav-menu::-webkit-scrollbar-track {
-                background: transparent;
-            }
-            .nav-menu::-webkit-scrollbar-thumb {
-                background: #d1d5db;
-                border-radius: 4px;
-            }
-            .nav-menu::-webkit-scrollbar-thumb:hover {
-                background: #9ca3af;
-            }
-            
-            .nav-item {
-                padding: 8px 16px;
-                background: transparent;
-                color: var(--text-muted);
-                border-radius: 30px;
-                margin: 0;
-                font-size: 13px;
-                font-weight: 600;
-                white-space: nowrap;
-            }
-            .nav-item.active {
-                background: var(--primary);
-                color: white;
-            }
-            .nav-item:hover { color: var(--primary); background: transparent; }
-            #btn-collapse, .nav-menu div[style*="margin-top: 30px"] { display: none !important; }
-            
             .main-content {
                 margin-left: 0 !important;
-                padding: 160px 16px 24px 16px !important; /* Force padding */
+                padding: 135px 16px 24px 16px !important;
+                width: 100% !important;
+                min-height: 100vh !important;
+                height: auto !important;
             }
-            
-            .topbar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 72px;
-                margin: 0 !important;
-                padding: 0 16px !important;
-                z-index: 100;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                background: white;
-                border-bottom: 1px solid var(--border-color);
+            .page-title h1 { font-size: 18px; margin-bottom: 2px; }
+            .page-title p { font-size: 12px; }
+            .actions-row {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                margin-bottom: 20px !important;
+                gap: 10px !important;
             }
-            
-            .page-title h1 { font-size: 16px; margin-bottom: 2px; }
-            .page-title p { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
-            .status-pill { padding: 4px 10px; font-size: 10px; }
-            .user-info { display: none; } /* Hide user text, show only avatar */
-            .avatar { width: 32px; height: 32px; font-size: 12px; }
-            .top-actions { gap: 10px; }
-            
-            /* Grids */
-            .settings-grid, .form-grid, .grid-stats, .grid-main, .mini-stats-grid { 
-                grid-template-columns: 1fr !important; 
-                gap: 16px; 
+            .form-row:not(.form-row-2col) {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
             }
-            
-            .card, .panel { padding: 16px; margin-bottom: 16px; }
-            .card-header, .panel-header { flex-direction: column; gap: 12px; align-items: flex-start; margin-bottom: 16px; }
-            .progress-steps { flex-direction: column; align-items: flex-start; gap: 16px; }
-            .progress-line, .progress-line-active { display: none; }
-            .step { flex-direction: row; text-align: left; padding: 0; }
-            .step-text { text-align: left; }
-            .qr-placeholder { width: 100%; max-width: 240px; }
-            .alert-box { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .form-row.form-row-2col {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 12px !important;
+            }
+            .invoice-paper {
+                padding: 24px 16px !important;
+                border-radius: 12px !important;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
+            }
+            .inv-header {
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: flex-start !important;
+                gap: 12px !important;
+            }
+            .inv-desc-row {
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: flex-start !important;
+            }
+            .inv-totals {
+                padding-right: 0 !important;
+                justify-content: flex-end !important;
+            }
+            .inv-totals > div {
+                width: 100% !important;
+                max-width: 320px !important;
+            }
+            .inv-action-btns {
+                flex-wrap: wrap !important;
+                gap: 10px !important;
+            }
+            .inv-action-btns .btn {
+                flex: 1 1 calc(50% - 10px) !important;
+            }
+            .inv-action-btns .btn-full {
+                flex: 1 1 100% !important;
+            }
         }
     </style>
     <link rel="stylesheet" href="/css/responsive.css">
@@ -373,14 +342,17 @@
         </div>
 
         <div class="actions-row">
-            <div style="display: flex; gap: 12px;">
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Invoice Baru</button>
-                <button class="btn btn-secondary"><i class="fa-regular fa-file-lines"></i> Invoice Tersimpan (3)</button>
+                <button class="btn btn-secondary"><i class="fa-regular fa-file-lines"></i> Invoice Tersimpan (1)</button>
             </div>
             
-            <div class="btn-group">
-                <button class="btn active">ID</button>
-                <button class="btn">EN</button>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-language" style="color: #64748b; font-size: 16px;"></i>
+                <div class="btn-group">
+                    <button class="btn active">ID</button>
+                    <button class="btn">EN</button>
+                </div>
             </div>
         </div>
         
@@ -388,7 +360,7 @@
             
             <!-- LEFT COLUMN: Forms -->
             <div>
-                <!-- Panel 1 -->
+                <!-- Panel 1: Informasi Bisnis -->
                 <div class="acc-panel">
                     <div class="acc-header">
                         Informasi Bisnis
@@ -397,51 +369,51 @@
                     <div class="acc-body">
                         <label class="form-label">Logo Vendor (JPG/PNG, maks 5MB)</label>
                         <div id="logoUploadContainer" style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px;">
-                            <div id="logoPreviewThumbnail" style="display: none; width: 48px; height: 48px; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; justify-content: center; align-items: center; background: #fafafa;">
-                                <img id="logoImgThumbnail" src="" style="max-width: 100%; max-height: 100%;">
+                            <div id="logoPreviewThumbnail" style="width: 44px; height: 44px; min-width: 44px; border: 1px solid var(--border-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; overflow: hidden;">
+                                <img id="logoImgThumbnail" src="" style="display: none; max-width: 100%; max-height: 100%; object-fit: contain;">
+                                <i class="fa-regular fa-image" id="logoIconPlaceholder" style="color: #a1a5b7; font-size: 20px;"></i>
                             </div>
-                            <div class="upload-box form-group" id="btnUploadBox" style="margin-bottom: 0; flex: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 10px; border: 1px dashed var(--border-color); border-radius: 8px; color: #555; font-size: 14px;" onclick="document.getElementById('logoInput').click()">
-                                <i class="fa-solid fa-arrow-up-from-bracket" style="margin-right: 8px;"></i> Unggah Logo
+                            <div class="btn btn-secondary upload-btn-box" id="btnUploadBox" style="flex: 1; height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-dark); font-size: 13px; font-weight: 500; background: white; gap: 8px; cursor: pointer;" onclick="document.getElementById('logoInput').click()">
+                                <i class="fa-solid fa-arrow-up-from-bracket"></i> Unggah Logo
                             </div>
-                            <span id="btnHapusLogo" style="display: none; color: var(--text-muted); cursor: pointer; font-size: 13px;" onclick="hapusLogo()">Hapus</span>
+                            <span id="btnHapusLogo" style="display: none; color: var(--text-muted); cursor: pointer; font-size: 13px; margin-left: 4px;" onclick="hapusLogo()">Hapus</span>
                             <input type="file" id="logoInput" style="display: none;" accept="image/png, image/jpeg" onchange="previewLogoFile(this)">
                         </div>
                         
-                        <div class="form-row form-group">
-                            <div>
-                                <label class="form-label">Nama Vendor</label>
-                                <input type="text" class="form-control" value="PENAPICT" id="inputNamaVendor" oninput="syncPreview('inputNamaVendor', 'previewNamaVendor')">
-                            </div>
-                            <div>
-                                <label class="form-label">Alamat Perusahaan</label>
-                                <input type="text" class="form-control" value="Rumah sakit no 13 panjer" id="inputAlamatVendor" oninput="syncPreview('inputAlamatVendor', 'previewAlamatVendor')">
-                            </div>
+                        <div class="form-group">
+                            <label class="form-label">Nama Vendor</label>
+                            <input type="text" class="form-control" value="Fariz hidayat" id="inputNamaVendor" oninput="syncPreview('inputNamaVendor', 'previewNamaVendor'); syncPreview('inputNamaVendor', 'previewTtdNama')">
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Nomor Invoice (Kustom)</label>
-                            <input type="text" class="form-control" value="INV-202610-001" id="inputNoInvoice" oninput="syncPreview('inputNoInvoice', 'previewNoInvoice')">
+                            <label class="form-label">Alamat Perusahaan</label>
+                            <input type="text" class="form-control" value="Kombas purwokerto" id="inputAlamatVendor" oninput="syncPreview('inputAlamatVendor', 'previewAlamatVendor')">
                         </div>
                         
-                        <div class="info-text">Kosongkan untuk memakai nomor otomatis berurutan: <strong id="previewAutoInvoice">INV-202610-001</strong></div>
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label class="form-label">Nomor Invoice (Kustom)</label>
+                            <input type="text" class="form-control" value="INV-202610-002" id="inputNoInvoice" oninput="syncPreview('inputNoInvoice', 'previewNoInvoice')">
+                        </div>
+                        
+                        <div class="info-text" style="margin-bottom: 16px;">Kosongkan untuk memakai nomor otomatis berurutan: <strong id="previewAutoInvoice">INV-202610-002</strong></div>
                         
                         <div class="form-row form-group" style="align-items: flex-end;">
-                            <div style="grid-column: 1 / 2; margin-top: 12px;">
+                            <div>
                                 <select class="form-control" id="inputFormatInvoice">
                                     <option value="INV-{YYYY}{MM}-{SEQ3}">INV-{YYYY}{MM}-{SEQ3}</option>
                                 </select>
                             </div>
-                            <div style="grid-column: 2 / 3; margin-top: 12px;">
+                            <div>
                                 <button class="btn btn-secondary" style="width: 100%; border: 1px solid var(--primary); color: var(--primary);" id="btnSimpanFormat" onclick="simpanFormat()"><i class="fa-solid fa-check" id="iconFormat" style="display:none; margin-right:4px;"></i> <span id="textFormat">Simpan Format</span></button>
                             </div>
                         </div>
-                        <div class="info-text" style="font-size: 10px; color: #ccc;">YY/YYYY, MM, DD, SEQ3/SEQ4/SEQ5</div>
+                        <div class="info-text" style="font-size: 10px; color: #aaa; margin-top: -8px; margin-bottom: 16px;">YY/YYYY, MM, DD, SEQ3/SEQ4/SEQ5</div>
                         
-                        <button class="btn btn-secondary" style="width: 100%; margin-top: 16px; border: 1px solid var(--border-color); font-weight: 500;" id="btnSimpanBisnis" onclick="simpanBisnis()"><i class="fa-regular fa-floppy-disk" id="iconBisnis"></i> <span id="textBisnis">Simpan Informasi Bisnis</span></button>
+                        <button class="btn btn-secondary" style="width: 100%; border: 1px solid var(--border-color); font-weight: 500;" id="btnSimpanBisnis" onclick="simpanBisnis()"><i class="fa-regular fa-floppy-disk" id="iconBisnis"></i> <span id="textBisnis">Simpan Informasi Bisnis</span></button>
                     </div>
                 </div>
 
-                <!-- Panel 2 -->
+                <!-- Panel 2: Informasi Klien -->
                 <div class="acc-panel">
                     <div class="acc-header">
                         Informasi Klien
@@ -456,144 +428,189 @@
                             <div style="font-size: 11px; color: var(--text-muted);">Pembayaran yang dicatat di invoice ini otomatis memperbarui status pembayaran booking.</div>
                         </div>
                         
-                        <button class="btn btn-primary form-group" style="border-radius: 8px; width: 100%;" id="btnAmbilBooking" onclick="openBookingModal()"><i class="fa-solid fa-cloud-arrow-down"></i> Ambil dari Booking</button>
-                        <div class="info-text form-group" id="infoAmbilBooking">Isi otomatis nama, WhatsApp, alamat, tanggal acara, paket, diskon, dan add-on dari data Booking & Operasional.</div>
+                        <button class="btn btn-primary" style="border-radius: 8px; width: fit-content; padding: 10px 16px; margin-bottom: 6px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px;" id="btnAmbilBooking" onclick="openBookingModal()"><i class="fa-regular fa-calendar-check"></i> Ambil dari Booking</button>
+                        <div class="info-text" style="margin-bottom: 16px;" id="infoAmbilBooking">Isi otomatis nama, WhatsApp, alamat, tanggal acara, paket, diskon, dan add-on dari data Booking & Operasional.</div>
                         
-                        <div class="form-row form-group">
-                            <div>
-                                <label class="form-label">Nama Klien (Pengantin)</label>
-                                <input type="text" class="form-control" value="Rian & Amal" id="inputNamaKlien" oninput="syncPreview('inputNamaKlien', 'previewNamaKlien')">
-                            </div>
-                            <div>
-                                <label class="form-label">No. WhatsApp Klien</label>
-                                <input type="text" class="form-control" value="081234567890" id="inputNoWaKlien">
-                            </div>
+                        <div class="form-group">
+                            <label class="form-label">Nama Klien (Pengantin)</label>
+                            <input type="text" class="form-control" value="Rian & Amel" id="inputNamaKlien" oninput="syncPreview('inputNamaKlien', 'previewNamaKlien')">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">No WhatsApp Klien</label>
+                            <input type="text" class="form-control" value="081234567890" id="inputNoWaKlien" oninput="syncPreviewClientWa()">
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">Alamat Klien (opsional)</label>
-                            <input type="text" class="form-control" placeholder="Alamat lengkap klien" id="inputAlamatKlien" oninput="syncPreview('inputAlamatKlien', 'previewAlamatKlien')">
+                            <input type="text" class="form-control" placeholder="Alamat lengkap klien" id="inputAlamatKlien" oninput="syncPreviewClientWa()">
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">Tanggal Acara</label>
                             <div style="position: relative;">
                                 <input type="text" class="form-control" placeholder="mm/dd/yyyy" id="inputTglAcara" oninput="syncPreview('inputTglAcara', 'previewTglAcara')">
-                                <i class="fa-regular fa-calendar" style="position: absolute; right: 14px; top: 12px; color: var(--text-muted);"></i>
+                                <i class="fa-regular fa-calendar" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-dark); pointer-events: none;"></i>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Panel 3 -->
+                <!-- Panel 3: Rincian Paket & Biaya -->
                 <div class="acc-panel">
                     <div class="acc-header">
                         Rincian Paket & Biaya
                         <i class="fa-solid fa-chevron-up"></i>
                     </div>
                     <div class="acc-body">
-                        <div class="form-row form-group">
-                            <div>
-                                <label class="form-label">Nama Paket Utama</label>
-                                <input type="text" class="form-control" value="Paket Utama" id="inputPaketUtama" oninput="calculateTotals()">
-                            </div>
-                            <div>
-                                <label class="form-label">Harga Paket Utama</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">Rp</span>
-                                    <input type="number" class="form-control" value="10000000" id="inputHargaUtama" oninput="calculateTotals()">
+                        <div class="form-group">
+                            <label class="form-label">Nama Paket Pernikahan</label>
+                            <div style="position: relative;">
+                                <input type="text" class="form-control" value="Premium Wedding Documentation" id="inputPaketUtama" oninput="calculateTotals()" style="padding-right: 40px;">
+                                <div style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dark); cursor: pointer;" onclick="togglePaketSelect()">
+                                    <i class="fa-solid fa-chevron-down" style="font-size: 13px;"></i>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="form-group" style="width: 50%;">
-                            <label class="form-label">Diskon Spesial</label>
-                            <div class="input-group">
-                                <span class="input-group-text">Rp</span>
-                                <input type="number" class="form-control" value="500000" id="inputDiskon" oninput="calculateTotals()">
-                            </div>
+                        <div class="form-group">
+                            <label class="form-label">Harga Paket Utama</label>
+                            <input type="text" class="form-control" value="Rp 10.000.000" id="inputHargaUtama" oninput="handleCurrencyInput(this); calculateTotals();">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Jumlah Paket</label>
+                            <input type="number" class="form-control" value="1" min="1" id="inputJumlahPaket" oninput="calculateTotals();">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Diskon / Potongan</label>
+                            <input type="text" class="form-control" value="Rp 500.000" id="inputDiskon" oninput="handleCurrencyInput(this); calculateTotals();">
                         </div>
 
-                        <div id="addonContainer">
-                            <!-- Addon rows go here -->
+                        <div id="paketTambahanContainer">
+                            <!-- Paket tambahan row jika ada -->
                         </div>
+
+                        <button class="btn btn-secondary" style="border: 1px solid var(--border-color); font-weight: 500; padding: 10px 16px; margin-bottom: 8px; display: inline-flex; align-items: center; gap: 8px;" id="btnSimpanBiaya" onclick="simpanBiaya()"><i class="fa-regular fa-floppy-disk" id="iconBiaya"></i> <span id="textBiaya">Simpan Paket & Harga</span></button>
+                        <div class="info-text" style="margin-bottom: 16px;">Tersimpan di perangkat ini, bisa dipilih lagi lewat tombol panah di kolom nama paket.</div>
                         
-                        <button class="btn btn-outline-primary form-group" onclick="addAddon()"><i class="fa-solid fa-plus"></i> Tambah Paket</button>
+                        <button class="btn btn-outline-primary form-group" onclick="addPaketTambahan()"><i class="fa-solid fa-plus"></i> Tambah Paket</button>
                         
-                        <div class="info-text bg form-group" style="display: flex; justify-content: space-between; font-weight: 500; align-items: center; padding: 12px; border-radius: 8px;">
+                        <div class="info-text bg form-group" style="display: flex; justify-content: space-between; font-weight: 500; align-items: center; padding: 12px 16px; border-radius: 8px;">
                             <div style="display: flex; flex-direction: column; gap: 4px;">
                                 <span style="font-size: 11px; color: var(--text-muted);">Subtotal Paket</span>
-                                <span id="calcSubtotal">Rp 10.000.000</span>
+                                <span id="calcSubtotal" style="font-weight: 600;">Rp 10.000.000</span>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 4px;">
                                 <span style="font-size: 11px; color: var(--text-muted);">Total Add-on</span>
-                                <span id="calcAddon">Rp 0</span>
+                                <span id="calcAddon" style="font-weight: 600;">Rp 1.500.000</span>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 4px; text-align: right;">
                                 <span style="font-size: 11px; color: var(--text-muted);">GRAND TOTAL</span>
-                                <span id="calcGrandTotal" style="color: var(--primary); font-size: 16px; font-weight: 600;">Rp 9.500.000</span>
+                                <span id="calcGrandTotal" style="color: var(--primary); font-size: 16px; font-weight: 700;">Rp 11.000.000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 4: Add-on Tambahan -->
+                <div class="acc-panel">
+                    <div class="acc-header">
+                        Add-on Tambahan
+                        <i class="fa-solid fa-chevron-up"></i>
+                    </div>
+                    <div class="acc-body">
+                        <div id="addonContainer">
+                            <div class="addon-item-box" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                                <div style="position: relative; margin-bottom: 12px;">
+                                    <input type="text" class="form-control addon-name" value="Live Streaming" placeholder="Nama Add-on" oninput="calculateTotals()" style="padding-right: 36px;">
+                                    <button type="button" class="btn-trash" onclick="removeAddonItem(this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px;">
+                                        <i class="fa-regular fa-trash-can"></i>
+                                    </button>
+                                </div>
+                                <div class="form-row form-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px;">
+                                    <div>
+                                        <label class="form-label">Jumlah (pcs)</label>
+                                        <input type="number" class="form-control addon-qty" value="1" min="1" oninput="calculateTotals()">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Harga Satuan</label>
+                                        <input type="text" class="form-control addon-price" value="Rp 1.500.000" oninput="handleCurrencyInput(this); calculateTotals();">
+                                    </div>
+                                </div>
+                                <div class="subtotal-text" style="text-align: right; font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+                                    <span class="addon-calc-formula">1 x Rp 1.500.000 = </span><strong class="addon-calc-result" style="color: var(--text-dark);">Rp 1.500.000</strong>
+                                </div>
                             </div>
                         </div>
                         
-                        <button class="btn btn-secondary" style="width: 100%; border: 1px solid var(--border-color); font-weight: 500;" id="btnSimpanBiaya" onclick="simpanBiaya()"><i class="fa-regular fa-floppy-disk" id="iconBiaya"></i> <span id="textBiaya">Simpan Paket & Harga</span></button>
+                        <button class="btn btn-outline-primary" style="width: 100%; border: 1px dashed var(--primary); color: var(--primary); background: transparent; padding: 12px; border-radius: 8px; font-weight: 500;" onclick="addAddonItem()"><i class="fa-solid fa-plus"></i> Tambah Item Add-on</button>
                     </div>
                 </div>
                 
-                <!-- Panel 5 -->
+                <!-- Panel 5: Termin & Pembayaran -->
                 <div class="acc-panel">
                     <div class="acc-header">
                         Termin & Pembayaran
                         <i class="fa-solid fa-chevron-up"></i>
                     </div>
                     <div class="acc-body">
-                        <div class="form-row form-group">
-                            <div>
-                                <label class="form-label">Termin Saat Ini</label>
-                                <select class="form-control">
-                                    <option>Uang Muka / DP 1</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="form-label">Nominal DP 1</label>
-                                <input type="text" class="form-control" value="Rp 3.000.000">
-                            </div>
+                        <div class="form-group">
+                            <label class="form-label">Termin Saat Ini</label>
+                            <select class="form-control" id="selectTermin" onchange="syncTerminPreview()">
+                                <option value="Uang Muka / DP 1" selected>Uang Muka / DP 1</option>
+                                <option value="Termin 2 / Pelunasan">Termin 2 / Pelunasan</option>
+                                <option value="Pelunasan Penuh">Pelunasan Penuh</option>
+                            </select>
                         </div>
                         
-                        <div class="form-group" style="width: 50%;">
+                        <div class="form-group">
+                            <label class="form-label">Nominal DP 1</label>
+                            <input type="text" class="form-control" value="Rp 3.000.000" id="inputDP1" oninput="handleCurrencyInput(this); calculateTotals();">
+                        </div>
+                        
+                        <div class="form-group">
                             <label class="form-label">Nominal DP 2</label>
-                            <input type="text" class="form-control" value="Rp 0">
+                            <input type="text" class="form-control" value="Rp 0" id="inputDP2" oninput="handleCurrencyInput(this); calculateTotals();">
                         </div>
                         
-                        <div class="info-text bg form-group" style="display: flex; justify-content: space-between; font-weight: 500;">
-                            <span>Total DP 1: <strong style="color: var(--text-dark);">Rp 3.000.000</strong></span>
-                            <span>Sisa Tagihan: <strong style="color: var(--text-dark);">Rp 8.000.000</strong></span>
+                        <div class="termin-summary-card" style="background: #f8f9fa; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px 20px; margin: 16px 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px;">
+                                <span style="color: var(--text-dark); font-weight: 500;" id="labelTerminSummary">Total DP 1</span>
+                                <span style="color: var(--text-dark); font-weight: 700;" id="valTerminSummary">Rp 3.000.000</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+                                <span style="color: var(--text-dark); font-weight: 500;">Sisa Tagihan</span>
+                                <span style="color: var(--text-dark); font-weight: 700;" id="valSisaSummary">Rp 0</span>
+                            </div>
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">Tanggal Jatuh Tempo Pelunasan</label>
                             <div style="position: relative;">
-                                <input type="text" class="form-control" placeholder="mm/dd/yyyy">
-                                <i class="fa-regular fa-calendar" style="position: absolute; right: 14px; top: 12px; color: var(--text-muted);"></i>
+                                <input type="text" class="form-control" placeholder="mm/dd/yyyy" id="inputTglJatuhTempo">
+                                <i class="fa-regular fa-calendar" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-dark); pointer-events: none;"></i>
                             </div>
                         </div>
                         
                         <div class="form-row form-group">
                             <div>
                                 <label class="form-label">Nama Bank</label>
-                                <input type="text" class="form-control" value="BNI">
+                                <input type="text" class="form-control" value="BNI" id="inputNamaBank" oninput="syncBankPreview()">
                             </div>
                             <div>
                                 <label class="form-label">No Rekening</label>
-                                <input type="text" class="form-control" value="0432063867">
+                                <input type="text" class="form-control" value="0432063867" id="inputNoRekening" oninput="syncBankPreview()">
                             </div>
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">Atas Nama</label>
-                            <input type="text" class="form-control" value="Umi Salamah">
+                            <input type="text" class="form-control" value="Umi Salamah" id="inputAtasNama" oninput="syncBankPreview()">
                         </div>
                         
-                        <button class="btn btn-secondary" style="width: 100%;"><i class="fa-regular fa-floppy-disk"></i> Simpan Data Bank</button>
+                        <button class="btn btn-secondary" style="width: 100%; border: 1px solid var(--border-color); font-weight: 500;" id="btnSimpanBank" onclick="simpanBank()"><i class="fa-regular fa-floppy-disk"></i> Simpan Data Bank</button>
                     </div>
                 </div>
 
@@ -681,14 +698,14 @@ Terima kasih banyak! 🤍</textarea>
                                 <i class="fa-regular fa-image" id="previewLogoPlaceholder" style="color: #a1a5b7; font-size: 20px;"></i>
                             </div>
                             <div>
-                                <div class="inv-logo-text" id="previewNamaVendor" style="margin-bottom: 4px; font-size: 20px; font-weight: 600; color: #222;">PENAPICT</div>
-                                <div style="font-size: 10px; color: #888;" id="previewAlamatVendor">Rumah sakit no 13 panjer</div>
+                                <div class="inv-logo-text" id="previewNamaVendor" style="margin-bottom: 4px; font-size: 20px; font-weight: 600; color: #222;">Fariz hidayat</div>
+                                <div style="font-size: 10px; color: #888;" id="previewAlamatVendor">Kombas purwokerto</div>
                             </div>
                         </div>
                         <div class="inv-meta" style="text-align: right;">
                             <h2 style="font-size: 24px; font-weight: 300; letter-spacing: 2px; color: #555; margin-bottom: 8px;">INVOICE</h2>
-                            <p style="font-size: 10px; color: #888; margin-bottom: 2px;">No. <span id="previewNoInvoice">INV-202610-001</span></p>
-                            <p style="font-size: 10px; color: #888;">10 Oktober 2026</p>
+                            <p style="font-size: 10px; color: #888; margin-bottom: 2px;">No. <span id="previewNoInvoice">INV-202610-002</span></p>
+                            <p style="font-size: 10px; color: #888;" id="previewInvoiceDate">10 Oktober 2026</p>
                         </div>
                     </div>
                     
@@ -696,13 +713,13 @@ Terima kasih banyak! 🤍</textarea>
                     <div class="inv-desc-row" style="margin-bottom: 24px; display: flex; justify-content: space-between;">
                         <div class="inv-bill-to">
                             <p style="font-size: 9px; font-weight: 600; color: #999; margin-bottom: 8px; text-transform: uppercase;">KEPADA</p>
-                            <h4 id="previewNamaKlien" style="font-size: 15px; font-weight: 500; color: #333; margin-bottom: 4px;">fariz</h4>
-                            <p style="font-size: 11px; color: #888;" id="previewAlamatKlien">+6285878067644</p>
+                            <h4 id="previewNamaKlien" style="font-size: 15px; font-weight: 500; color: #333; margin-bottom: 4px;">Rian & Amel</h4>
+                            <p style="font-size: 11px; color: #888;" id="previewAlamatKlien">081234567890</p>
                         </div>
                         <div class="inv-bill-to" style="text-align: right;">
                             <p style="font-size: 9px; font-weight: 600; color: #999; margin-bottom: 8px; text-transform: uppercase;">TANGGAL ACARA</p>
                             <h4 style="font-size: 15px; font-weight: 500; color: #333; margin-bottom: 4px;" id="previewTglAcara">Sabtu, 10 Oktober 2026</h4>
-                            <p style="font-size: 11px; color: #888;">Uang Muka / DP 1</p>
+                            <p style="font-size: 11px; color: #888;" id="previewTerminLabel">Uang Muka / DP 1</p>
                         </div>
                     </div>
                     
@@ -717,10 +734,24 @@ Terima kasih banyak! 🤍</textarea>
                         <tbody id="previewTableBody">
                             <tr>
                                 <td style="padding: 16px; border-bottom: 1px solid #f1f1f4;">
-                                    <div style="font-size: 13px; font-weight: 500; color: #333; margin-bottom: 4px;">Penawaran QT-20261010-236</div>
+                                    <div style="font-size: 13px; font-weight: 500; color: #333; margin-bottom: 4px;">Premium Wedding Documentation</div>
                                     <div style="font-size: 10px; color: #888;">Paket Utama</div>
                                 </td>
-                                <td style="text-align: right; padding: 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #333;">Rp 9.000</td>
+                                <td style="text-align: right; padding: 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #333;">Rp 10.000.000</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 16px; border-bottom: 1px solid #f1f1f4;">
+                                    <div style="font-size: 13px; font-weight: 500; color: #333; margin-bottom: 4px;">Diskon / Potongan Harga</div>
+                                    <div style="font-size: 10px; color: #888;">Penawaran khusus</div>
+                                </td>
+                                <td style="text-align: right; padding: 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #f1416c;">- Rp 500.000</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 16px; border-bottom: 1px solid #f1f1f4;">
+                                    <div style="font-size: 13px; font-weight: 500; color: #333; margin-bottom: 4px;">Live Streaming</div>
+                                    <div style="font-size: 10px; color: #888;">Add-on &bull; 1 pcs</div>
+                                </td>
+                                <td style="text-align: right; padding: 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #333;">Rp 1.500.000</td>
                             </tr>
                         </tbody>
                     </table>
@@ -730,36 +761,40 @@ Terima kasih banyak! 🤍</textarea>
                         <div style="width: 280px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 11px;">
                                 <div style="color: #666;">Subtotal Paket</div>
-                                <div id="previewSubtotal" style="color: #333;">Rp 9.000</div>
+                                <div id="previewSubtotal" style="color: #333;">Rp 10.000.000</div>
                             </div>
                             <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 11px;">
                                 <div style="color: #666;">Total Add-on</div>
-                                <div id="previewAddon" style="color: #333;">Rp 0</div>
+                                <div id="previewAddon" style="color: #333;">Rp 1.500.000</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 11px;">
+                                <div style="color: #666;">Diskon</div>
+                                <div id="previewDiskon" style="color: #f1416c;">- Rp 500.000</div>
                             </div>
                             <!-- Grand Total -->
                             <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid #eee; font-size: 12px; font-weight: 700;">
                                 <div style="color: #333;">GRAND TOTAL</div>
-                                <div id="previewGrandTotal" style="color: #333;">Rp 9.000</div>
+                                <div id="previewGrandTotal" style="color: #333;">Rp 11.000.000</div>
                             </div>
                             
                             <!-- DP Info Box -->
                             <div style="background: #f8f9fa; border-radius: 8px; padding: 12px; margin-top: 16px;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 11px;">
-                                    <div style="color: #666;">Uang Muka / DP 1</div>
+                                    <div style="color: #666;" id="previewDPLabel">Uang Muka / DP 1</div>
                                     <div id="previewDP1" style="color: #333;">Rp 3.000.000</div>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600;">
                                     <div style="color: #666;">Sisa Tagihan</div>
-                                    <div id="previewSisaTagihan" style="color: #333; font-size: 13px;">Rp 0</div>
+                                    <div id="previewSisaTagihan" style="color: #333; font-size: 13px;">Rp 8.000.000</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
                     <!-- METODE PEMBAYARAN -->
-                    <div class="inv-payment" style="border: 1px solid #f1f1f4; border-radius: 8px; padding: 16px; margin-bottom: 32px;">
+                    <div class="inv-payment" style="border: 1px solid #f1f1f4; border-radius: 8px; padding: 16px; margin-bottom: 32px;" id="previewPaymentBox">
                         <p style="text-transform: uppercase; font-size: 9px; font-weight: 600; color: #999; margin-bottom: 8px;">METODE PEMBAYARAN</p>
-                        <h5 style="font-size: 12px; font-weight: 400; color: #555; margin: 0;"><strong style="color: #333;">BNI</strong> - 0431063867 - a.n Umi Salamah</h5>
+                        <h5 style="font-size: 12px; font-weight: 400; color: #555; margin: 0;" id="previewPaymentText"><strong style="color: #333;" id="previewBankName">BNI</strong> - <span id="previewNoRek">0432063867</span> - a.n <span id="previewAtasNama">Umi Salamah</span></h5>
                     </div>
                     
                     <!-- SYARAT KETENTUAN -->
@@ -788,10 +823,10 @@ Terima kasih banyak! 🤍</textarea>
                     <label><input type="checkbox"> Belum ada tanda tangan</label>
                 </div>
                 
-                <div style="display: flex; gap: 12px; margin-bottom: 40px;">
+                <div class="inv-action-btns" style="display: flex; gap: 12px; margin-bottom: 40px;">
                     <button class="btn btn-secondary"><i class="fa-regular fa-image"></i> Unduh PNG</button>
                     <button class="btn btn-secondary" style="background: var(--text-dark); color: white; border-color: var(--text-dark);"><i class="fa-regular fa-file-pdf"></i> Unduh PDF</button>
-                    <button class="btn btn-primary" style="flex: 1;"><i class="fa-regular fa-folder-open"></i> Simpan ke Folder</button>
+                    <button class="btn btn-primary btn-full" style="flex: 1;"><i class="fa-regular fa-folder-open"></i> Simpan ke Folder</button>
                 </div>
                 
             </div>
@@ -1064,104 +1099,271 @@ Jika pembayaran sudah dilakukan, mohon abaikan pesan ini atau kirimkan buktinya 
             syncPreview('inputTglAcara', 'previewTglAcara');
         }
         
-        // --- Biaya Dinamis ---
-        function formatRupiah(angka) {
-            return 'Rp ' + parseInt(angka).toLocaleString('id-ID');
+        // --- Helper & Currency Formatting ---
+        function parseCurrency(str) {
+            if (!str) return 0;
+            if (typeof str === 'number') return str;
+            return parseInt(String(str).replace(/[^0-9]/g, '')) || 0;
         }
 
-        function addAddon() {
+        function formatRupiah(angka) {
+            const num = parseInt(angka) || 0;
+            return 'Rp ' + num.toLocaleString('id-ID');
+        }
+
+        function handleCurrencyInput(el) {
+            const raw = el.value.replace(/[^0-9]/g, '');
+            if (raw) {
+                el.value = formatRupiah(raw);
+            } else {
+                el.value = '';
+            }
+        }
+
+        function syncPreviewClientWa() {
+            const wa = document.getElementById('inputNoWaKlien').value;
+            const alamat = document.getElementById('inputAlamatKlien').value;
+            const target = document.getElementById('previewAlamatKlien');
+            if (target) {
+                if (wa && alamat) {
+                    target.innerText = `${wa} • ${alamat}`;
+                } else if (wa) {
+                    target.innerText = wa;
+                } else if (alamat) {
+                    target.innerText = alamat;
+                } else {
+                    target.innerText = '081234567890';
+                }
+            }
+        }
+
+        function syncTerminPreview() {
+            const terminVal = document.getElementById('selectTermin').value;
+            const previewTermin = document.getElementById('previewTerminLabel');
+            const previewDPLabel = document.getElementById('previewDPLabel');
+            const labelTerminSummary = document.getElementById('labelTerminSummary');
+            
+            if (previewTermin) previewTermin.innerText = terminVal;
+            if (previewDPLabel) previewDPLabel.innerText = terminVal;
+            if (labelTerminSummary) labelTerminSummary.innerText = 'Total ' + terminVal.replace('Uang Muka / ', '');
+        }
+
+        function syncBankPreview() {
+            const bank = document.getElementById('inputNamaBank').value || 'BNI';
+            const rek = document.getElementById('inputNoRekening').value || '0432063867';
+            const an = document.getElementById('inputAtasNama').value || 'Umi Salamah';
+            
+            const bankEl = document.getElementById('previewBankName');
+            const rekEl = document.getElementById('previewNoRek');
+            const anEl = document.getElementById('previewAtasNama');
+            
+            if (bankEl) bankEl.innerText = bank;
+            if (rekEl) rekEl.innerText = rek;
+            if (anEl) anEl.innerText = an;
+        }
+
+        function simpanBank() {
+            const btn = document.getElementById('btnSimpanBank');
+            const icon = document.getElementById('iconBank');
+            const text = document.getElementById('textBank');
+            
+            btn.style.background = 'rgba(80, 205, 137, 0.1)';
+            btn.style.borderColor = 'var(--success)';
+            btn.style.color = 'var(--success)';
+            icon.className = 'fa-solid fa-check';
+            text.innerText = 'Tersimpan';
+            setTimeout(() => {
+                btn.style.background = 'transparent';
+                btn.style.borderColor = 'var(--border-color)';
+                btn.style.color = 'var(--text-dark)';
+                icon.className = 'fa-regular fa-floppy-disk';
+                text.innerText = 'Simpan Data Bank';
+            }, 2000);
+        }
+
+        function togglePaketSelect() {
+            const paketNames = [
+                "Premium Wedding Documentation",
+                "Standard Wedding Documentation",
+                "Akad & Resepsi Basic",
+                "Prewedding & Wedding All-In"
+            ];
+            const current = document.getElementById('inputPaketUtama').value;
+            const nextIdx = (paketNames.indexOf(current) + 1) % paketNames.length;
+            document.getElementById('inputPaketUtama').value = paketNames[nextIdx];
+            calculateTotals();
+        }
+
+        // --- Addon Tambahan Management ---
+        function addAddonItem() {
             const html = `
-            <div class="addon-row form-group" style="border: 1px dashed var(--border-color); padding: 12px; border-radius: 8px; position: relative;">
-                <i class="fa-solid fa-trash" style="color: #f1416c; position: absolute; right: 12px; top: 12px; cursor: pointer;" onclick="removeAddon(this)"></i>
-                <div style="margin-bottom: 12px;">
-                    <label class="form-label">Nama Paket Tambahan</label>
-                    <input type="text" class="form-control addon-name" value="Live Streaming" oninput="calculateTotals()">
+            <div class="addon-item-box" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                <div style="position: relative; margin-bottom: 12px;">
+                    <input type="text" class="form-control addon-name" value="Add-on Baru" placeholder="Nama Add-on" oninput="calculateTotals()" style="padding-right: 36px;">
+                    <button type="button" class="btn-trash" onclick="removeAddonItem(this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px;">
+                        <i class="fa-regular fa-trash-can"></i>
+                    </button>
                 </div>
-                <div class="form-row">
+                <div class="form-row form-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px;">
                     <div>
-                        <label class="form-label">Harga Paket</label>
-                        <div class="input-group">
-                            <span class="input-group-text">Rp</span>
-                            <input type="number" class="form-control addon-price" value="1500000" oninput="calculateTotals()">
-                        </div>
+                        <label class="form-label">Jumlah (pcs)</label>
+                        <input type="number" class="form-control addon-qty" value="1" min="1" oninput="calculateTotals()">
                     </div>
                     <div>
-                        <label class="form-label">Diskon</label>
-                        <div class="input-group">
-                            <span class="input-group-text">Rp</span>
-                            <input type="number" class="form-control addon-discount" value="0" oninput="calculateTotals()">
-                        </div>
+                        <label class="form-label">Harga Satuan</label>
+                        <input type="text" class="form-control addon-price" value="Rp 500.000" oninput="handleCurrencyInput(this); calculateTotals();">
                     </div>
+                </div>
+                <div class="subtotal-text" style="text-align: right; font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+                    <span class="addon-calc-formula">1 x Rp 500.000 = </span><strong class="addon-calc-result" style="color: var(--text-dark);">Rp 500.000</strong>
                 </div>
             </div>`;
             document.getElementById('addonContainer').insertAdjacentHTML('beforeend', html);
             calculateTotals();
         }
-        
-        function removeAddon(btn) {
-            btn.closest('.addon-row').remove();
+
+        function removeAddonItem(btn) {
+            btn.closest('.addon-item-box').remove();
             calculateTotals();
         }
-        
+
+        function addPaketTambahan() {
+            const html = `
+            <div class="paket-tambahan-box" style="border: 1px dashed var(--border-color); padding: 14px; border-radius: 8px; margin-bottom: 14px; position: relative; background: #fafafa;">
+                <i class="fa-solid fa-xmark" style="color: #f1416c; position: absolute; right: 14px; top: 14px; cursor: pointer; font-size: 16px;" onclick="this.closest('.paket-tambahan-box').remove(); calculateTotals();"></i>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label class="form-label">Nama Paket Tambahan</label>
+                    <input type="text" class="form-control pkt-extra-name" value="Paket Tambahan" oninput="calculateTotals()">
+                </div>
+                <div class="form-row form-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label class="form-label">Harga Paket</label>
+                        <input type="text" class="form-control pkt-extra-price" value="Rp 2.000.000" oninput="handleCurrencyInput(this); calculateTotals();">
+                    </div>
+                    <div>
+                        <label class="form-label">Diskon</label>
+                        <input type="text" class="form-control pkt-extra-disc" value="Rp 0" oninput="handleCurrencyInput(this); calculateTotals();">
+                    </div>
+                </div>
+            </div>`;
+            document.getElementById('paketTambahanContainer').insertAdjacentHTML('beforeend', html);
+            calculateTotals();
+        }
+
+        // --- Calculate Totals & Sync Preview ---
         function calculateTotals() {
-            // Get Utama
-            const pktUtama = document.getElementById('inputPaketUtama').value || 'Paket Utama';
-            const hrgaUtama = parseInt(document.getElementById('inputHargaUtama').value) || 0;
-            const diskon = parseInt(document.getElementById('inputDiskon').value) || 0;
+            // Paket Utama
+            const pktUtama = document.getElementById('inputPaketUtama').value || 'Premium Wedding Documentation';
+            const hargaUtama = parseCurrency(document.getElementById('inputHargaUtama').value);
+            const qtyUtama = parseInt(document.getElementById('inputJumlahPaket').value) || 1;
+            const diskonUtama = parseCurrency(document.getElementById('inputDiskon').value);
             
-            let totalAddon = 0;
+            const subtotalUtama = hargaUtama * qtyUtama;
+            let subtotalPaket = subtotalUtama;
+            let totalDiskon = diskonUtama;
+
             let tbHtml = `
                 <tr>
                     <td style="padding: 16px; border-bottom: 1px solid #f1f1f4;">
                         <div style="font-size: 13px; font-weight: 500; color: #333; margin-bottom: 4px;">${pktUtama}</div>
-                        <div style="font-size: 10px; color: #888;">Paket Utama</div>
+                        <div style="font-size: 10px; color: #888;">Paket Utama ${qtyUtama > 1 ? '&bull; ' + qtyUtama + ' paket' : ''}</div>
                     </td>
-                    <td style="text-align: right; padding: 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #333;">${formatRupiah(hrgaUtama)}</td>
+                    <td style="text-align: right; padding: 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #333;">${formatRupiah(subtotalUtama)}</td>
                 </tr>`;
-                
-            // Get Addons
-            const addons = document.querySelectorAll('.addon-row');
-            addons.forEach(row => {
-                const name = row.querySelector('.addon-name').value || 'Add-on';
-                const price = parseInt(row.querySelector('.addon-price').value) || 0;
-                const disc = parseInt(row.querySelector('.addon-discount').value) || 0;
-                const net = price - disc;
-                totalAddon += net;
-                
+
+            // Paket Tambahan
+            const extraPakets = document.querySelectorAll('.paket-tambahan-box');
+            extraPakets.forEach(box => {
+                const name = box.querySelector('.pkt-extra-name').value || 'Paket Tambahan';
+                const price = parseCurrency(box.querySelector('.pkt-extra-price').value);
+                const disc = parseCurrency(box.querySelector('.pkt-extra-disc').value);
+                subtotalPaket += price;
+                totalDiskon += disc;
+
                 tbHtml += `
                 <tr>
                     <td style="padding: 16px; border-bottom: 1px solid #f1f1f4;">
                         <div style="font-size: 13px; font-weight: 500; color: #333; margin-bottom: 4px;">${name}</div>
-                        <div style="font-size: 10px; color: #888;">Add-on${disc > 0 ? ' &bull; Diskon: ' + formatRupiah(disc) : ''}</div>
+                        <div style="font-size: 10px; color: #888;">Paket Tambahan</div>
                     </td>
-                    <td style="text-align: right; padding: 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #333;">${formatRupiah(net)}</td>
+                    <td style="text-align: right; padding: 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #333;">${formatRupiah(price)}</td>
                 </tr>`;
             });
-            
-            const subtotal = hrgaUtama;
-            const grandTotal = subtotal + totalAddon - diskon;
-            
-            // Set UI Left
-            document.getElementById('calcSubtotal').innerText = formatRupiah(subtotal);
+
+            // Diskon row if discount > 0
+            if (totalDiskon > 0) {
+                tbHtml += `
+                <tr>
+                    <td style="padding: 16px; border-bottom: 1px solid #f1f1f4;">
+                        <div style="font-size: 13px; font-weight: 500; color: #333; margin-bottom: 4px;">Diskon / Potongan Harga</div>
+                        <div style="font-size: 10px; color: #888;">Penawaran khusus</div>
+                    </td>
+                    <td style="text-align: right; padding: 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #f1416c;">- ${formatRupiah(totalDiskon)}</td>
+                </tr>`;
+            }
+
+            // Add-ons
+            let totalAddon = 0;
+            const addonItems = document.querySelectorAll('.addon-item-box');
+            addonItems.forEach(item => {
+                const name = item.querySelector('.addon-name').value || 'Add-on';
+                const qty = parseInt(item.querySelector('.addon-qty').value) || 1;
+                const price = parseCurrency(item.querySelector('.addon-price').value);
+                const itemTotal = qty * price;
+                totalAddon += itemTotal;
+
+                const formulaEl = item.querySelector('.addon-calc-formula');
+                const resultEl = item.querySelector('.addon-calc-result');
+                if (formulaEl) formulaEl.innerText = `${qty} x ${formatRupiah(price)} = `;
+                if (resultEl) resultEl.innerText = formatRupiah(itemTotal);
+
+                tbHtml += `
+                <tr>
+                    <td style="padding: 16px; border-bottom: 1px solid #f1f1f4;">
+                        <div style="font-size: 13px; font-weight: 500; color: #333; margin-bottom: 4px;">${name}</div>
+                        <div style="font-size: 10px; color: #888;">Add-on &bull; ${qty} pcs</div>
+                    </td>
+                    <td style="text-align: right; padding: 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #333;">${formatRupiah(itemTotal)}</td>
+                </tr>`;
+            });
+
+            const grandTotal = subtotalPaket + totalAddon - totalDiskon;
+
+            // DP & Sisa
+            const dp1 = parseCurrency(document.getElementById('inputDP1').value);
+            const dp2 = parseCurrency(document.getElementById('inputDP2').value);
+            const totalDP = dp1 + dp2;
+            const sisa = grandTotal - totalDP;
+
+            // Update Left Summary Cards
+            document.getElementById('calcSubtotal').innerText = formatRupiah(subtotalPaket);
             document.getElementById('calcAddon').innerText = formatRupiah(totalAddon);
             document.getElementById('calcGrandTotal').innerText = formatRupiah(grandTotal);
-            
-            // Set UI Preview
+
+            // Update Termin Summary Card
+            document.getElementById('valTerminSummary').innerText = formatRupiah(dp1);
+            document.getElementById('valSisaSummary').innerText = formatRupiah(sisa > 0 ? sisa : 0);
+
+            // Update Preview Table & Totals
             document.getElementById('previewTableBody').innerHTML = tbHtml;
-            document.getElementById('previewSubtotal').innerText = formatRupiah(subtotal);
+            document.getElementById('previewSubtotal').innerText = formatRupiah(subtotalPaket);
             document.getElementById('previewAddon').innerText = formatRupiah(totalAddon);
             
-            // Diskon logic - if no discount, maybe hide it? In the image, diskon is subtracted from Grand Total but not explicitly shown as a separate row above subtotal. Oh wait, it's just GRAND TOTAL.
-            // Let's just update grand total
+            const prevDiskonEl = document.getElementById('previewDiskon');
+            if (prevDiskonEl) {
+                if (totalDiskon > 0) {
+                    prevDiskonEl.parentElement.style.display = 'flex';
+                    prevDiskonEl.innerText = '- ' + formatRupiah(totalDiskon);
+                } else {
+                    prevDiskonEl.parentElement.style.display = 'none';
+                }
+            }
+
             document.getElementById('previewGrandTotal').innerText = formatRupiah(grandTotal);
-            
-            // Mock DP calculation (just keeping the existing UI values but calculating Sisa)
-            const dp1Str = document.getElementById('previewDP1').innerText.replace(/[^0-9]/g, '');
-            const dp1 = parseInt(dp1Str) || 3000000;
-            const sisa = grandTotal - dp1;
+            document.getElementById('previewDP1').innerText = formatRupiah(dp1);
             document.getElementById('previewSisaTagihan').innerText = formatRupiah(sisa > 0 ? sisa : 0);
         }
-        
+
         function simpanBiaya() {
             const btn = document.getElementById('btnSimpanBiaya');
             const icon = document.getElementById('iconBiaya');
@@ -1180,12 +1382,43 @@ Jika pembayaran sudah dilakukan, mohon abaikan pesan ini atau kirimkan buktinya 
                 text.innerText = 'Simpan Paket & Harga';
             }, 2000);
             
-            alert("Paket disimpan"); // Toast mock
+            // Show toast notification
+            showToastNotification("Paket disimpan");
         }
-        
+
+        function showToastNotification(msg) {
+            let toast = document.getElementById('invoiceToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'invoiceToast';
+                toast.style.position = 'fixed';
+                toast.style.top = '80px';
+                toast.style.right = '20px';
+                toast.style.background = 'rgba(24, 28, 50, 0.95)';
+                toast.style.color = 'white';
+                toast.style.padding = '12px 20px';
+                toast.style.borderRadius = '8px';
+                toast.style.fontSize = '13px';
+                toast.style.fontWeight = '500';
+                toast.style.zIndex = '9999';
+                toast.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
+                toast.style.transition = 'opacity 0.3s ease';
+                document.body.appendChild(toast);
+            }
+            toast.innerText = msg;
+            toast.style.opacity = '1';
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => { toast.style.display = 'none'; }, 300);
+            }, 2500);
+        }
+
         // Initialize once on load
         document.addEventListener('DOMContentLoaded', () => {
             calculateTotals();
+            syncBankPreview();
+            syncTerminPreview();
         });
     </script>
     <script src="/js/responsive.js"></script>
