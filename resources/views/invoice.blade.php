@@ -101,9 +101,14 @@
         /* Right Panel */
         .section-title { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .design-options { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
-        .design-card { background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 16px; font-size: 12px; font-weight: 600; color: var(--text-dark); cursor: pointer; flex: 1; text-align: center; min-width: 140px; }
+        .design-section-card { background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+        .design-section-title { font-size: 14px; font-weight: 600; color: var(--text-dark); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .design-section-title i { color: var(--text-muted); font-size: 16px; }
+        .design-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .design-card { background: white; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px 16px; font-size: 13px; font-weight: 600; color: var(--text-dark); cursor: pointer; text-align: left; transition: all 0.2s ease; box-sizing: border-box; }
+        .design-card:hover { border-color: var(--primary); }
         .design-card.active { border: 2px solid var(--primary); }
+        .design-card-bar { height: 4px; border-radius: 2px; margin-top: 10px; width: 100%; }
         
         /* Invoice Paper */
         .invoice-paper { background: white; border-radius: 8px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 24px; font-family: 'Inter', sans-serif; color: #333; }
@@ -140,7 +145,7 @@
         .checkbox-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
         /* Invoice Themes */
-        .invoice-paper.theme-minimalist { background: white; color: #333; }
+        .invoice-paper.theme-minimalist { background: white !important; color: #333; }
         .invoice-paper.theme-minimalist .inv-header { border-bottom: none; }
         .invoice-paper.theme-minimalist .inv-table th { border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 12px 0; }
         .invoice-paper.theme-minimalist .inv-table td { padding: 12px 0; border-bottom: 1px dashed #eee; }
@@ -148,7 +153,7 @@
         .invoice-paper.theme-minimalist .inv-payment { background: transparent; padding: 0; }
         
         /* Creative & Aesthetic */
-        .invoice-paper.theme-creative { background: #fff5f7; color: #5a3c4a; }
+        .invoice-paper.theme-creative { background: #fff5f7 !important; color: #5a3c4a; }
         .invoice-paper.theme-creative .inv-header { flex-direction: column; align-items: center; text-align: center; border-bottom: none; }
         .invoice-paper.theme-creative .inv-logo-text { color: #d67a9a; font-size: 24px; margin-bottom: 16px; }
         .invoice-paper.theme-creative .inv-meta { text-align: center; }
@@ -161,7 +166,7 @@
         .invoice-paper.theme-creative .bold { color: #a34c6e; }
         
         /* Corporate & Professional */
-        .invoice-paper.theme-corporate { background: white; color: #333; padding: 0; overflow: hidden; }
+        .invoice-paper.theme-corporate { background: white !important; color: #333; padding: 0; overflow: hidden; }
         .invoice-paper.theme-corporate .inv-header { background: #284168; color: white; padding: 40px; border-bottom: none; margin-bottom: 0; }
         .invoice-paper.theme-corporate .inv-header .inv-logo-text { color: white; }
         .invoice-paper.theme-corporate .inv-meta h2 { color: white; font-weight: 600; letter-spacing: 1px; }
@@ -179,7 +184,7 @@
         .invoice-paper.theme-corporate .inv-footer { padding: 0 40px 40px; }
 
         /* Modern & Bold */
-        .invoice-paper.theme-modern { background: white; color: #111; font-family: 'Inter', sans-serif; }
+        .invoice-paper.theme-modern { background: white !important; color: #111; font-family: 'Inter', sans-serif; }
         .invoice-paper.theme-modern .inv-header { border-bottom: 8px solid #111; padding-bottom: 30px; }
         .invoice-paper.theme-modern .inv-meta h2 { color: #111; font-weight: 800; font-size: 32px; letter-spacing: 0; }
         .invoice-paper.theme-modern .inv-table th { color: white; background: #111; border-bottom: none; padding: 12px 16px; }
@@ -188,7 +193,7 @@
         .invoice-paper.theme-modern .inv-payment { background: transparent; padding: 0; }
         
         /* Classic / Traditional */
-        .invoice-paper.theme-classic { background: #fdfbf6; color: #4a3c31; font-family: 'Times New Roman', serif; }
+        .invoice-paper.theme-classic { background: #fdfbf6 !important; color: #4a3c31; font-family: 'Times New Roman', serif; }
         .invoice-paper.theme-classic .inv-header { flex-direction: column; align-items: center; text-align: center; border-bottom: none; }
         .invoice-paper.theme-classic .inv-logo-text { color: #876839; font-size: 24px; margin-bottom: 16px; }
         .invoice-paper.theme-classic .inv-meta { text-align: center; }
@@ -198,13 +203,37 @@
         .invoice-paper.theme-classic .highlight-bg { background: #f0e3cc; padding: 8px 12px; margin: -8px -12px; border-radius: 4px; display: inline-block; width: calc(100% + 24px); box-sizing: border-box; color: #876839; }
         .invoice-paper.theme-classic .inv-payment { background: transparent; padding: 0; }
 
-        /* Responsive Mobile Layout for Invoice Generator */
+        /* Responsive Layout for Small Screens and Split Screen */
+        @media (max-width: 1200px) {
+            .invoice-grid {
+                grid-template-columns: 1fr !important;
+                gap: 24px !important;
+                width: 100% !important;
+            }
+            .invoice-preview-column {
+                width: 100% !important;
+            }
+            .design-options {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 12px !important;
+                overflow: visible !important;
+            }
+            .design-card {
+                min-width: 0 !important;
+                width: 100% !important;
+                flex: none !important;
+            }
+            .invoice-paper {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+        }
+
         @media (max-width: 992px) {
-            .invoice-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
             .top-actions .status-pill { display: none !important; }
             .actions-row { flex-wrap: wrap; gap: 12px; }
-            .design-options { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
-            .design-card { min-width: 140px; flex-shrink: 0; }
         }
 
         @media (max-width: 768px) {
@@ -265,6 +294,17 @@
             }
             .inv-action-btns .btn-full {
                 flex: 1 1 100% !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .design-options {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 8px !important;
+            }
+            .design-card {
+                padding: 10px 10px !important;
+                font-size: 11px !important;
             }
         }
     </style>
@@ -661,35 +701,39 @@ Terima kasih banyak! 🤍</textarea>
             </div>
             
             <!-- RIGHT COLUMN: Preview -->
-            <div>
-                <div class="section-title"><i class="fa-solid fa-palette"></i> Gaya Desain Invoice</div>
-                <div class="design-options">
-                    <div class="design-card active" data-theme="theme-minimalist">
-                        Minimalis & Clean
-                        <div style="height: 4px; background: #666; border-radius: 2px; margin-top: 12px; width: 100%;"></div>
+            <div class="invoice-preview-column">
+                <div class="acc-panel design-section-card" style="padding: 20px; margin-bottom: 24px;">
+                    <div class="design-section-title">
+                        <i class="fa-solid fa-palette"></i> Gaya Desain Invoice
                     </div>
-                    <div class="design-card" data-theme="theme-creative">
-                        Creative & Aesthetic
-                        <div style="height: 4px; background: #d67a9a; border-radius: 2px; margin-top: 12px; width: 100%;"></div>
-                    </div>
-                    <div class="design-card" data-theme="theme-corporate">
-                        Corporate & Professional
-                        <div style="height: 4px; background: #1b365d; border-radius: 2px; margin-top: 12px; width: 100%;"></div>
-                    </div>
-                    <div class="design-card" data-theme="theme-modern">
-                        Modern & Bold
-                        <div style="height: 4px; background: #111; border-radius: 2px; margin-top: 12px; width: 100%;"></div>
-                    </div>
-                    <div class="design-card" data-theme="theme-classic">
-                        Classic / Traditional
-                        <div style="height: 4px; background: #876839; border-radius: 2px; margin-top: 12px; width: 100%;"></div>
+                    <div class="design-options">
+                        <div class="design-card active" data-theme="theme-minimalist">
+                            Minimalis & Clean
+                            <div class="design-card-bar" style="background: #666;"></div>
+                        </div>
+                        <div class="design-card" data-theme="theme-creative">
+                            Creative & Aesthetic
+                            <div class="design-card-bar" style="background: #d67a9a;"></div>
+                        </div>
+                        <div class="design-card" data-theme="theme-corporate">
+                            Corporate & Professional
+                            <div class="design-card-bar" style="background: #1b365d;"></div>
+                        </div>
+                        <div class="design-card" data-theme="theme-modern">
+                            Modern & Bold
+                            <div class="design-card-bar" style="background: #111;"></div>
+                        </div>
+                        <div class="design-card" data-theme="theme-classic">
+                            Classic / Traditional
+                            <div class="design-card-bar" style="background: #876839;"></div>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="section-title"><i class="fa-regular fa-eye"></i> LIVE PREVIEW INVOICE</div>
+                <div class="section-title" style="margin-top: 8px; margin-bottom: 16px;"><i class="fa-regular fa-eye"></i> LIVE PREVIEW INVOICE</div>
                 
                 <!-- Paper Invoice -->
-                <div class="invoice-paper theme-minimalist" id="invoice-preview" style="background: white; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border-radius: 12px; margin-top: 20px;">
+                <div class="invoice-paper theme-minimalist" id="invoice-preview" style="padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border-radius: 12px; margin-top: 10px;">
                     <!-- HEADER -->
                     <div class="inv-header" style="border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
                         <div style="display: flex; align-items: center; gap: 16px;">
