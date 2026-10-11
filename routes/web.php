@@ -70,6 +70,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/followup/process/{level}', [\App\Http\Controllers\FollowUpController::class, 'processManual']);
     Route::get('/booking', function () { return view('booking'); });
     Route::get('/invoice', function () { return view('invoice'); });
+    Route::get('/invoices', function () { return view('invoice'); });
+
+    Route::get('/api/invoices', [\App\Http\Controllers\InvoiceController::class, 'getInvoices']);
+    Route::get('/api/invoices/settings', [\App\Http\Controllers\InvoiceController::class, 'getSettings']);
+    Route::get('/api/invoices/{id}', [\App\Http\Controllers\InvoiceController::class, 'getInvoice']);
+    Route::post('/api/invoices', [\App\Http\Controllers\InvoiceController::class, 'addInvoice']);
+    Route::delete('/api/invoices/{id}', [\App\Http\Controllers\InvoiceController::class, 'deleteInvoice']);
+    Route::post('/api/invoices/save-bank', [\App\Http\Controllers\InvoiceController::class, 'saveBank']);
+    Route::post('/api/invoices/save-terms', [\App\Http\Controllers\InvoiceController::class, 'saveTerms']);
 
     Route::get('/quotations', function () { return view('quotation'); });
     Route::get('/api/quotations', [QuotationController::class, 'getQuotations']);

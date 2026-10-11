@@ -43,6 +43,10 @@ class User extends Authenticatable
         'ai_custom_questions',
         'ai_max_replies',
         'price_list_links',
+        'bank_name',
+        'bank_account_number',
+        'bank_account_name',
+        'default_terms',
     ];
 
     /**

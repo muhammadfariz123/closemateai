@@ -1,0 +1,257 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Invoice;
+use App\Models\Booking;
+use App\Models\SystemActivity;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
+
+class InvoiceController extends Controller
+{
+    protected function getUser()
+    {
+        return auth()->user() ?? \App\Models\User::first();
+    }
+
+    // List all invoices for vendor
+    public function getInvoices()
+    {
+        $user = $this->getUser();
+        if (!$user) return response()->json([]);
+
+        $invoices = Invoice::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($invoices);
+    }
+
+    // Get single invoice
+    public function getInvoice($id)
+    {
+        $user = $this->getUser();
+        if (!$user) return response()->json(['error' => 'Unauthorized'], 401);
+
+        $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
+        if (!$invoice) return response()->json(['error' => 'Not found'], 404);
+
+        return response()->json($invoice);
+    }
+
+    // Save or update invoice with automatic calculations
+    public function addInvoice(Request $request)
+    {
+        $user = $this->getUser();
+        if (!$user) return response()->json(['success' => false], 401);
+
+        $id = $request->input('id');
+        if (empty($id) || str_starts_with($id, 'inv_temp_')) {
+            $id = (string) Str::uuid();
+        }
+
+        // Server-side calculation
+        $pkgPrice = (float) $this->parseNumber($request->input('package_price', 0));
+        $pkgQty = (int) ($request->input('package_qty', 1) ?: 1);
+        $discount = (float) $this->parseNumber($request->input('discount', 0));
+
+        $extraPackages = $request->input('extra_packages', []);
+        if (is_string($extraPackages)) {
+            $extraPackages = json_decode($extraPackages, true) ?: [];
+        }
+
+        $addons = $request->input('addons', []);
+        if (is_string($addons)) {
+            $addons = json_decode($addons, true) ?: [];
+        }
+
+        // Subtotal package
+        $subtotalPackage = $pkgPrice * $pkgQty;
+        $totalDiscount = $discount;
+        foreach ($extraPackages as $extra) {
+            $p = (float) $this->parseNumber($extra['price'] ?? 0);
+            $d = (float) $this->parseNumber($extra['discount'] ?? 0);
+            $subtotalPackage += $p;
+            $totalDiscount += $d;
+        }
+
+        // Total addons
+        $totalAddon = 0;
+        foreach ($addons as $addon) {
+            $qty = (int) ($addon['qty'] ?? 1);
+            if ($qty < 1) $qty = 1;
+            $price = (float) $this->parseNumber($addon['price'] ?? 0);
+            $totalAddon += ($qty * $price);
+        }
+
+        // Grand Total
+        $grandTotal = $subtotalPackage + $totalAddon - $totalDiscount;
+
+        // DP and remaining balance
+        $dp1 = (float) $this->parseNumber($request->input('dp1_amount', 0));
+        $dp2 = (float) $this->parseNumber($request->input('dp2_amount', 0));
+        $totalDp = $dp1 + $dp2;
+        $remaining = max(0, $grandTotal - $totalDp);
+
+        $data = [
+            'id' => $id,
+            'user_id' => $user->id,
+            'booking_id' => $request->input('booking_id'),
+            'invoice_number' => $request->input('invoice_number', 'INV-' . date('Ym') . '-001'),
+            'invoice_date' => $this->parseDate($request->input('invoice_date')),
+            'vendor_name' => $request->input('vendor_name', $user->business_name ?? $user->name),
+            'vendor_address' => $request->input('vendor_address'),
+            'client_name' => $request->input('client_name'),
+            'client_wa' => $request->input('client_wa'),
+            'client_address' => $request->input('client_address'),
+            'event_date' => $this->parseDate($request->input('event_date')),
+            'termin_label' => $request->input('termin_label', 'Uang Muka / DP 1'),
+            'package_name' => $request->input('package_name'),
+            'package_price' => $pkgPrice,
+            'package_qty' => $pkgQty,
+            'discount' => $discount,
+            'extra_packages' => $extraPackages,
+            'addons' => $addons,
+            'subtotal_package' => $subtotalPackage,
+            'total_addon' => $totalAddon,
+            'total_discount' => $totalDiscount,
+            'grand_total' => $grandTotal,
+            'dp1_amount' => $dp1,
+            'dp2_amount' => $dp2,
+            'total_dp' => $totalDp,
+            'remaining_balance' => $remaining,
+            'due_date' => $this->parseDate($request->input('due_date')),
+            'bank_name' => $request->input('bank_name', 'BCA'),
+            'bank_account_number' => $request->input('bank_account_number'),
+            'bank_account_name' => $request->input('bank_account_name'),
+            'terms_and_conditions' => $request->input('terms_and_conditions'),
+            'theme' => $request->input('theme', 'theme-minimalist'),
+            'status' => 'saved',
+        ];
+
+        $invoice = Invoice::updateOrCreate(
+            ['id' => $id],
+            $data
+        );
+
+        // Sync with Booking if connected
+        if (!empty($data['booking_id'])) {
+            $booking = Booking::where('user_id', $user->id)->find($data['booking_id']);
+            if ($booking) {
+                $booking->paid_amount = $totalDp;
+                if ($totalDp >= $grandTotal && $grandTotal > 0) {
+                    $booking->payment_status = 'Lunas';
+                } elseif ($dp2 > 0) {
+                    $booking->payment_status = 'Termin 2';
+                } elseif ($dp1 > 0) {
+                    $booking->payment_status = 'DP 1';
+                }
+                $booking->save();
+            }
+        }
+
+        // Log system activity if class exists
+        if (class_exists(SystemActivity::class)) {
+            SystemActivity::create([
+                'user_id' => $user->id,
+                'type' => 'invoice_created',
+                'description' => "Menyimpan invoice {$invoice->invoice_number} untuk klien " . ($invoice->client_name ?: '-'),
+            ]);
+        }
+
+        $count = Invoice::where('user_id', $user->id)->count();
+
+        return response()->json([
+            'success' => true,
+            'invoice' => $invoice,
+            'saved_count' => $count
+        ]);
+    }
+
+    // Delete invoice
+    public function deleteInvoice($id)
+    {
+        $user = $this->getUser();
+        if (!$user) return response()->json(['success' => false], 401);
+
+        Invoice::where('user_id', $user->id)->where('id', $id)->delete();
+        $count = Invoice::where('user_id', $user->id)->count();
+
+        return response()->json([
+            'success' => true,
+            'saved_count' => $count
+        ]);
+    }
+
+    // Save vendor bank details to user profile
+    public function saveBank(Request $request)
+    {
+        $user = $this->getUser();
+        if (!$user) return response()->json(['success' => false], 401);
+
+        $user->bank_name = $request->input('bank_name', 'BCA');
+        $user->bank_account_number = $request->input('bank_account_number');
+        $user->bank_account_name = $request->input('bank_account_name');
+        $user->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    // Save terms & conditions
+    public function saveTerms(Request $request)
+    {
+        $user = $this->getUser();
+        if (!$user) return response()->json(['success' => false], 401);
+
+        $user->default_terms = $request->input('terms', []);
+        $user->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    // Get settings
+    public function getSettings()
+    {
+        $user = $this->getUser();
+        if (!$user) return response()->json([]);
+
+        $count = Invoice::where('user_id', $user->id)->count();
+
+        return response()->json([
+            'bank_name' => $user->bank_name ?: 'BCA',
+            'bank_account_number' => $user->bank_account_number ?: '0431063867',
+            'bank_account_name' => $user->bank_account_name ?: 'Umi Salamah',
+            'default_terms' => $user->default_terms,
+            'business_name' => $user->business_name ?: $user->name,
+            'saved_count' => $count,
+        ]);
+    }
+
+    protected function parseNumber($val)
+    {
+        if (is_numeric($val)) return (float) $val;
+        if (empty($val)) return 0;
+        return (float) preg_replace('/[^0-9]/', '', (string) $val);
+    }
+
+    protected function parseDate($val)
+    {
+        if (empty($val)) return null;
+        try {
+            if (str_contains($val, '/')) {
+                // mm/dd/yyyy or dd/mm/yyyy
+                $parts = explode('/', $val);
+                if (count($parts) === 3) {
+                    if (strlen($parts[2]) === 4) {
+                        return Carbon::createFromDate($parts[2], $parts[0], $parts[1])->toDateString();
+                    }
+                }
+            }
+            return Carbon::parse($val)->toDateString();
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+}
