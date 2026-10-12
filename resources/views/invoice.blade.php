@@ -1262,8 +1262,7 @@
                         <div class="form-group">
                             <label class="form-label" id="labelTglJatuhTempo">Tanggal Jatuh Tempo Pelunasan</label>
                             <div style="position: relative;">
-                                <input type="text" class="form-control" placeholder="mm/dd/yyyy" id="inputTglJatuhTempo" value="" oninput="syncJatuhTempoPreview()">
-                                <i class="fa-regular fa-calendar" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-dark); pointer-events: none;"></i>
+                                <input type="date" class="form-control" id="inputTglJatuhTempo" value="" onchange="syncJatuhTempoPreview(); updateWaDraft();" oninput="syncJatuhTempoPreview(); updateWaDraft();" style="cursor: pointer;" onclick="try { if (typeof this.showPicker === 'function') this.showPicker(); } catch(e){}">
                             </div>
                         </div>
                         
@@ -2158,6 +2157,7 @@
             }
 
             syncTerminPreview();
+            syncJatuhTempoPreview();
         }
 
         function updatePreviewInvoiceDate() {
