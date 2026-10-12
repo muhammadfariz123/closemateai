@@ -94,6 +94,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/invoices/{id}/duplicate', [\App\Http\Controllers\InvoiceController::class, 'duplicateInvoice']);
     Route::post('/api/invoices/save-bank', [\App\Http\Controllers\InvoiceController::class, 'saveBank']);
     Route::post('/api/invoices/save-terms', [\App\Http\Controllers\InvoiceController::class, 'saveTerms']);
+    Route::get('/api/invoices/packages', [\App\Http\Controllers\InvoiceController::class, 'getPackages']);
+    Route::post('/api/invoices/save-package', [\App\Http\Controllers\InvoiceController::class, 'savePackage']);
+    Route::delete('/api/invoices/packages/{id}', [\App\Http\Controllers\InvoiceController::class, 'deletePackage']);
+    Route::post('/api/invoices/save-business', [\App\Http\Controllers\InvoiceController::class, 'saveBusiness']);
+    Route::post('/api/invoices/save-format', [\App\Http\Controllers\InvoiceController::class, 'saveFormat']);
 
     Route::get('/quotations', function () { return view('quotation'); });
     Route::get('/api/quotations', [QuotationController::class, 'getQuotations']);

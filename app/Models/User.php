@@ -51,6 +51,8 @@ class User extends Authenticatable
         'ai_prompt',
         'ai_personality_type',
         'ai_limit_reached_message',
+        'vendor_address',
+        'invoice_format',
     ];
 
     /**

@@ -1085,12 +1085,12 @@
                         <i class="fa-solid fa-chevron-up"></i>
                     </div>
                     <div class="acc-body">
-                        <div id="bookingConnectedBox" style="display: none; padding: 12px; background: rgba(80, 205, 137, 0.05); border: 1px solid rgba(80, 205, 137, 0.2); border-radius: 8px; margin-bottom: 16px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <div id="bookingConnectedBox" style="display: none; padding: 14px 16px; background: rgba(107, 92, 216, 0.06); border: 1px solid rgba(107, 92, 216, 0.2); border-radius: 10px; margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                                 <span style="font-weight: 600; font-size: 13px; color: var(--text-dark);" id="bookingConnectedText">Terhubung ke Booking: -</span>
-                                <span style="color: #f1416c; font-size: 12px; cursor: pointer;" onclick="putuskanBooking()">Putuskan Hubungan</span>
+                                <span style="color: #ef4444; font-size: 12px; font-weight: 600; cursor: pointer;" onclick="putuskanBooking()">Putuskan Hubungan</span>
                             </div>
-                            <div style="font-size: 11px; color: var(--text-muted);">Pembayaran yang dicatat di invoice ini otomatis memperbarui status pembayaran booking.</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">Pembayaran yang dicatat di invoice ini otomatis memperbarui status pembayaran booking.</div>
                         </div>
                         
                         <button class="btn btn-primary" style="border-radius: 8px; width: fit-content; padding: 10px 16px; margin-bottom: 6px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px;" id="btnAmbilBooking" onclick="openBookingModal()"><i class="fa-regular fa-calendar-check"></i> <span id="btnAmbilBookingText">Ambil dari Booking</span></button>
@@ -1115,8 +1115,7 @@
                         <div class="form-group">
                             <label class="form-label" id="labelTglAcara">Tanggal Acara</label>
                             <div style="position: relative;">
-                                <input type="text" class="form-control" placeholder="mm/dd/yyyy" id="inputTglAcara" value="" oninput="syncPreviewDate(); updateWaDraft();">
-                                <i class="fa-regular fa-calendar" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-dark); pointer-events: none;"></i>
+                                <input type="date" class="form-control" id="inputTglAcara" value="" onchange="syncPreviewDate(); updateWaDraft();" oninput="syncPreviewDate(); updateWaDraft();" style="cursor: pointer;">
                             </div>
                         </div>
                     </div>
@@ -2612,15 +2611,67 @@ Terima kasih banyak! 🤍`;
         }
 
         function simpanBisnis() {
-            showToastNotification(currentLang === 'en' ? "Business info saved" : "Informasi bisnis berhasil disimpan");
+            const vendor_name = document.getElementById('inputNamaVendor')?.value || '';
+            const vendor_address = document.getElementById('inputAlamatVendor')?.value || '';
+            fetch('/api/invoices/save-business', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                body: JSON.stringify({ vendor_name, vendor_address })
+            })
+            .then(res => res.json())
+            .then(() => {
+                showToastNotification(currentLang === 'en' ? "Business info saved" : "Informasi bisnis berhasil disimpan");
+            })
+            .catch(() => {
+                showToastNotification(currentLang === 'en' ? "Business info saved" : "Informasi bisnis berhasil disimpan");
+            });
         }
 
         function simpanFormat() {
-            showToastNotification(currentLang === 'en' ? "Invoice format saved" : "Format invoice berhasil disimpan");
+            const format = document.getElementById('inputPrefixInvoice')?.value || 'INV-{YYYY}{MM}-{SEQ3}';
+            fetch('/api/invoices/save-format', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                body: JSON.stringify({ format })
+            })
+            .then(res => res.json())
+            .then(() => {
+                showToastNotification(currentLang === 'en' ? "Invoice format saved" : "Format invoice berhasil disimpan");
+            })
+            .catch(() => {
+                showToastNotification(currentLang === 'en' ? "Invoice format saved" : "Format invoice berhasil disimpan");
+            });
         }
 
         function simpanBiaya() {
-            showToastNotification(currentLang === 'en' ? "Package & price saved" : "Paket & harga berhasil disimpan");
+            const name = document.getElementById('inputPaketUtama')?.value?.trim();
+            if (!name) {
+                alert("Silakan masukkan nama paket terlebih dahulu");
+                return;
+            }
+            const price = parseCurrency(document.getElementById('inputHargaUtama')?.value);
+            const discount = parseCurrency(document.getElementById('inputDiskon')?.value);
+
+            fetch('/api/invoices/save-package', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ name, price, discount })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToastNotification(currentLang === 'en' ? "Package & price saved" : "Paket & harga disimpan");
+                } else {
+                    alert(data.error || "Gagal menyimpan paket");
+                }
+            })
+            .catch(() => {
+                showToastNotification(currentLang === 'en' ? "Package & price saved" : "Paket & harga disimpan");
+            });
         }
 
         function simpanTtd() {
@@ -2875,13 +2926,36 @@ Terima kasih banyak! 🤍`;
         function formatTglIndo(val) {
             if (!val) return '';
             try {
+                const daysId = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                const daysEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
                 const monthsId = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
                 const monthsEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                const days = currentLang === 'en' ? daysEn : daysId;
                 const months = currentLang === 'en' ? monthsEn : monthsId;
-                const d = new Date(val);
+
+                let d = null;
+                if (typeof val === 'string' && val.includes('-')) {
+                    const p = val.split('-');
+                    if (p.length === 3) {
+                        d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+                    }
+                } else if (typeof val === 'string' && val.includes('/')) {
+                    const p = val.split('/');
+                    if (p.length === 3) {
+                        if (p[2].length === 4) {
+                            d = new Date(parseInt(p[2], 10), parseInt(p[0], 10) - 1, parseInt(p[1], 10));
+                        } else if (p[0].length === 4) {
+                            d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+                        }
+                    }
+                }
+                if (!d || isNaN(d.getTime())) {
+                    d = new Date(val);
+                }
                 if (isNaN(d.getTime())) return val;
-                const dd = String(d.getDate()).padStart(2, '0');
-                return `${dd} ${months[d.getMonth()]} ${d.getFullYear()}`;
+
+                const dayName = days[d.getDay()];
+                return `${dayName}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
             } catch(e) {
                 return val;
             }
@@ -3508,8 +3582,27 @@ Terima kasih banyak! 🤍`;
         }
 
         // --- Save Invoice to Database ---
+        let selectedBookingId = null;
+
         function simpanInvoiceKeDatabase() {
+            const extraPkgs = [];
+            document.querySelectorAll('.paket-tambahan-box').forEach(box => {
+                const name = box.querySelector('.pkt-extra-name')?.value?.trim();
+                const price = parseCurrency(box.querySelector('.pkt-extra-price')?.value);
+                const disc = parseCurrency(box.querySelector('.pkt-extra-disc')?.value);
+                if (name || price > 0) extraPkgs.push({ name, price, discount: disc });
+            });
+
+            const addonsList = [];
+            document.querySelectorAll('.addon-item-box').forEach(box => {
+                const name = box.querySelector('.addon-name')?.value?.trim();
+                const qty = parseInt(box.querySelector('.addon-qty')?.value, 10) || 1;
+                const price = parseCurrency(box.querySelector('.addon-price')?.value);
+                if (name || price > 0) addonsList.push({ name, qty, price });
+            });
+
             const payload = {
+                booking_id: selectedBookingId || null,
                 invoice_number: document.getElementById('inputNoInvoice')?.value || 'INV-202610-006',
                 vendor_name: document.getElementById('inputNamaVendor')?.value || 'Fariz hidayat',
                 vendor_address: document.getElementById('inputAlamatVendor')?.value || 'Kombas purwokerto',
@@ -3521,9 +3614,12 @@ Terima kasih banyak! 🤍`;
                 package_price: parseCurrency(document.getElementById('inputHargaUtama')?.value),
                 package_qty: parseInt(document.getElementById('inputJumlahPaket')?.value, 10) || 1,
                 discount: parseCurrency(document.getElementById('inputDiskon')?.value),
+                extra_packages: extraPkgs,
+                addons: addonsList,
                 grand_total: parseCurrency(document.getElementById('calcGrandTotal')?.innerText),
-                total_dp: parseCurrency(document.getElementById('inputDP1')?.value),
-                dp2: parseCurrency(document.getElementById('inputDP2')?.value),
+                dp1_amount: parseCurrency(document.getElementById('inputDP1')?.value),
+                dp2_amount: parseCurrency(document.getElementById('inputDP2')?.value),
+                total_dp: parseCurrency(document.getElementById('inputDP1')?.value) + parseCurrency(document.getElementById('inputDP2')?.value),
                 remaining_balance: parseCurrency(document.getElementById('valSisaSummary')?.innerText),
                 bank_name: document.getElementById('inputNamaBank')?.value || 'BCA',
                 bank_account_number: document.getElementById('inputNoRekening')?.value || '0431063867',
@@ -3614,11 +3710,21 @@ Terima kasih banyak! 🤍`;
             const b = allBookingsList.find(x => String(x.id) === String(bookingId));
             if (!b) return;
 
+            selectedBookingId = b.id;
+
             if (b.client_name) document.getElementById('inputNamaKlien').value = b.client_name;
             if (b.client_phone) document.getElementById('inputNoWaKlien').value = b.client_phone;
+            if (b.client_address) document.getElementById('inputAlamatKlien').value = b.client_address;
             if (b.event_date) document.getElementById('inputTglAcara').value = b.event_date;
             if (b.package_name) document.getElementById('inputPaketUtama').value = b.package_name;
             if (b.total_price) document.getElementById('inputHargaUtama').value = 'Rp ' + formatRupiah(b.total_price);
+
+            const box = document.getElementById('bookingConnectedBox');
+            if (box) {
+                box.style.display = 'block';
+                const txt = document.getElementById('bookingConnectedText');
+                if (txt) txt.textContent = `Terhubung ke Booking: ${b.client_name || '-'} — ${b.event_date || '-'}`;
+            }
 
             syncPreviewClientWa();
             syncPreviewDate();
@@ -3629,6 +3735,7 @@ Terima kasih banyak! 🤍`;
         }
 
         function putuskanBooking() {
+            selectedBookingId = null;
             const box = document.getElementById('bookingConnectedBox');
             if (box) box.style.display = 'none';
             showToastNotification("Hubungan booking diputuskan");
@@ -3638,32 +3745,75 @@ Terima kasih banyak! 🤍`;
             e.stopPropagation();
             const menu = document.getElementById('paketDropdownMenu');
             if (!menu) return;
-            if (menu.style.display === 'none' || menu.style.display === '') {
-                menu.innerHTML = `
-                    <div style="padding: 10px 12px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'" onclick="selectPresetPaket('Premium Wedding Documentation', 10000000, 500000)">
-                        Premium Wedding Documentation — Rp 10.000.000
-                    </div>
-                    <div style="padding: 10px 12px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'" onclick="selectPresetPaket('Standard Wedding Photo', 6000000, 0)">
-                        Standard Wedding Photo — Rp 6.000.000
-                    </div>
-                    <div style="padding: 10px 12px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'" onclick="selectPresetPaket('Intimate Engagement', 3500000, 0)">
-                        Intimate Engagement — Rp 3.500.000
-                    </div>
-                `;
-                menu.style.display = 'block';
-            } else {
+            if (menu.style.display === 'block') {
                 menu.style.display = 'none';
+                return;
             }
+            loadAndRenderPaketDropdown();
         }
 
-        function selectPresetPaket(name, price, disc) {
+        function loadAndRenderPaketDropdown() {
+            const menu = document.getElementById('paketDropdownMenu');
+            if (!menu) return;
+            menu.innerHTML = `<div style="padding: 12px; text-align: center; color: #888; font-size: 12px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data paket...</div>`;
+            menu.style.display = 'block';
+
+            fetch('/api/invoices/packages')
+                .then(res => res.json())
+                .then(list => {
+                    if (!Array.isArray(list) || list.length === 0) {
+                        menu.innerHTML = `<div style="padding: 12px; text-align: center; color: #888; font-size: 12px;">Belum ada paket tersimpan.</div>`;
+                        return;
+                    }
+                    let html = '';
+                    list.forEach(p => {
+                        const safeName = (p.name || '').replace(/'/g, "\\'");
+                        html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #f1f1f4; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'">
+                            <div style="flex: 1;" onclick="pilihPresetPaket('${safeName}', ${p.price || 0}, ${p.discount || 0})">
+                                <div style="font-weight: 500; font-size: 13px; color: #181c32;">${p.name || '-'}</div>
+                                <div style="font-size: 11px; color: #888; margin-top: 2px;">Rp ${formatRupiah(p.price || 0)}</div>
+                            </div>
+                            <button type="button" class="btn-trash" onclick="hapusPaketTersimpan(${p.id}, event)" style="background: none; border: none; color: #a1a5b7; cursor: pointer; font-size: 14px; padding: 6px; border-radius: 4px;" title="Hapus paket" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#a1a5b7'">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                        </div>`;
+                    });
+                    menu.innerHTML = html;
+                })
+                .catch(() => {
+                    menu.innerHTML = `<div style="padding: 12px; text-align: center; color: #ef4444; font-size: 12px;">Gagal memuat paket.</div>`;
+                });
+        }
+
+        function pilihPresetPaket(name, price, disc) {
             document.getElementById('inputPaketUtama').value = name;
             document.getElementById('inputHargaUtama').value = 'Rp ' + formatRupiah(price);
-            document.getElementById('inputDiskon').value = 'Rp ' + formatRupiah(disc);
-            const menu = document.getElementById('paketDropdownMenu');
-            if (menu) menu.style.display = 'none';
+            if (disc > 0) {
+                document.getElementById('inputDiskon').value = 'Rp ' + formatRupiah(disc);
+            }
             calculateTotals();
             updateWaDraft();
+            const menu = document.getElementById('paketDropdownMenu');
+            if (menu) menu.style.display = 'none';
+        }
+
+        function hapusPaketTersimpan(id, e) {
+            e.stopPropagation();
+            if (!confirm("Hapus paket tersimpan ini?")) return;
+            fetch(`/api/invoices/packages/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(res => res.json())
+            .then(() => {
+                showToastNotification("Paket berhasil dihapus");
+                loadAndRenderPaketDropdown();
+            });
         }
 
         document.addEventListener('click', () => {
@@ -3742,6 +3892,22 @@ Terima kasih banyak! 🤍`;
                     }
                     if (settings.bank_account_name) {
                         document.getElementById('inputAtasNama').value = settings.bank_account_name;
+                    }
+                    if (settings.business_name) {
+                        const vName = document.getElementById('inputNamaVendor');
+                        if (vName) vName.value = settings.business_name;
+                        const pvName = document.getElementById('previewNamaVendor');
+                        if (pvName) pvName.innerText = settings.business_name;
+                    }
+                    if (settings.vendor_address) {
+                        const vAddr = document.getElementById('inputAlamatVendor');
+                        if (vAddr) vAddr.value = settings.vendor_address;
+                        const pvAddr = document.getElementById('previewAlamatVendor');
+                        if (pvAddr) pvAddr.innerText = settings.vendor_address;
+                    }
+                    if (settings.invoice_format) {
+                        const vFmt = document.getElementById('inputPrefixInvoice');
+                        if (vFmt) vFmt.value = settings.invoice_format;
                     }
                     syncBankPreview();
                     updateWaDraft();

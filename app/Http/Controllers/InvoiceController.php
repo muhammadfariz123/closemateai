@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Invoice;
 use App\Models\Booking;
+use App\Models\InvoicePackage;
 use App\Models\SystemActivity;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
@@ -726,6 +727,8 @@ class InvoiceController extends Controller
                 'bank_account_name' => $user->bank_account_name ?: 'Umi Salamah',
                 'default_terms' => is_string($user->default_terms) ? explode("\n", $user->default_terms) : ($user->default_terms ?: []),
                 'business_name' => $user->business_name ?: $user->name,
+                'vendor_address' => $user->vendor_address ?: 'Kombas purwokerto',
+                'invoice_format' => $user->invoice_format ?: 'INV-{YYYY}{MM}-{SEQ3}',
                 'saved_count' => $count,
             ]);
         } catch (\Throwable $e) {
@@ -736,8 +739,126 @@ class InvoiceController extends Controller
                 'bank_account_name' => 'Umi Salamah',
                 'default_terms' => [],
                 'business_name' => 'CloseMateAI',
+                'vendor_address' => 'Kombas purwokerto',
+                'invoice_format' => 'INV-{YYYY}{MM}-{SEQ3}',
                 'saved_count' => 0,
             ]);
+        }
+    }
+
+    public function getPackages()
+    {
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json([]);
+
+            $packages = InvoicePackage::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            if ($packages->isEmpty()) {
+                $defaults = [
+                    ['name' => 'paket 111', 'price' => 9000, 'discount' => 0],
+                    ['name' => 'Penawaran QT-202610-236', 'price' => 9000, 'discount' => 0],
+                    ['name' => 'Silver Package', 'price' => 15000000, 'discount' => 0],
+                ];
+                foreach ($defaults as $def) {
+                    InvoicePackage::create([
+                        'user_id' => $user->id,
+                        'name' => $def['name'],
+                        'price' => $def['price'],
+                        'discount' => $def['discount'],
+                    ]);
+                }
+                $packages = InvoicePackage::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
+            }
+
+            return response()->json($packages);
+        } catch (\Throwable $e) {
+            Log::error('getPackages error: ' . $e->getMessage());
+            return response()->json([]);
+        }
+    }
+
+    public function savePackage(Request $request)
+    {
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+
+            $name = trim((string)$request->input('name', ''));
+            if (empty($name)) {
+                return response()->json(['success' => false, 'error' => 'Nama paket tidak boleh kosong'], 400);
+            }
+            $price = (float) $this->parseNumber($request->input('price', 0));
+            $discount = (float) $this->parseNumber($request->input('discount', 0));
+
+            $pkg = InvoicePackage::updateOrCreate(
+                ['user_id' => $user->id, 'name' => $name],
+                ['price' => $price, 'discount' => $discount]
+            );
+
+            return response()->json(['success' => true, 'package' => $pkg]);
+        } catch (\Throwable $e) {
+            Log::error('savePackage error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function deletePackage($id)
+    {
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+
+            InvoicePackage::where('user_id', $user->id)->where('id', $id)->delete();
+
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            Log::error('deletePackage error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function saveBusiness(Request $request)
+    {
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+
+            if ($request->has('vendor_name')) {
+                $user->business_name = $request->input('vendor_name');
+            }
+            if ($request->has('vendor_address')) {
+                $user->vendor_address = $request->input('vendor_address');
+            }
+            $user->save();
+
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            Log::error('saveBusiness error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function saveFormat(Request $request)
+    {
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+
+            $user->invoice_format = $request->input('format', 'INV-{YYYY}{MM}-{SEQ3}');
+            $user->save();
+
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            Log::error('saveFormat error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
 
