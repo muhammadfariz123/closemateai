@@ -81,7 +81,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/api/invoices/{id}', [\App\Http\Controllers\InvoiceController::class, 'deleteInvoice']);
     Route::post('/api/invoices/{id}/mark-paid', [\App\Http\Controllers\InvoiceController::class, 'markPaid']);
     Route::post('/api/invoices/{id}/payments', [\App\Http\Controllers\InvoiceController::class, 'recordPayment']);
+    Route::post('/api/invoices/{id}/record-payment', [\App\Http\Controllers\InvoiceController::class, 'recordPayment']);
     Route::delete('/api/invoices/{id}/payments/{paymentId}', [\App\Http\Controllers\InvoiceController::class, 'deletePayment']);
+    Route::post('/api/invoices/{id}/duplicate', [\App\Http\Controllers\InvoiceController::class, 'duplicateInvoice']);
     Route::post('/api/invoices/save-bank', [\App\Http\Controllers\InvoiceController::class, 'saveBank']);
     Route::post('/api/invoices/save-terms', [\App\Http\Controllers\InvoiceController::class, 'saveTerms']);
 

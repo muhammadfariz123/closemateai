@@ -13,7 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->validateCsrfTokens(except: [
             'api/public/wa/*',
-            'api/simulator/chat'
+            'api/simulator/chat',
+            'api/invoices',
+            'api/invoices/*'
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

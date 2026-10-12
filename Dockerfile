@@ -69,9 +69,16 @@ chown -R www-data:www-data "$TARGET_DIR" /app /var/www/html/database /var/www/ht
 # Update Apache to listen on Render PORT\n\
 sed -i "s/80/${PORT:-8000}/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf\n\
 \n\
-# Run migrations\n\
+# Clear cache to guarantee latest views and routes are loaded\n\
+php artisan optimize:clear || true\n\
+\n\
+# Run database migrations automatically\n\
 php artisan migrate --force || true\n\
 php artisan storage:link || true\n\
+\n\
+# Ensure permissions after migrations\n\
+chmod -R 777 "$TARGET_DIR" /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache || true\n\
+chown -R www-data:www-data "$TARGET_DIR" /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache || true\n\
 \n\
 # Start apache in foreground\n\
 apache2-foreground' > /usr/local/bin/start.sh

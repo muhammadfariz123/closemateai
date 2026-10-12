@@ -493,36 +493,164 @@ class InvoiceController extends Controller
 
         $filename = "invoices-" . date('Ymd-His') . ".csv";
         $headers = [
-            "Content-type" => "text/csv",
+            "Content-type" => "text/csv; charset=UTF-8",
             "Content-Disposition" => "attachment; filename=$filename",
             "Pragma" => "no-cache",
             "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
             "Expires" => "0"
         ];
 
-        $columns = ['No Invoice', 'Klien', 'No WhatsApp', 'Tanggal Invoice', 'Tanggal Acara', 'Total', 'Terbayar', 'Sisa', 'Status'];
+        $columns = ['No Invoice', 'Klien', 'WhatsApp', 'Tanggal Acara', 'Grand Total', 'Terbayar', 'Status', 'Dibuat'];
 
         $callback = function() use ($invoices, $columns) {
             $file = fopen('php://output', 'w');
+            fputs($file, "\xEF\xBB\xBF"); // UTF-8 BOM
             fputcsv($file, $columns);
 
             foreach ($invoices as $inv) {
+                $grandTotal = round((float) ($inv->grand_total ?? 0));
+                $totalPaid = round((float) ($inv->total_dp ?? 0));
+                $rem = round((float) ($inv->remaining_balance ?? 0));
+                
+                $status = $inv->payment_status ?: 'Belum Dibayar';
+                if ($rem <= 0 && $grandTotal > 0) {
+                    $status = 'Lunas';
+                } elseif ($totalPaid > 0 && $status !== 'Lunas') {
+                    $status = 'Terbayar Sebagian';
+                }
+
+                $eventDateStr = '';
+                if ($inv->event_date) {
+                    try {
+                        $eventDateStr = is_string($inv->event_date) ? Carbon::parse($inv->event_date)->format('d/m/Y') : $inv->event_date->format('d/m/Y');
+                    } catch (\Throwable $e) {
+                        $eventDateStr = (string) $inv->event_date;
+                    }
+                }
+
+                $createdStr = '';
+                if ($inv->created_at) {
+                    try {
+                        $createdStr = is_string($inv->created_at) ? Carbon::parse($inv->created_at)->format('m/d/Y') : $inv->created_at->format('m/d/Y');
+                    } catch (\Throwable $e) {
+                        $createdStr = date('m/d/Y');
+                    }
+                } else {
+                    $createdStr = date('m/d/Y');
+                }
+
                 fputcsv($file, [
                     $inv->invoice_number,
-                    $inv->client_name,
-                    $inv->client_wa,
-                    $inv->invoice_date ? (is_string($inv->invoice_date) ? $inv->invoice_date : $inv->invoice_date->format('d/m/Y')) : '',
-                    $inv->event_date ? (is_string($inv->event_date) ? $inv->event_date : $inv->event_date->format('d/m/Y')) : '',
-                    $inv->grand_total,
-                    $inv->total_dp,
-                    $inv->remaining_balance,
-                    $inv->payment_status ?: 'Belum Dibayar'
+                    $inv->client_name ?: '',
+                    $inv->client_wa ?: '',
+                    $eventDateStr,
+                    $grandTotal,
+                    $totalPaid,
+                    $status,
+                    $createdStr
                 ]);
             }
             fclose($file);
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    // Duplicate invoice
+    public function duplicateInvoice($id)
+    {
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+
+            $source = Invoice::where('user_id', $user->id)->where('id', $id)->first();
+            if (!$source) {
+                return response()->json(['success' => false, 'error' => 'Invoice sumber tidak ditemukan'], 404);
+            }
+
+            // Generate next invoice number
+            $prefix = 'INV-' . date('Ym') . '-';
+            $invoices = Invoice::where('user_id', $user->id)
+                ->where('invoice_number', 'like', $prefix . '%')
+                ->pluck('invoice_number');
+
+            $maxSeq = 0;
+            foreach ($invoices as $num) {
+                $parts = explode('-', $num);
+                $last = end($parts);
+                if (is_numeric($last)) {
+                    $seq = (int) $last;
+                    if ($seq > $maxSeq) {
+                        $maxSeq = $seq;
+                    }
+                }
+            }
+            $nextSeq = $maxSeq + 1;
+            $newNumber = $prefix . sprintf('%03d', $nextSeq);
+
+            $newId = (string) Str::uuid();
+            $grandTotal = (float) $source->grand_total;
+
+            $newInvoice = Invoice::create([
+                'id' => $newId,
+                'user_id' => $user->id,
+                'booking_id' => $source->booking_id,
+                'invoice_number' => $newNumber,
+                'invoice_date' => Carbon::now()->toDateString(),
+                'vendor_name' => $source->vendor_name ?: ($user->business_name ?? $user->name),
+                'vendor_address' => $source->vendor_address,
+                'client_name' => $source->client_name,
+                'client_wa' => $source->client_wa,
+                'client_address' => $source->client_address,
+                'event_date' => $source->event_date,
+                'termin_label' => $source->termin_label ?: 'Uang Muka / DP 1',
+                'package_name' => $source->package_name,
+                'package_price' => $source->package_price,
+                'package_qty' => $source->package_qty ?: 1,
+                'discount' => $source->discount ?: 0,
+                'extra_packages' => $source->extra_packages ?: [],
+                'addons' => $source->addons ?: [],
+                'subtotal_package' => $source->subtotal_package,
+                'total_addon' => $source->total_addon ?: 0,
+                'total_discount' => $source->total_discount ?: 0,
+                'grand_total' => $grandTotal,
+                'dp1_amount' => $source->dp1_amount ?: 0,
+                'dp2_amount' => $source->dp2_amount ?: 0,
+                'total_dp' => 0,
+                'remaining_balance' => $grandTotal,
+                'payments' => [],
+                'payment_status' => 'Belum Dibayar',
+                'due_date' => $source->due_date,
+                'bank_name' => $source->bank_name ?: 'BCA',
+                'bank_account_number' => $source->bank_account_number,
+                'bank_account_name' => $source->bank_account_name,
+                'terms_and_conditions' => $source->terms_and_conditions,
+                'theme' => $source->theme ?: 'theme-minimalist',
+                'status' => 'saved',
+            ]);
+
+            if (class_exists(SystemActivity::class)) {
+                SystemActivity::create([
+                    'user_id' => $user->id,
+                    'type' => 'invoice_created',
+                    'description' => "Menduplikasi invoice {$source->invoice_number} menjadi {$newNumber}",
+                ]);
+            }
+
+            $count = Invoice::where('user_id', $user->id)->count();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Invoice diduplikat sebagai {$newNumber}",
+                'invoice_number' => $newNumber,
+                'invoice' => $newInvoice,
+                'saved_count' => $count
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('duplicateInvoice error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     // Delete invoice
