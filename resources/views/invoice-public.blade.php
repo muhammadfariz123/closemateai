@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice {{ $invoice->invoice_number }} - {{ $invoice->client_name ?: 'Klien' }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -87,10 +87,14 @@
             padding: 48px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.06);
             box-sizing: border-box;
+            position: relative;
         }
 
         .inv-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #eee; padding-bottom: 24px; margin-bottom: 24px; }
-        .inv-logo-text { font-size: 22px; font-weight: 700; color: #222; }
+        .inv-header-brand { display: flex; align-items: center; gap: 16px; }
+        .inv-logo-box { width: 52px; height: 52px; border-radius: 50%; background: #f1f1f4; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; border: 1px solid #e4e6ef; }
+        .inv-logo-text { font-size: 20px; font-weight: 600; color: #222; }
+        .inv-addr-text { font-size: 11px; color: #888; margin-top: 2px; }
         .inv-meta { text-align: right; }
         .inv-meta h2 { font-size: 24px; font-weight: 300; letter-spacing: 2px; color: #555; margin-bottom: 8px; }
         .inv-meta p { font-size: 11px; color: #888; margin-bottom: 2px; }
@@ -120,6 +124,75 @@
             .inv-meta { text-align: left; }
             .inv-totals-grid { width: 100%; }
         }
+
+        @media print {
+            body { background: white !important; padding: 0 !important; }
+            .top-bar, .status-banner { display: none !important; }
+            .invoice-paper { box-shadow: none !important; max-width: 100% !important; padding: 20px !important; border-radius: 0 !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    
+        /* ----------------- INVOICE THEMES (MATCHING REFERENCE IMAGES 1-5) ----------------- */
+        /* 1. Minimalis & Clean */
+        .invoice-paper.theme-minimalist { background: #ffffff; color: #1e293b; }
+        .invoice-paper.theme-minimalist .inv-header { border-bottom: 1px solid #e2e8f0; }
+        .invoice-paper.theme-minimalist .inv-logo-text { color: #1e293b; font-size: 20px; font-weight: 700; }
+        .invoice-paper.theme-minimalist .inv-meta h2 { color: #64748b; font-size: 24px; font-weight: 300; letter-spacing: 2px; }
+        .invoice-paper.theme-minimalist .inv-table th { background: #f8fafc; color: #475569; }
+        .invoice-paper.theme-minimalist .inv-dp-box { background: #f8fafc; border: none; }
+        .invoice-paper.theme-minimalist .inv-payment-box { border: 1px solid #f1f5f9; background: #ffffff; }
+
+        /* 2. Creative & Aesthetic */
+        .invoice-paper.theme-creative { background: #ffffff; color: #374151; }
+        .invoice-paper.theme-creative .inv-header { margin: -48px -48px 24px -48px; padding: 36px 48px 24px 48px; background: linear-gradient(180deg, #fcecee 0%, #fef5f7 75%, #ffffff 100%); flex-direction: column; align-items: center; text-align: center; border-bottom: none; }
+        .invoice-paper.theme-creative .inv-header-brand { flex-direction: column; align-items: center; text-align: center; gap: 0; }
+        .invoice-paper.theme-creative .inv-logo-box { margin: 0 auto 10px auto; width: 56px; height: 56px; border: 2px solid #f8ccd7 !important; }
+        .invoice-paper.theme-creative .inv-logo-text { color: #d66d85; font-size: 20px; font-weight: 700; }
+        .invoice-paper.theme-creative .inv-addr-text { color: #888888; font-size: 11px; margin-bottom: 12px; }
+        .invoice-paper.theme-creative .inv-meta { text-align: center; }
+        .invoice-paper.theme-creative .inv-meta h2 { color: #d66d85; font-size: 24px; font-weight: 400; letter-spacing: 8px; margin: 4px 0 6px 0; }
+        .invoice-paper.theme-creative .inv-table th { background: #fdf0f2; color: #d66d85; border: none; }
+        .invoice-paper.theme-creative .inv-table td { border-bottom: 1px solid #fde8ed; }
+        .invoice-paper.theme-creative .inv-dp-box { background: #fdf2f4; border: none; }
+        .invoice-paper.theme-creative .inv-payment-box { border: 1px solid #fce7eb; background: #ffffff; }
+
+        /* 3. Corporate & Professional */
+        .invoice-paper.theme-corporate { background: #ffffff; color: #1e293b; }
+        .invoice-paper.theme-corporate .inv-header { margin: -48px -48px 24px -48px; padding: 32px 48px; background: #1e3a5f; color: #ffffff; border-radius: 12px 12px 0 0; border-bottom: none; }
+        .invoice-paper.theme-corporate .inv-logo-box { border: 2px solid rgba(255,255,255,0.4) !important; }
+        .invoice-paper.theme-corporate .inv-logo-text { color: #ffffff; text-transform: uppercase; font-size: 19px; font-weight: 700; letter-spacing: 0.5px; }
+        .invoice-paper.theme-corporate .inv-addr-text { color: #cbd5e1; }
+        .invoice-paper.theme-corporate .inv-meta h2 { color: #ffffff; letter-spacing: 3px; font-weight: 400; }
+        .invoice-paper.theme-corporate .inv-meta p { color: #cbd5e1; }
+        .invoice-paper.theme-corporate .inv-table th { background: #edf2f7; color: #1e3a5f; border: none; }
+        .invoice-paper.theme-corporate .inv-table td { border-bottom: 1px solid #edf2f7; }
+        .invoice-paper.theme-corporate .inv-dp-box { background: #edf2f7; border: none; }
+        .invoice-paper.theme-corporate .inv-payment-box { border: 1px solid #e2e8f0; background: #ffffff; }
+
+        /* 4. Modern & Bold */
+        .invoice-paper.theme-modern { background: #ffffff; color: #111827; }
+        .invoice-paper.theme-modern .inv-header { border-bottom: 3px solid #111827; padding-bottom: 16px; margin-bottom: 24px; }
+        .invoice-paper.theme-modern .inv-logo-text { color: #111827; font-weight: 900; text-transform: uppercase; font-size: 19px; }
+        .invoice-paper.theme-modern .inv-meta h2 { color: #111827; font-weight: 900; font-size: 28px; }
+        .invoice-paper.theme-modern .inv-table th { background: #111827; color: #ffffff; border: none; }
+        .invoice-paper.theme-modern .inv-dp-box { background: #f4f4f5; border: none; }
+        .invoice-paper.theme-modern .inv-payment-box { border: 1px solid #e4e4e7; background: #ffffff; }
+
+        /* 5. Classic / Traditional */
+        .invoice-paper.theme-classic { background: #ffffff; color: #3e3223; font-family: 'Playfair Display', Georgia, serif; }
+        .invoice-paper.theme-classic .inv-header { margin: -48px -48px 24px -48px; padding: 36px 48px 24px 48px; background: #f5ede0; border-radius: 12px 12px 0 0; flex-direction: column; align-items: center; text-align: center; border-bottom: none; }
+        .invoice-paper.theme-classic .inv-header-brand { flex-direction: column; align-items: center; text-align: center; gap: 0; }
+        .invoice-paper.theme-classic .inv-logo-box { margin: 0 auto 10px auto; width: 56px; height: 56px; border: 2px solid #e6d7be !important; }
+        .invoice-paper.theme-classic .inv-logo-text { color: #6e4d25; font-size: 22px; font-weight: 600; font-family: 'Playfair Display', Georgia, serif; }
+        .invoice-paper.theme-classic .inv-addr-text { color: #8c7860; font-family: 'Inter', sans-serif; }
+        .invoice-paper.theme-classic .inv-meta { text-align: center; }
+        .invoice-paper.theme-classic .inv-meta h2 { color: #6e4d25; letter-spacing: 8px; font-size: 22px; font-weight: 400; font-family: 'Playfair Display', Georgia, serif; margin: 4px 0 6px 0; }
+        .invoice-paper.theme-classic .inv-meta p { color: #9c8a74; font-family: 'Inter', sans-serif; }
+        .invoice-paper.theme-classic .inv-table th { background: #f3ebd9; color: #6e4d25; border: none; }
+        .invoice-paper.theme-classic .inv-table td { border-bottom: 1px solid #f0e5d0; }
+        .invoice-paper.theme-classic .inv-dp-box { background: #f5ede0; border: none; }
+        .invoice-paper.theme-classic .inv-payment-box { border: 1px solid #eee4cd; background: #ffffff; }
+
     </style>
 </head>
 <body>
@@ -152,9 +225,18 @@
     <div class="invoice-paper {{ $invoice->theme ?? 'theme-minimalist' }}" id="invoice-paper">
         <!-- HEADER -->
         <div class="inv-header">
-            <div>
-                <div class="inv-logo-text">{{ $invoice->vendor_name ?: ($user->business_name ?? 'Vendor') }}</div>
-                <div style="font-size: 12px; color: #888; margin-top: 4px;">{{ $invoice->vendor_address ?: ($user->business_address ?? '') }}</div>
+            <div class="inv-header-brand">
+                <div class="inv-logo-box">
+                    @if(!empty($invoice->user->avatar) || !empty($invoice->user->logo) || !empty($user->avatar) || !empty($user->logo))
+                        <img src="{{ asset($invoice->user->avatar ?? $invoice->user->logo ?? $user->avatar ?? $user->logo) }}" style="max-height: 100%; max-width: 100%;">
+                    @else
+                        <i class="fa-regular fa-image" style="color: #a1a5b7; font-size: 20px;"></i>
+                    @endif
+                </div>
+                <div>
+                    <div class="inv-logo-text">{{ $invoice->vendor_name ?: ($user->business_name ?? 'Vendor') }}</div>
+                    <div class="inv-addr-text">{{ $invoice->vendor_address ?: ($user->business_address ?? '') }}</div>
+                </div>
             </div>
             <div class="inv-meta">
                 <h2>INVOICE</h2>

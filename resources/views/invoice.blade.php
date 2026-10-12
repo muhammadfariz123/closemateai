@@ -143,65 +143,653 @@
         .checkbox-row { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); margin-top: 12px; }
         .checkbox-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
-        /* Invoice Themes */
-        .invoice-paper.theme-minimalist { background: white; color: #333; }
-        .invoice-paper.theme-minimalist .inv-header { border-bottom: none; }
-        .invoice-paper.theme-minimalist .inv-table th { border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 12px 0; }
-        .invoice-paper.theme-minimalist .inv-table td { padding: 12px 0; border-bottom: 1px dashed #eee; }
-        .invoice-paper.theme-minimalist .highlight-bg { background: #fafafa; padding: 8px 12px; margin: -8px -12px; border-radius: 4px; display: inline-block; width: calc(100% + 24px); box-sizing: border-box; }
-        .invoice-paper.theme-minimalist .inv-payment { background: transparent; padding: 0; }
-        
-        /* Creative & Aesthetic */
-        .invoice-paper.theme-creative { background: #fff5f7; color: #5a3c4a; }
-        .invoice-paper.theme-creative .inv-header { flex-direction: column; align-items: center; text-align: center; border-bottom: none; }
-        .invoice-paper.theme-creative .inv-logo-text { color: #d67a9a; font-size: 24px; margin-bottom: 16px; }
-        .invoice-paper.theme-creative .inv-meta { text-align: center; }
-        .invoice-paper.theme-creative .inv-meta h2 { color: #d67a9a; font-weight: 300; letter-spacing: 4px; font-size: 28px; }
-        .invoice-paper.theme-creative .inv-meta p { color: #c47692; }
-        .invoice-paper.theme-creative .inv-table th { color: #d67a9a; border-bottom: none; background: #fce8ee; padding: 12px 16px; }
-        .invoice-paper.theme-creative .inv-table td { padding: 12px 16px; border-bottom: 1px solid #f9e1e8; }
-        .invoice-paper.theme-creative .highlight-bg { background: #fce8ee; padding: 8px 12px; margin: -8px -12px; border-radius: 4px; display: inline-block; width: calc(100% + 24px); box-sizing: border-box; color: #d67a9a; }
-        .invoice-paper.theme-creative .inv-payment { background: transparent; padding: 0; }
-        .invoice-paper.theme-creative .bold { color: #a34c6e; }
-        
-        /* Corporate & Professional */
-        .invoice-paper.theme-corporate { background: white; color: #333; padding: 0; overflow: hidden; }
-        .invoice-paper.theme-corporate .inv-header { background: #284168; color: white; padding: 40px; border-bottom: none; margin-bottom: 0; }
-        .invoice-paper.theme-corporate .inv-header .inv-logo-text { color: white; }
-        .invoice-paper.theme-corporate .inv-meta h2 { color: white; font-weight: 600; letter-spacing: 1px; }
-        .invoice-paper.theme-corporate .inv-meta p { color: rgba(255,255,255,0.7); }
-        .invoice-paper.theme-corporate .inv-desc-row { padding: 30px 40px 10px; }
-        .invoice-paper.theme-corporate .inv-bill-to p { color: #888; }
-        .invoice-paper.theme-corporate .inv-table { margin: 0 40px 30px; width: calc(100% - 80px); }
-        .invoice-paper.theme-corporate .inv-table th { color: #284168; border-top: 2px solid #284168; border-bottom: 2px solid #284168; background: transparent; padding: 12px 0; }
-        .invoice-paper.theme-corporate .inv-table td { padding: 12px 0; border-bottom: 1px solid #eee; }
-        .invoice-paper.theme-corporate .inv-totals { padding: 0 40px 30px; }
-        .invoice-paper.theme-corporate .highlight-bg { background: #ebf1f9; padding: 8px 12px; margin: -8px -12px; border-radius: 4px; display: inline-block; width: calc(100% + 24px); box-sizing: border-box; }
-        .invoice-paper.theme-corporate .highlight-bg.left { color: #284168; }
-        .invoice-paper.theme-corporate .highlight-bg.right { color: #284168; }
-        .invoice-paper.theme-corporate .inv-payment { margin: 0 40px 30px; background: transparent; padding: 0; }
-        .invoice-paper.theme-corporate .inv-footer { padding: 0 40px 40px; }
+        /* Invoice Themes — REFINED TO MATCH REFERENCE IMAGES 1-5 */
+        .invoice-paper {
+            background: #ffffff;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+            color: #1e293b;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            transition: all 0.25s ease;
+        }
 
-        /* Modern & Bold */
-        .invoice-paper.theme-modern { background: white; color: #111; font-family: 'Inter', sans-serif; }
-        .invoice-paper.theme-modern .inv-header { border-bottom: 8px solid #111; padding-bottom: 30px; }
-        .invoice-paper.theme-modern .inv-meta h2 { color: #111; font-weight: 800; font-size: 32px; letter-spacing: 0; }
-        .invoice-paper.theme-modern .inv-table th { color: white; background: #111; border-bottom: none; padding: 12px 16px; }
-        .invoice-paper.theme-modern .inv-table td { padding: 12px 16px; border-bottom: 1px solid #eee; }
-        .invoice-paper.theme-modern .highlight-bg { background: #f5f5f5; padding: 8px 12px; margin: -8px -12px; border-radius: 4px; display: inline-block; width: calc(100% + 24px); box-sizing: border-box; }
-        .invoice-paper.theme-modern .inv-payment { background: transparent; padding: 0; }
-        
-        /* Classic / Traditional */
-        .invoice-paper.theme-classic { background: #fdfbf6; color: #4a3c31; font-family: 'Times New Roman', serif; }
-        .invoice-paper.theme-classic .inv-header { flex-direction: column; align-items: center; text-align: center; border-bottom: none; }
-        .invoice-paper.theme-classic .inv-logo-text { color: #876839; font-size: 24px; margin-bottom: 16px; }
-        .invoice-paper.theme-classic .inv-meta { text-align: center; }
-        .invoice-paper.theme-classic .inv-meta h2 { color: #876839; font-weight: 400; letter-spacing: 4px; font-size: 28px; }
-        .invoice-paper.theme-classic .inv-table th { color: #876839; border-bottom: none; background: #f0e3cc; padding: 12px 16px; }
-        .invoice-paper.theme-classic .inv-table td { padding: 12px 16px; border-bottom: 1px solid #f0e3cc; }
-        .invoice-paper.theme-classic .highlight-bg { background: #f0e3cc; padding: 8px 12px; margin: -8px -12px; border-radius: 4px; display: inline-block; width: calc(100% + 24px); box-sizing: border-box; color: #876839; }
-        .invoice-paper.theme-classic .inv-payment { background: transparent; padding: 0; }
+        .invoice-paper .inv-desc-row {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .invoice-paper .inv-table {
+            margin-bottom: 16px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .invoice-paper .inv-totals {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 24px;
+            padding-right: 4px;
+        }
+        .invoice-paper .inv-payment {
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+        }
 
+        /* --------------------------------------------------------
+           1. MINIMALIS & CLEAN (IMAGE 1)
+           -------------------------------------------------------- */
+        .invoice-paper.theme-minimalist {
+            background: #ffffff;
+            color: #1e293b;
+        }
+        .invoice-paper.theme-minimalist .inv-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 20px;
+            margin-bottom: 22px;
+        }
+        .invoice-paper.theme-minimalist .inv-header-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .invoice-paper.theme-minimalist .inv-logo-text {
+            color: #1e293b;
+            font-size: 19px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .invoice-paper.theme-minimalist .inv-addr-text {
+            color: #64748b;
+            font-size: 11px;
+        }
+        .invoice-paper.theme-minimalist .inv-meta {
+            text-align: right;
+        }
+        .invoice-paper.theme-minimalist #previewInvoiceTitle {
+            color: #475569;
+            font-size: 24px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            margin: 0 0 4px 0;
+        }
+        .invoice-paper.theme-minimalist .inv-meta p {
+            color: #64748b;
+            font-size: 11px;
+            margin: 0 0 2px 0;
+        }
+        .invoice-paper.theme-minimalist #labelPreviewKepada,
+        .invoice-paper.theme-minimalist #labelPreviewTglAcara {
+            color: #94a3b8;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .invoice-paper.theme-minimalist #previewTerminLabel {
+            color: #334155;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .invoice-paper.theme-minimalist .inv-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            padding: 10px 16px;
+            border: none;
+        }
+        .invoice-paper.theme-minimalist .inv-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 12px;
+        }
+        .invoice-paper.theme-minimalist #labelPreviewGrandTotal,
+        .invoice-paper.theme-minimalist #previewGrandTotal {
+            color: #1e293b;
+            font-weight: 700;
+        }
+        .invoice-paper.theme-minimalist #previewDpBox {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-top: 14px;
+        }
+        .invoice-paper.theme-minimalist #labelPreviewSisaTagihan {
+            color: #64748b;
+            font-size: 11px;
+        }
+        .invoice-paper.theme-minimalist #previewSisaTagihan {
+            color: #1e293b;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .invoice-paper.theme-minimalist #previewPaymentBox {
+            border: 1px solid #f1f5f9;
+            background: #ffffff;
+        }
+        .invoice-paper.theme-minimalist #labelPreviewMetodeBayar {
+            color: #94a3b8;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .invoice-paper.theme-minimalist #previewPaymentText {
+            color: #1e293b;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .invoice-paper.theme-minimalist #labelPreviewTermsHeader {
+            color: #475569;
+            font-weight: 700;
+            font-size: 10px;
+        }
+
+        /* --------------------------------------------------------
+           2. CREATIVE & AESTHETIC (IMAGE 2)
+           -------------------------------------------------------- */
+        .invoice-paper.theme-creative {
+            background: #ffffff;
+            color: #374151;
+        }
+        .invoice-paper.theme-creative .inv-header {
+            margin: -40px -40px 24px -40px;
+            padding: 34px 40px 22px 40px;
+            background: linear-gradient(180deg, #fcecee 0%, #fef5f7 75%, #ffffff 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border-bottom: none;
+        }
+        .invoice-paper.theme-creative .inv-header-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 0;
+        }
+        .invoice-paper.theme-creative #previewLogoContainer {
+            margin: 0 auto 10px auto;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 2px solid #f8ccd7;
+        }
+        .invoice-paper.theme-creative .inv-logo-text {
+            color: #d66d85;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .invoice-paper.theme-creative .inv-addr-text {
+            color: #888888;
+            font-size: 11px;
+            margin-bottom: 12px;
+        }
+        .invoice-paper.theme-creative .inv-meta {
+            text-align: center;
+        }
+        .invoice-paper.theme-creative #previewInvoiceTitle {
+            color: #d66d85;
+            font-size: 24px;
+            font-weight: 400;
+            letter-spacing: 8px;
+            margin: 4px 0 6px 0;
+        }
+        .invoice-paper.theme-creative .inv-meta p {
+            color: #999999;
+            font-size: 11px;
+            margin: 0 0 2px 0;
+        }
+        .invoice-paper.theme-creative #labelPreviewKepada,
+        .invoice-paper.theme-creative #labelPreviewTglAcara {
+            color: #a3a3a3;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .invoice-paper.theme-creative #previewTerminLabel {
+            color: #d66d85;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .invoice-paper.theme-creative .inv-table th {
+            background: #fdf0f2;
+            color: #d66d85;
+            font-weight: 700;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            padding: 10px 16px;
+            border: none;
+        }
+        .invoice-paper.theme-creative .inv-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #fde8ed;
+            font-size: 12px;
+        }
+        .invoice-paper.theme-creative #labelPreviewGrandTotal,
+        .invoice-paper.theme-creative #previewGrandTotal {
+            color: #374151;
+            font-weight: 700;
+        }
+        .invoice-paper.theme-creative #previewDpBox {
+            background: #fdf2f4;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-top: 14px;
+        }
+        .invoice-paper.theme-creative #labelPreviewSisaTagihan {
+            color: #d66d85;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .invoice-paper.theme-creative #previewSisaTagihan {
+            color: #d66d85;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .invoice-paper.theme-creative #previewPaymentBox {
+            border: 1px solid #fce7eb;
+            background: #ffffff;
+        }
+        .invoice-paper.theme-creative #labelPreviewMetodeBayar {
+            color: #a3a3a3;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .invoice-paper.theme-creative #previewPaymentText {
+            color: #374151;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .invoice-paper.theme-creative #labelPreviewTermsHeader {
+            color: #d66d85;
+            font-weight: 700;
+            font-size: 10px;
+        }
+
+        /* --------------------------------------------------------
+           3. CORPORATE & PROFESSIONAL (IMAGE 3)
+           -------------------------------------------------------- */
+        .invoice-paper.theme-corporate {
+            background: #ffffff;
+            color: #1e293b;
+        }
+        .invoice-paper.theme-corporate .inv-header {
+            margin: -40px -40px 24px -40px;
+            padding: 30px 40px;
+            background: #1e3a5f;
+            color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 12px 12px 0 0;
+            border-bottom: none;
+        }
+        .invoice-paper.theme-corporate .inv-header-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .invoice-paper.theme-corporate #previewLogoContainer {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.4);
+        }
+        .invoice-paper.theme-corporate .inv-logo-text {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .invoice-paper.theme-corporate .inv-addr-text {
+            color: #cbd5e1;
+            font-size: 11px;
+        }
+        .invoice-paper.theme-corporate .inv-meta {
+            text-align: right;
+        }
+        .invoice-paper.theme-corporate #previewInvoiceTitle {
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 500;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin: 0 0 4px 0;
+        }
+        .invoice-paper.theme-corporate .inv-meta p {
+            color: #cbd5e1;
+            font-size: 11px;
+            margin: 0 0 2px 0;
+        }
+        .invoice-paper.theme-corporate #labelPreviewKepada,
+        .invoice-paper.theme-corporate #labelPreviewTglAcara {
+            color: #64748b;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .invoice-paper.theme-corporate #previewTerminLabel {
+            color: #1e3a5f;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .invoice-paper.theme-corporate .inv-table th {
+            background: #edf2f7;
+            color: #1e3a5f;
+            font-weight: 700;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            padding: 10px 16px;
+            border: none;
+        }
+        .invoice-paper.theme-corporate .inv-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 12px;
+        }
+        .invoice-paper.theme-corporate #labelPreviewGrandTotal,
+        .invoice-paper.theme-corporate #previewGrandTotal {
+            color: #1e3a5f;
+            font-weight: 700;
+        }
+        .invoice-paper.theme-corporate #previewDpBox {
+            background: #edf2f7;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-top: 14px;
+        }
+        .invoice-paper.theme-corporate #labelPreviewSisaTagihan {
+            color: #1e3a5f;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .invoice-paper.theme-corporate #previewSisaTagihan {
+            color: #1e3a5f;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .invoice-paper.theme-corporate #previewPaymentBox {
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+        }
+        .invoice-paper.theme-corporate #labelPreviewMetodeBayar {
+            color: #64748b;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .invoice-paper.theme-corporate #previewPaymentText {
+            color: #1e293b;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .invoice-paper.theme-corporate #labelPreviewTermsHeader {
+            color: #1e3a5f;
+            font-weight: 700;
+            font-size: 10px;
+        }
+
+        /* --------------------------------------------------------
+           4. MODERN & BOLD (IMAGE 4)
+           -------------------------------------------------------- */
+        .invoice-paper.theme-modern {
+            background: #ffffff;
+            color: #111827;
+        }
+        .invoice-paper.theme-modern .inv-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 3px solid #111827;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+        .invoice-paper.theme-modern .inv-header-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .invoice-paper.theme-modern .inv-logo-text {
+            color: #111827;
+            font-size: 19px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .invoice-paper.theme-modern .inv-addr-text {
+            color: #4b5563;
+            font-size: 11px;
+        }
+        .invoice-paper.theme-modern .inv-meta {
+            text-align: right;
+        }
+        .invoice-paper.theme-modern #previewInvoiceTitle {
+            color: #111827;
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin: 0 0 4px 0;
+        }
+        .invoice-paper.theme-modern .inv-meta p {
+            color: #4b5563;
+            font-size: 11px;
+            font-weight: 500;
+            margin: 0 0 2px 0;
+        }
+        .invoice-paper.theme-modern #labelPreviewKepada,
+        .invoice-paper.theme-modern #labelPreviewTglAcara {
+            color: #6b7280;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .invoice-paper.theme-modern #previewTerminLabel {
+            color: #111827;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .invoice-paper.theme-modern .inv-table th {
+            background: #111827;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            padding: 10px 16px;
+            border: none;
+        }
+        .invoice-paper.theme-modern .inv-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e4e4e7;
+            font-size: 12px;
+        }
+        .invoice-paper.theme-modern #labelPreviewGrandTotal,
+        .invoice-paper.theme-modern #previewGrandTotal {
+            color: #111827;
+            font-weight: 800;
+        }
+        .invoice-paper.theme-modern #previewDpBox {
+            background: #f4f4f5;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-top: 14px;
+        }
+        .invoice-paper.theme-modern #labelPreviewSisaTagihan {
+            color: #18181b;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .invoice-paper.theme-modern #previewSisaTagihan {
+            color: #18181b;
+            font-size: 14px;
+            font-weight: 800;
+        }
+        .invoice-paper.theme-modern #previewPaymentBox {
+            border: 1px solid #e4e4e7;
+            background: #ffffff;
+        }
+        .invoice-paper.theme-modern #labelPreviewMetodeBayar {
+            color: #71717a;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .invoice-paper.theme-modern #previewPaymentText {
+            color: #18181b;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .invoice-paper.theme-modern #labelPreviewTermsHeader {
+            color: #111827;
+            font-weight: 800;
+            font-size: 10px;
+        }
+
+        /* --------------------------------------------------------
+           5. CLASSIC / TRADITIONAL (IMAGE 5)
+           -------------------------------------------------------- */
+        .invoice-paper.theme-classic {
+            background: #ffffff;
+            color: #3e3223;
+        }
+        .invoice-paper.theme-classic .inv-header {
+            margin: -40px -40px 24px -40px;
+            padding: 34px 40px 24px 40px;
+            background: #f5ede0;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border-bottom: none;
+            font-family: 'Playfair Display', Georgia, serif;
+        }
+        .invoice-paper.theme-classic .inv-header-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 0;
+        }
+        .invoice-paper.theme-classic #previewLogoContainer {
+            margin: 0 auto 10px auto;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 2px solid #e0d0bc;
+        }
+        .invoice-paper.theme-classic .inv-logo-text {
+            color: #6e4d25;
+            font-size: 22px;
+            font-weight: 600;
+            font-family: 'Playfair Display', Georgia, serif;
+            margin-bottom: 2px;
+        }
+        .invoice-paper.theme-classic .inv-addr-text {
+            color: #8c7860;
+            font-size: 11px;
+            margin-bottom: 12px;
+        }
+        .invoice-paper.theme-classic .inv-meta {
+            text-align: center;
+        }
+        .invoice-paper.theme-classic #previewInvoiceTitle {
+            color: #6e4d25;
+            font-size: 22px;
+            font-weight: 400;
+            letter-spacing: 8px;
+            font-family: 'Playfair Display', Georgia, serif;
+            margin: 4px 0 6px 0;
+        }
+        .invoice-paper.theme-classic .inv-meta p {
+            color: #9c8a74;
+            font-size: 11px;
+            margin: 0 0 2px 0;
+        }
+        .invoice-paper.theme-classic #labelPreviewKepada,
+        .invoice-paper.theme-classic #labelPreviewTglAcara {
+            color: #8c7860;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .invoice-paper.theme-classic #previewTerminLabel {
+            color: #6e4d25;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .invoice-paper.theme-classic .inv-table th {
+            background: #f3ebd9;
+            color: #6e4d25;
+            font-weight: 700;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            padding: 10px 16px;
+            border: none;
+        }
+        .invoice-paper.theme-classic .inv-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0e5d0;
+            font-size: 12px;
+        }
+        .invoice-paper.theme-classic #labelPreviewGrandTotal,
+        .invoice-paper.theme-classic #previewGrandTotal {
+            color: #3e3223;
+            font-weight: 700;
+        }
+        .invoice-paper.theme-classic #previewDpBox {
+            background: #f5ede0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-top: 14px;
+        }
+        .invoice-paper.theme-classic #labelPreviewSisaTagihan {
+            color: #6e4d25;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .invoice-paper.theme-classic #previewSisaTagihan {
+            color: #6e4d25;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .invoice-paper.theme-classic #previewPaymentBox {
+            border: 1px solid #eee4cd;
+            background: #ffffff;
+        }
+        .invoice-paper.theme-classic #labelPreviewMetodeBayar {
+            color: #8c7860;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .invoice-paper.theme-classic #previewPaymentText {
+            color: #3e3223;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .invoice-paper.theme-classic #labelPreviewTermsHeader {
+            color: #6e4d25;
+            font-weight: 700;
+            font-size: 10px;
+        }
+        
         /* Responsive Mobile Layout for Invoice Generator */
         @media (max-width: 992px) {
             .invoice-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
@@ -751,21 +1339,21 @@
                 <!-- Paper Invoice -->
                 <div class="invoice-paper theme-minimalist" id="invoice-preview" style="background: white; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border-radius: 12px; margin-top: 20px;">
                     <!-- HEADER -->
-                    <div class="inv-header" style="border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div style="display: flex; align-items: center; gap: 16px;">
-                            <div id="previewLogoContainer" style="width: 56px; height: 56px; border-radius: 50%; background: #f1f1f4; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; border: 1px solid #e4e6ef;">
+                    <div class="inv-header" id="previewHeader">
+                        <div class="inv-header-brand" id="previewHeaderBrand">
+                            <div id="previewLogoContainer" style="width: 52px; height: 52px; border-radius: 50%; background: #f1f1f4; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; border: 1px solid #e4e6ef;">
                                 <img id="previewLogoImg" src="" style="max-height: 100%; max-width: 100%; display: none;">
                                 <i class="fa-regular fa-image" id="previewLogoPlaceholder" style="color: #a1a5b7; font-size: 20px;"></i>
                             </div>
                             <div>
-                                <div class="inv-logo-text" id="previewNamaVendor" style="margin-bottom: 4px; font-size: 20px; font-weight: 600; color: #222;">Fariz hidayat</div>
-                                <div style="font-size: 10px; color: #888;" id="previewAlamatVendor">Kombas purwokerto</div>
+                                <div class="inv-logo-text" id="previewNamaVendor">Fariz hidayat</div>
+                                <div class="inv-addr-text" id="previewAlamatVendor">Kombas purwokerto</div>
                             </div>
                         </div>
-                        <div class="inv-meta" style="text-align: right;">
-                            <h2 style="font-size: 24px; font-weight: 300; letter-spacing: 2px; color: #555; margin-bottom: 8px;">INVOICE</h2>
-                            <p style="font-size: 10px; color: #888; margin-bottom: 2px;">No. <span id="previewNoInvoice">INV-202610-006</span></p>
-                            <p style="font-size: 10px; color: #888;" id="previewInvoiceDate">12 Oktober 2026</p>
+                        <div class="inv-meta" id="previewHeaderMeta">
+                            <h2 id="previewInvoiceTitle">INVOICE</h2>
+                            <p>No. <span id="previewNoInvoice">INV-202610-006</span></p>
+                            <p id="previewInvoiceDate">12 Oktober 2026</p>
                         </div>
                     </div>
                     
@@ -1089,17 +1677,28 @@
         });
 
         // Theme Switcher
+        let currentSelectedTheme = 'theme-minimalist';
+
+        function applyTheme(theme) {
+            currentSelectedTheme = theme || 'theme-minimalist';
+            const invoicePaper = document.getElementById('invoice-preview');
+            if (invoicePaper) {
+                invoicePaper.className = 'invoice-paper ' + currentSelectedTheme;
+            }
+            document.querySelectorAll('.design-card').forEach(card => {
+                if (card.getAttribute('data-theme') === currentSelectedTheme) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+        }
+
         const designCards = document.querySelectorAll('.design-card');
-        const invoicePaper = document.getElementById('invoice-preview');
         designCards.forEach(card => {
             card.addEventListener('click', () => {
-                designCards.forEach(c => c.classList.remove('active'));
-                card.classList.add('active');
-                if (invoicePaper) {
-                    invoicePaper.className = 'invoice-paper';
-                    const theme = card.getAttribute('data-theme');
-                    if (theme) invoicePaper.classList.add(theme);
-                }
+                const theme = card.getAttribute('data-theme');
+                if (theme) applyTheme(theme);
             });
         });
 
@@ -2929,7 +3528,8 @@ Terima kasih banyak! 🤍`;
                 bank_name: document.getElementById('inputNamaBank')?.value || 'BCA',
                 bank_account_number: document.getElementById('inputNoRekening')?.value || '0431063867',
                 bank_account_name: document.getElementById('inputAtasNama')?.value || 'Umi Salamah',
-                due_date: document.getElementById('inputTglJatuhTempo')?.value || ''
+                due_date: document.getElementById('inputTglJatuhTempo')?.value || '',
+                theme: currentSelectedTheme || 'theme-minimalist'
             };
 
             fetch('/api/invoices', {
