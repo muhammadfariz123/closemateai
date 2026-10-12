@@ -52,6 +52,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/knowledge/re-extract', [KnowledgeFileController::class, 'reExtract']);
     Route::post('/knowledge/save-ai-limits', [KnowledgeFileController::class, 'saveAiLimits']);
     Route::post('/knowledge/save-links', [KnowledgeFileController::class, 'saveLinks']);
+    Route::post('/knowledge/save-calendar', [KnowledgeFileController::class, 'saveCalendar']);
+    Route::get('/knowledge/faqs', [KnowledgeFileController::class, 'getFaqs']);
+    Route::post('/knowledge/faqs', [KnowledgeFileController::class, 'storeFaq']);
+    Route::post('/knowledge/faqs/{id}/update', [KnowledgeFileController::class, 'updateFaq']);
+    Route::delete('/knowledge/faqs/{id}', [KnowledgeFileController::class, 'destroyFaq']);
+    Route::post('/knowledge/faqs/{id}/delete', [KnowledgeFileController::class, 'destroyFaq']);
+    Route::post('/knowledge/save-terms', [KnowledgeFileController::class, 'saveTerms']);
+    Route::post('/knowledge/save-ai-prompt', [KnowledgeFileController::class, 'saveAiPrompt']);
     Route::post('/api/simulator/chat', [KnowledgeFileController::class, 'simulateChat']);
 
     Route::get('/api/chats', [ChatController::class, 'getChats']);

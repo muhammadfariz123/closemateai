@@ -489,10 +489,10 @@
                 </div>
                 
                 <div style="font-weight: 500; font-size: 14px; margin-bottom: 8px; margin-top: 20px;">Google Calendar iCal URL (.ics)</div>
-                <input type="text" class="form-control" placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" style="margin-bottom: 8px;">
+                <input type="text" id="google_calendar_url" class="form-control" placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" value="{{ $user->google_calendar_url ?? '' }}" style="margin-bottom: 8px;">
                 <div class="kb-card-desc">Buka Google Calendar &rarr; Settings &rarr; Pengaturan Kalender Anda &rarr; Integrasikan Kalender &rarr; Salin "Alamat rahasia dalam format iCal".</div>
                 
-                <button class="btn btn-secondary" style="margin-top: 12px;"><i class="fa-regular fa-floppy-disk"></i> Simpan Kalender</button>
+                <button type="button" class="btn btn-secondary" onclick="saveCalendar()" style="margin-top: 12px;"><i class="fa-regular fa-floppy-disk"></i> Simpan Kalender</button>
             </div>
         </div>
 
@@ -501,66 +501,30 @@
             <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 20px;">
                 <div style="position: relative; width: 60%;">
                     <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 16px; top: 12px; color: var(--text-muted);"></i>
-                    <input type="text" class="form-control" placeholder="Cari pertanyaan..." style="padding-left: 40px;">
+                    <input type="text" id="faq_search_input" class="form-control" placeholder="Cari pertanyaan..." style="padding-left: 40px;" oninput="filterFaqs()">
                 </div>
-                <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add New FAQ</button>
+                <button type="button" class="btn btn-primary" onclick="openAddFaqModal()"><i class="fa-solid fa-plus"></i> Add New FAQ</button>
             </div>
 
-            <!-- FAQ Items -->
-            <div class="faq-item expanded">
-                <div class="faq-header" onclick="this.parentElement.classList.toggle('expanded')">
-                    <div>Berapa DP untuk booking tanggal? <span class="faq-badge">Payment</span></div>
-                    <i class="fa-solid fa-chevron-down" style="transition: 0.2s;"></i>
-                </div>
-                <div class="faq-body">
-                    <p>DP sebesar 30% dari total paket untuk mengunci tanggal acara.</p>
-                    <div class="faq-actions">
-                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;"><i class="fa-solid fa-pen"></i> Edit</button>
-                        <button class="btn btn-danger-outline" style="padding: 6px 12px; font-size: 12px;"><i class="fa-regular fa-trash-can"></i> Hapus</button>
+            <!-- FAQ Items List Container -->
+            <div id="faq_list_container">
+                @forelse($faqs ?? [] as $faq)
+                <div class="faq-item" data-id="{{ $faq->id }}" data-category="{{ $faq->category }}" data-question="{{ strtolower($faq->question) }}" data-answer="{{ strtolower($faq->answer) }}">
+                    <div class="faq-header" onclick="this.parentElement.classList.toggle('expanded')">
+                        <div><span class="faq-question-text">{{ $faq->question }}</span> <span class="faq-badge">{{ $faq->category }}</span></div>
+                        <i class="fa-solid fa-chevron-down" style="transition: 0.2s;"></i>
+                    </div>
+                    <div class="faq-body">
+                        <p class="faq-answer-text">{{ $faq->answer }}</p>
+                        <div class="faq-actions">
+                            <button type="button" class="btn btn-secondary" onclick="openEditFaqModal({{ $faq->id }})" style="padding: 6px 12px; font-size: 12px;"><i class="fa-solid fa-pen"></i> Edit</button>
+                            <button type="button" class="btn btn-danger-outline" onclick="deleteFaq({{ $faq->id }})" style="padding: 6px 12px; font-size: 12px;"><i class="fa-regular fa-trash-can"></i> Hapus</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-header" onclick="this.parentElement.classList.toggle('expanded')">
-                    <div>Apakah bisa reschedule? <span class="faq-badge">Schedule</span></div>
-                    <i class="fa-solid fa-chevron-down" style="transition: 0.2s;"></i>
-                </div>
-                <div class="faq-body">
-                    <p>Bisa 1x reschedule maksimal H-60 sebelum acara tanpa biaya tambahan.</p>
-                    <div class="faq-actions">
-                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;"><i class="fa-solid fa-pen"></i> Edit</button>
-                        <button class="btn btn-danger-outline" style="padding: 6px 12px; font-size: 12px;"><i class="fa-regular fa-trash-can"></i> Hapus</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-header" onclick="this.parentElement.classList.toggle('expanded')">
-                    <div>Apakah melayani luar kota? <span class="faq-badge">Location</span></div>
-                    <i class="fa-solid fa-chevron-down" style="transition: 0.2s;"></i>
-                </div>
-                <div class="faq-body">
-                    <p>Ya, dengan biaya transport & akomodasi tim ditanggung klien.</p>
-                    <div class="faq-actions">
-                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;"><i class="fa-solid fa-pen"></i> Edit</button>
-                        <button class="btn btn-danger-outline" style="padding: 6px 12px; font-size: 12px;"><i class="fa-regular fa-trash-can"></i> Hapus</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-header" onclick="this.parentElement.classList.toggle('expanded')">
-                    <div>Berapa lama file jadi? <span class="faq-badge">General</span></div>
-                    <i class="fa-solid fa-chevron-down" style="transition: 0.2s;"></i>
-                </div>
-                <div class="faq-body">
-                    <p>Foto edit 14 hari kerja, video cinematic 30 hari kerja.</p>
-                    <div class="faq-actions">
-                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;"><i class="fa-solid fa-pen"></i> Edit</button>
-                        <button class="btn btn-danger-outline" style="padding: 6px 12px; font-size: 12px;"><i class="fa-regular fa-trash-can"></i> Hapus</button>
-                    </div>
-                </div>
+                @empty
+                <div id="faq_empty_msg" style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px;">Belum ada FAQ. Klik "Add New FAQ" untuk menambahkan.</div>
+                @endforelse
             </div>
         </div>
 
@@ -751,13 +715,9 @@
                 <div class="kb-card-title">Terms & Conditions</div>
                 <div class="kb-card-desc">Dikutip AI saat klien menanyakan aturan booking & pembatalan.</div>
                 
-                <textarea class="form-control" style="background: white; border: 1px solid #e1e1e4; margin-bottom: 16px;">1. Booking tanggal dianggap sah setelah DP 30% diterima.
-2. Pelunasan dilakukan maksimal H-7 sebelum acara.
-3. DP tidak dapat dikembalikan, namun dapat dipindah 1x reschedule (maks. H-60).
-4. Biaya transport & akomodasi tim di luar Jabodetabek ditanggung klien.
-5. File mentah (RAW) tidak diberikan kecuali ada kesepakatan tertulis.</textarea>
+                <textarea id="default_terms_input" class="form-control" style="background: white; border: 1px solid #e1e1e4; margin-bottom: 16px; min-height: 180px;">{{ $user->default_terms ?? "1. Booking tanggal dianggap sah setelah DP 30% diterima.\n2. Pelunasan dilakukan maksimal H-7 sebelum acara.\n3. DP tidak dapat dikembalikan, namun dapat dipindah 1x reschedule (maks. H-60).\n4. Biaya transport & akomodasi tim di luar Jabodetabek ditanggung klien.\n5. File mentah (RAW) tidak diberikan kecuali ada kesepakatan tertulis." }}</textarea>
 
-                <button class="btn btn-primary"><i class="fa-regular fa-floppy-disk"></i> Save Changes</button>
+                <button type="button" class="btn btn-primary" onclick="saveTerms()"><i class="fa-regular fa-floppy-disk"></i> Save Changes</button>
             </div>
         </div>
 
@@ -775,60 +735,54 @@
                         </div>
                     </div>
                     <div class="d-flex gap-2">
-                        <span class="prompt-badge active" onclick="loadPrompt('casual', this)"><i class="fa-solid fa-wand-magic-sparkles"></i> Casual</span>
-                        <span class="prompt-badge" onclick="loadPrompt('friendly', this)"><i class="fa-solid fa-wand-magic-sparkles"></i> Friendly</span>
-                        <span class="prompt-badge" onclick="loadPrompt('jaksel', this)"><i class="fa-solid fa-wand-magic-sparkles"></i> Jaksel</span>
+                        @php $curType = $user->ai_personality_type ?: 'casual'; @endphp
+                        <span class="prompt-badge {{ $curType === 'casual' ? 'active' : '' }}" onclick="loadPrompt('casual', this)"><i class="fa-solid fa-wand-magic-sparkles"></i> Casual</span>
+                        <span class="prompt-badge {{ $curType === 'friendly' ? 'active' : '' }}" onclick="loadPrompt('friendly', this)"><i class="fa-solid fa-wand-magic-sparkles"></i> Friendly</span>
+                        <span class="prompt-badge {{ $curType === 'jaksel' ? 'active' : '' }}" onclick="loadPrompt('jaksel', this)"><i class="fa-solid fa-wand-magic-sparkles"></i> Jaksel</span>
                     </div>
                 </div>
                 
                 <div style="font-weight: 600; font-size: 14px; margin-bottom: 12px; color: var(--text-dark);">Special Instructions</div>
-                <textarea id="ai-prompt-textarea" class="form-control" style="background: white; border: 1px solid #e1e1e4; margin-bottom: 16px; min-height: 250px;">[PROFIL VENDOR]
-- Nama Bisnis/Vendor : 
-- Alamat Lengkap    : 
-- Jenis Jasa :
-
-[PERAN & PERSONA]
-- Kamu adalah [NAMA KAMU] Admin CS resmi dari [NAMA BRAND ANDA] yang sedang membalas chat secara live langsung dari HP/Smartphone.
-- Karakter: Ramah, santai, ekspresif khas anak muda/Gen-Z, sangat membantu, dan mengobrol seperti admin manusia asli (bukan bot otomatis).
-- Gaya Ketikan: Alami khas obrolan WhatsApp, menggunakan gaya bahasa santai dan beberapa ketikan singkatan wajar agar terasa real & humanis.
-
-[GAYA BAHASA & TONE OF VOICE]
-1. Nada Bicara: Santai, ramah, hangat, dan mengalir seperti mengobrol dengan teman.
-2. Kata Ganti Orang (WAJIB):
-- Diri sendiri : "Aku"
-- Calon klien : "Kak" atau "Kakak"
-- DILARANG KERAS menggunakan kata: "Kamu", "Saya", "Anda", "Kami", "Mimin", atau "Bro/Sist".
-3. Ketikan Singkatan WhatsApp (NATURAL CHAT ABBREVIATIONS):
-- Gunakan singkatan-singkatan ringan khas ketikan HP secara alami:
-* "yg" (yang)
-* "utk" (untuk)
-* "bgt" (banget)
-* "udh" / "sdh" (udah/sudah)
-* "tp" (tapi)
-* "dr" (dari)
-* "dgn" (dengan)
-* "krn" (karena)
-* "klo" (kalau)
-* "gak" / "nggak" (tidak)
-- LARANGAN SINGKATAN: DILARANG mengaburkan atau menyingkat Nama Klien, Nama Paket, Angka Harga, dan Tanggal Acara.
-
-[GAYA TULISAN & FORMAT]
-- Tulis dalam paragraf pendek (1-2 kalimat per paragraf).
-- Gunakan huruf kecil di beberapa kata penyambung agar terkesan mengetik cepat di HP.
-- Boleh menggunakan perpanjangan vokal ramah (contoh: "yaaa", "ajaah", "bgt").
-- Sisipkan 1-2 emoji ramah per balasan (✨, 😊, 🫶, 🥹).
-
-[SAPAAN AWAL (GREETING)]
-- Jika klien hanya menyapa ("Halo", "P", "Selamat pagi", "Permisi"): Balas sapaan sesuai dengan gaya bahasa.
-
-BATASAN & KEAMANAN (GUARDRAILS & HUMAN TAKEOVER)
-- DILARANG KERAS berhalusinasi/membuat-buat harga, nama tempat, atau diskon yang tidak ada di Knowledge Base.
-- NEGOSIASI & CUSTOM PACKAGE: Jika klien menawar harga atau meminta paket kustom di luar ketentuan
-- Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virtual, bilang saja memang kecepatan merespon sudah menjadi SOP wajib.</textarea>
+                <textarea id="ai-prompt-textarea" class="form-control" style="background: white; border: 1px solid #e1e1e4; margin-bottom: 16px; min-height: 280px;">{{ $user->ai_prompt ?: \App\Services\AiBrainService::getDefaultPrompt($curType) }}</textarea>
                 
-                <button class="btn btn-primary"><i class="fa-regular fa-floppy-disk"></i> Save AI Settings</button>
+                <button type="button" class="btn btn-primary" onclick="saveAiPrompt()"><i class="fa-regular fa-floppy-disk"></i> Save AI Settings</button>
             </div>
         </div>
+    </div>
+
+    <!-- Modal Add / Edit FAQ (Matching Reference Images) -->
+    <div id="faqModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 16px; padding: 24px; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 id="faqModalTitle" style="font-size: 18px; font-weight: 700; color: #181c32;">Edit FAQ</h3>
+                <button type="button" onclick="closeFaqModal()" style="background: none; border: none; font-size: 18px; color: #a1a5b7; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="faqForm" onsubmit="saveFaqSubmit(event)">
+                <input type="hidden" id="faq_id" value="">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="font-size: 13px; font-weight: 600; color: #181c32; display: block; margin-bottom: 8px;">Question</label>
+                    <input type="text" id="faq_question" class="form-control" placeholder="Berapa DP untuk booking tanggal?" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="font-size: 13px; font-weight: 600; color: #181c32; display: block; margin-bottom: 8px;">Answer</label>
+                    <textarea id="faq_answer" class="form-control" style="min-height: 100px;" placeholder="DP sebesar 30% dari total paket untuk mengunci tanggal acara." required></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label style="font-size: 13px; font-weight: 600; color: #181c32; display: block; margin-bottom: 8px;">Category</label>
+                    <select id="faq_category" class="form-control">
+                        <option value="Payment">Payment</option>
+                        <option value="Schedule">Schedule</option>
+                        <option value="Location">Location</option>
+                        <option value="General">General</option>
+                    </select>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeFaqModal()" style="padding: 10px 20px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveFaq" style="padding: 10px 22px;">Save FAQ</button>
+                </div>
+            </form>
+        </div>
+    </div>
     </div>
 
     <!-- Floating Widgets -->
@@ -1239,7 +1193,10 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
             });
         }
 
+        let currentActivePromptType = '{{ $user->ai_personality_type ?: "casual" }}';
+
         function loadPrompt(type, element) {
+            currentActivePromptType = type;
             // Update UI Active State
             document.querySelectorAll('.prompt-badge').forEach(b => b.classList.remove('active'));
             element.classList.add('active');
@@ -1250,6 +1207,189 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
             // Show Toast Notification
             const typeName = type.charAt(0).toUpperCase() + type.slice(1);
             showToast(`Template ${typeName} dimuat. Jangan lupa simpan.`);
+        }
+
+        function saveAiPrompt() {
+            const promptText = document.getElementById('ai-prompt-textarea').value;
+            $.post('/knowledge/save-ai-prompt', {
+                ai_prompt: promptText,
+                ai_personality_type: currentActivePromptType
+            }, function(res) {
+                if(res.success) {
+                    showToast(res.message);
+                } else {
+                    alert(res.message);
+                }
+            }).fail(function(xhr) {
+                alert("Error: " + xhr.responseText);
+            });
+        }
+
+        function saveCalendar() {
+            const url = document.getElementById('google_calendar_url').value.trim();
+            $.post('/knowledge/save-calendar', { google_calendar_url: url }, function(res) {
+                if(res.success) {
+                    showToast(res.message);
+                } else {
+                    alert(res.message);
+                }
+            }).fail(function(xhr) {
+                alert("Error: " + xhr.responseText);
+            });
+        }
+
+        function saveTerms() {
+            const text = document.getElementById('default_terms_input').value;
+            $.post('/knowledge/save-terms', { default_terms: text }, function(res) {
+                if(res.success) {
+                    showToast(res.message);
+                } else {
+                    alert(res.message);
+                }
+            }).fail(function(xhr) {
+                alert("Error: " + xhr.responseText);
+            });
+        }
+
+        // --- FAQ MANAGER (MATCHING REFERENCE IMAGES) ---
+        let currentFaqsData = @json($faqs ?? []);
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function renderFaqList() {
+            const container = document.getElementById('faq_list_container');
+            if (!container) return;
+            
+            if (!currentFaqsData || currentFaqsData.length === 0) {
+                container.innerHTML = `<div id="faq_empty_msg" style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px;">Belum ada FAQ. Klik "Add New FAQ" untuk menambahkan.</div>`;
+                return;
+            }
+
+            let html = '';
+            currentFaqsData.forEach(faq => {
+                html += `
+                <div class="faq-item" data-id="${faq.id}" data-category="${escapeHtml(faq.category || 'General')}" data-question="${escapeHtml((faq.question || '').toLowerCase())}" data-answer="${escapeHtml((faq.answer || '').toLowerCase())}">
+                    <div class="faq-header" onclick="this.parentElement.classList.toggle('expanded')">
+                        <div><span class="faq-question-text">${escapeHtml(faq.question)}</span> <span class="faq-badge">${escapeHtml(faq.category || 'General')}</span></div>
+                        <i class="fa-solid fa-chevron-down" style="transition: 0.2s;"></i>
+                    </div>
+                    <div class="faq-body">
+                        <p class="faq-answer-text">${escapeHtml(faq.answer)}</p>
+                        <div class="faq-actions">
+                            <button type="button" class="btn btn-secondary" onclick="openEditFaqModal(${faq.id})" style="padding: 6px 12px; font-size: 12px;"><i class="fa-solid fa-pen"></i> Edit</button>
+                            <button type="button" class="btn btn-danger-outline" onclick="deleteFaq(${faq.id})" style="padding: 6px 12px; font-size: 12px;"><i class="fa-regular fa-trash-can"></i> Hapus</button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function openAddFaqModal() {
+            document.getElementById('faqModalTitle').innerText = 'Add New FAQ';
+            document.getElementById('faq_id').value = '';
+            document.getElementById('faq_question').value = '';
+            document.getElementById('faq_answer').value = '';
+            document.getElementById('faq_category').value = 'General';
+            document.getElementById('faqModal').style.display = 'flex';
+        }
+
+        function openEditFaqModal(id) {
+            const faq = currentFaqsData.find(f => f.id == id);
+            if (!faq) return;
+            document.getElementById('faqModalTitle').innerText = 'Edit FAQ';
+            document.getElementById('faq_id').value = faq.id;
+            document.getElementById('faq_question').value = faq.question;
+            document.getElementById('faq_answer').value = faq.answer;
+            document.getElementById('faq_category').value = faq.category || 'General';
+            document.getElementById('faqModal').style.display = 'flex';
+        }
+
+        function closeFaqModal() {
+            document.getElementById('faqModal').style.display = 'none';
+        }
+
+        function saveFaqSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('faq_id').value;
+            const question = document.getElementById('faq_question').value.trim();
+            const answer = document.getElementById('faq_answer').value.trim();
+            const category = document.getElementById('faq_category').value;
+
+            const btn = document.getElementById('btnSaveFaq');
+            btn.disabled = true;
+
+            if (id) {
+                // Edit
+                $.post(`/knowledge/faqs/${id}/update`, { question, answer, category }, function(res) {
+                    btn.disabled = false;
+                    if (res.success) {
+                        const idx = currentFaqsData.findIndex(f => f.id == id);
+                        if (idx !== -1) currentFaqsData[idx] = res.data;
+                        renderFaqList();
+                        closeFaqModal();
+                        showToast(res.message || 'FAQ diperbarui');
+                    } else {
+                        alert(res.message);
+                    }
+                }).fail(function(xhr) {
+                    btn.disabled = false;
+                    alert("Error: " + xhr.responseText);
+                });
+            } else {
+                // Add
+                $.post('/knowledge/faqs', { question, answer, category }, function(res) {
+                    btn.disabled = false;
+                    if (res.success) {
+                        currentFaqsData.push(res.data);
+                        renderFaqList();
+                        closeFaqModal();
+                        showToast(res.message || 'FAQ berhasil ditambahkan');
+                    } else {
+                        alert(res.message);
+                    }
+                }).fail(function(xhr) {
+                    btn.disabled = false;
+                    alert("Error: " + xhr.responseText);
+                });
+            }
+        }
+
+        function deleteFaq(id) {
+            if (!confirm('Hapus pertanyaan FAQ ini?')) return;
+            $.post(`/knowledge/faqs/${id}/delete`, function(res) {
+                if (res.success) {
+                    currentFaqsData = currentFaqsData.filter(f => f.id != id);
+                    renderFaqList();
+                    showToast(res.message || 'FAQ berhasil dihapus');
+                } else {
+                    alert(res.message);
+                }
+            }).fail(function(xhr) {
+                alert("Error: " + xhr.responseText);
+            });
+        }
+
+        function filterFaqs() {
+            const q = (document.getElementById('faq_search_input')?.value || '').toLowerCase().trim();
+            document.querySelectorAll('#faq_list_container .faq-item').forEach(item => {
+                const question = item.getAttribute('data-question') || '';
+                const answer = item.getAttribute('data-answer') || '';
+                const category = (item.getAttribute('data-category') || '').toLowerCase();
+                if (!q || question.includes(q) || answer.includes(q) || category.includes(q)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
         }
 
         function showToast(message) {

@@ -47,6 +47,9 @@ class User extends Authenticatable
         'bank_account_number',
         'bank_account_name',
         'default_terms',
+        'google_calendar_url',
+        'ai_prompt',
+        'ai_personality_type',
     ];
 
     /**
@@ -74,5 +77,10 @@ class User extends Authenticatable
             'ai_require_data_before_price' => 'boolean',
             'ai_required_data' => 'array',
         ];
+    }
+
+    public function faqs()
+    {
+        return $this->hasMany(Faq::class)->orderBy('sort_order', 'asc')->orderBy('id', 'asc');
     }
 }

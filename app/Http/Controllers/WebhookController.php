@@ -164,59 +164,8 @@ class WebhookController extends Controller
 
     private function generateAiReply($user, $chat, $incomingMessage)
     {
-        $file = KnowledgeFile::where('user_id', $user->id)->latest()->first();
-        $knowledge = $file ? $file->extracted_text : 'Tidak ada data price list / katalog.';
-        
-        $aiRequireData = $user->ai_require_data_before_price ?? true;
-        $aiRequiredDataList = is_array($user->ai_required_data) ? $user->ai_required_data : [];
-        $customQuestions = $user->ai_custom_questions ?? '';
-        
-        $links = json_decode((string)($user->price_list_links ?? '[]'), true);
-        $formattedLinks = "";
-        if (!empty($links)) {
-            foreach ($links as $link) {
-                $title = $link['title'] ?: 'Link Price List';
-                $url = $link['url'] ?: '#';
-                $formattedLinks .= "{$title}: {$url}\n";
-            }
-        } else {
-            $formattedLinks = $file ? asset('storage/' . $file->file_path) : '[Link Price List belum diatur]';
-        }
-
-        $priceListRule = "";
-        if ($aiRequireData) {
-            $requirementsText = implode(', ', $aiRequiredDataList);
-            if ($customQuestions) {
-                $customQuestionsStr = str_replace("\n", ", ", trim($customQuestions));
-                $requirementsText .= ($requirementsText ? ', dan ' : '') . "($customQuestionsStr)";
-            }
-            if (empty($requirementsText)) {
-                $requirementsText = "Nama dan Detail Acara";
-            }
-
-            $priceListRule = "4. Jika klien meminta Price List (PL), JANGAN langsung mengirim isi pricelist atau file/link-nya. Kamu HARUS menggali informasi berikut ini terlebih dahulu dari klien: [{$requirementsText}].\n"
-                . "   Balaslah dengan gaya SEPERTI INI:\n"
-                . "   \"Halo Kak {$chat->client_name}! 😊\n\nBoleh banget Kak, dengan senang hati. Untuk keperluan pengiriman detailnya, boleh dibantu informasikan {$requirementsText} ya Kak? Supaya aku bisa sesuaikan informasinya buat Kakak. ✨\"\n";
-        } else {
-            $priceListRule = "4. Jika klien meminta Price List (PL), BERIKAN link file price list berikut ini SECARA LANGSUNG:\n{$formattedLinks}\n"
-                . "   Lalu di akhir pesan tanyakan detail acara dengan sopan.\n";
-        }
-
-        $systemPrompt = "Kamu adalah asisten WhatsApp yang sangat cerdas, ramah, natural, dan asik bernama CloseMateAI, mewakili bisnis '{$user->business_name}'.\n"
-            . "Tugas utamamu adalah melayani klien bernama '{$chat->client_name}' berdasarkan KNOWLEDGE BASE di bawah ini.\n"
-            . "Namun, kamu juga harus BISA NGOBROL dengan santai dan merespon konteks obrolan klien dengan sangat NYAMBUNG (meskipun klien ngajak bercanda atau ngobrol di luar topik).\n\n"
-            . "-- KNOWLEDGE BASE MULAI --\n"
-            . "{$knowledge}\n"
-            . "-- KNOWLEDGE BASE SELESAI --\n\n"
-            . "ATURAN PENTING (HARUS DIIKUTI):\n"
-            . "1. Jawablah dengan gaya bahasa WhatsApp yang LUWES, SANTAI, tidak kaku, dan layaknya manusia asli yang asik diajak ngobrol. Gunakan bahasa gaul/sehari-hari jika klien juga menggunakannya.\n"
-            . "2. Fokus merespon ucapan klien terakhir. JANGAN mengulang-ulang sapaan atau ucapan 'semoga harinya menyenangkan' di setiap pesan! Jadilah responsif terhadap konteks chat.\n"
-            . "3. Gunakan sapaan 'aku' untuk dirimu dan panggil klien dengan sopan (misal: 'Kak {$chat->client_name}').\n"
-            . "4. Gunakan emoji secukupnya agar chat terlihat hidup. 😊\n"
-            . $priceListRule
-            . "6. JANGAN mengarang harga/paket yang tidak ada di Knowledge Base.\n"
-            . "7. Berikan respon yang singkat dan padat (1-2 paragraf saja) layaknya chatting biasa, jangan membuat artikel panjang.\n"
-            . "8. Jika klien memberikan informasi acara (seperti tanggal, lokasi, dll), hargai itu dan JANGAN mengomentari tanggalnya ('wah masih lama ya' dll). Cukup balas secara profesional tapi ramah seperti: 'Oiya Kak, sudah aku catat ya detailnya! ✨' lalu berikan apa yang mereka butuhkan.";
+        $clientName = $chat->client_name ?: 'Klien';
+        $systemPrompt = \App\Services\AiBrainService::buildSystemPrompt($user, $clientName);
 
         // Ambil history chat agar AI mengerti konteks
         $messages = Message::where('chat_id', $chat->id)->orderBy('created_at', 'asc')->take(10)->get();

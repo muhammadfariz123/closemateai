@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\KnowledgeFile;
+use App\Models\Faq;
+use App\Services\AiBrainService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -18,8 +20,186 @@ class KnowledgeFileController extends Controller
             return redirect('/');
         }
         $file = KnowledgeFile::where('user_id', $user->id)->latest()->first();
+
+        // Seed default FAQs if user has none
+        if ($user->faqs()->count() === 0) {
+            $defaultFaqs = [
+                [
+                    'question' => 'Berapa DP untuk booking tanggal?',
+                    'answer' => 'DP sebesar 30% dari total paket untuk mengunci tanggal acara.',
+                    'category' => 'Payment',
+                    'sort_order' => 1
+                ],
+                [
+                    'question' => 'Apakah bisa reschedule?',
+                    'answer' => 'Bisa 1x reschedule maksimal H-60 sebelum acara tanpa biaya tambahan.',
+                    'category' => 'Schedule',
+                    'sort_order' => 2
+                ],
+                [
+                    'question' => 'Apakah melayani luar kota?',
+                    'answer' => 'Ya, dengan biaya transport & akomodasi tim ditanggung klien.',
+                    'category' => 'Location',
+                    'sort_order' => 3
+                ],
+                [
+                    'question' => 'Berapa lama file jadi?',
+                    'answer' => 'Foto edit 14 hari kerja, video cinematic 30 hari kerja.',
+                    'category' => 'General',
+                    'sort_order' => 4
+                ],
+            ];
+            foreach ($defaultFaqs as $df) {
+                $user->faqs()->create($df);
+            }
+        }
+
+        $faqs = $user->faqs()->get();
+
+        if (empty($user->default_terms)) {
+            $user->default_terms = "1. Booking tanggal dianggap sah setelah DP 30% diterima.\n2. Pelunasan dilakukan maksimal H-7 sebelum acara.\n3. DP tidak dapat dikembalikan, namun dapat dipindah 1x reschedule (maks. H-60).\n4. Biaya transport & akomodasi tim di luar Jabodetabek ditanggung klien.\n5. File mentah (RAW) tidak diberikan kecuali ada kesepakatan tertulis.";
+            $user->save();
+        }
+
+        if (empty($user->ai_prompt)) {
+            $user->ai_prompt = AiBrainService::getDefaultPrompt($user->ai_personality_type ?: 'casual');
+            $user->save();
+        }
         
-        return view('knowledge', compact('file', 'user'));
+        return view('knowledge', compact('file', 'user', 'faqs'));
+    }
+
+    public function saveCalendar(Request $request)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+        }
+
+        $url = trim((string)$request->input('google_calendar_url'));
+        $user->google_calendar_url = $url;
+        $user->save();
+
+        if ($url) {
+            cache()->forget('gcal_events_' . md5($url));
+        }
+
+        return response()->json(['success' => true, 'message' => 'Google Calendar berhasil disimpan']);
+    }
+
+    public function getFaqs()
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+        }
+
+        $faqs = $user->faqs()->get();
+        return response()->json(['success' => true, 'data' => $faqs]);
+    }
+
+    public function storeFaq(Request $request)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+        }
+
+        $request->validate([
+            'question' => 'required|string',
+            'answer' => 'required|string',
+        ]);
+
+        $maxOrder = $user->faqs()->max('sort_order') ?? 0;
+        $faq = $user->faqs()->create([
+            'question' => trim($request->input('question')),
+            'answer' => trim($request->input('answer')),
+            'category' => $request->input('category', 'General') ?: 'General',
+            'sort_order' => $maxOrder + 1,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'FAQ berhasil ditambahkan',
+            'data' => $faq
+        ]);
+    }
+
+    public function updateFaq(Request $request, $id)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+        }
+
+        $request->validate([
+            'question' => 'required|string',
+            'answer' => 'required|string',
+        ]);
+
+        $faq = $user->faqs()->find($id);
+        if (!$faq) {
+            return response()->json(['success' => false, 'message' => 'FAQ tidak ditemukan'], 404);
+        }
+
+        $faq->update([
+            'question' => trim($request->input('question')),
+            'answer' => trim($request->input('answer')),
+            'category' => $request->input('category', 'General') ?: 'General',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'FAQ diperbarui',
+            'data' => $faq
+        ]);
+    }
+
+    public function destroyFaq($id)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+        }
+
+        $faq = $user->faqs()->find($id);
+        if (!$faq) {
+            return response()->json(['success' => false, 'message' => 'FAQ tidak ditemukan'], 404);
+        }
+
+        $faq->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'FAQ berhasil dihapus'
+        ]);
+    }
+
+    public function saveTerms(Request $request)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+        }
+
+        $user->default_terms = $request->input('default_terms', '');
+        $user->save();
+
+        return response()->json(['success' => true, 'message' => 'Terms & Conditions berhasil disimpan']);
+    }
+
+    public function saveAiPrompt(Request $request)
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+        }
+
+        $user->ai_prompt = $request->input('ai_prompt');
+        $user->ai_personality_type = $request->input('ai_personality_type', 'casual');
+        $user->save();
+
+        return response()->json(['success' => true, 'message' => 'Pengaturan AI berhasil disimpan']);
     }
 
     public function saveAiLimits(Request $request)
@@ -397,60 +577,7 @@ class KnowledgeFileController extends Controller
                 return response()->json(['success' => false, 'message' => 'API Key belum diatur di .env']);
             }
 
-            $file = KnowledgeFile::where('user_id', $user->id)->latest()->first();
-            $knowledge = $file ? $file->extracted_text : 'Tidak ada data price list / katalog.';
-
-            // Dynamic Rules based on User Settings
-            $aiRequireData = $user->ai_require_data_before_price ?? true;
-            $aiRequiredDataList = is_array($user->ai_required_data) ? $user->ai_required_data : [];
-            $customQuestions = $user->ai_custom_questions ?? '';
-            
-            $links = json_decode((string)($user->price_list_links ?? '[]'), true);
-            $formattedLinks = "";
-            if (!empty($links)) {
-                foreach ($links as $link) {
-                    $title = $link['title'] ?: 'Link Price List';
-                    $url = $link['url'] ?: '#';
-                    $formattedLinks .= "{$title}: {$url}\n";
-                }
-            } else {
-                $formattedLinks = $file ? asset('storage/' . $file->file_path) : '[Link Price List belum diatur]';
-            }
-            
-            $priceListRule = "";
-            if ($aiRequireData) {
-                $requirementsText = implode(', ', $aiRequiredDataList);
-                if ($customQuestions) {
-                    $customQuestionsStr = str_replace("\n", ", ", trim($customQuestions));
-                    $requirementsText .= ($requirementsText ? ', dan ' : '') . "($customQuestionsStr)";
-                }
-                if (empty($requirementsText)) {
-                    $requirementsText = "Nama dan Detail Acara"; // Fallback
-                }
-
-                $priceListRule = "4. Jika klien meminta Price List (PL), JANGAN langsung mengirim isi pricelist atau file/link-nya. Kamu HARUS menggali informasi berikut ini terlebih dahulu dari klien: [{$requirementsText}].\n"
-                    . "   Balaslah dengan gaya SEPERTI INI:\n"
-                    . "   \"Halo Kak {$clientName}! 😊\n\nBoleh banget Kak, dengan senang hati. Untuk keperluan pengiriman detailnya, boleh dibantu informasikan {$requirementsText} ya Kak? Supaya aku bisa sesuaikan informasinya buat Kakak. ✨\"\n";
-            } else {
-                // Modus Cepat
-                $priceListRule = "4. Jika klien meminta Price List (PL), BERIKAN link file price list berikut ini SECARA LANGSUNG:\n{$formattedLinks}\n"
-                    . "   Lalu di akhir pesan tanyakan detail acara dengan sopan.\n"
-                    . "   Balaslah dengan gaya SEPERTI INI:\n"
-                    . "   \"Halo Kak {$clientName}! Dengan senang hati, ini aku kirimkan ya link price list lengkapnya untuk dipelajari dulu:\n\n{$formattedLinks}\n\nBoleh bantu aku dengan info Nama, Tanggal, dan Lokasi acaranya ya Kak? Supaya aku bisa cek ketersediaan tim kami di tanggal tersebut. 😊\"\n";
-            }
-
-            $systemPrompt = "Kamu adalah asisten CS (Customer Service) WhatsApp yang sangat ramah, natural, dan luwes bernama CloseMateAI, mewakili bisnis '{$user->business_name}'.\n"
-                . "Tugasmu adalah menjawab pesan dari calon klien bernama '{$clientName}' berdasarkan KNOWLEDGE BASE berikut ini:\n\n"
-                . "-- KNOWLEDGE BASE MULAI --\n"
-                . "{$knowledge}\n"
-                . "-- KNOWLEDGE BASE SELESAI --\n\n"
-                . "ATURAN PENTING:\n"
-                . "1. Jawablah dengan bahasa Indonesia yang sangat natural, santai, sopan, layaknya manusia biasa chatting di WhatsApp. Jangan kaku atau seperti robot.\n"
-                . "2. Gunakan sapaan 'aku' untuk dirimu dan 'Kak {$clientName}' untuk klien.\n"
-                . "3. Selalu sisipkan 1-2 emoji yang ramah (contoh: 😊, ✨, 🙏).\n"
-                . $priceListRule
-                . "5. JANGAN memberikan harga atau paket yang tidak ada di Knowledge Base.\n"
-                . "6. Balaslah hanya sebagai respon untuk pesan klien, jangan tambahkan embel-embel format aneh.";
+            $systemPrompt = AiBrainService::buildSystemPrompt($user, $clientName);
 
             $groqApiKey = env('GROQ_API_KEY');
 
