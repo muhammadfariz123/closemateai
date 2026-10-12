@@ -1654,35 +1654,34 @@
         </div>
 
         <!-- MODAL RIWAYAT PEMBAYARAN -->
-        <div id="paymentModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100000; align-items: center; justify-content: center;">
+        <div id="paymentModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100000; align-items: center; justify-content: center;" onclick="if(event.target === this) closePaymentModal()">
             <div style="background: white; width: 90%; max-width: 480px; border-radius: 16px; padding: 26px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); position: relative;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
                     <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #181c32;">Riwayat Pembayaran — <span id="paymentModalInvNo">INV-202610-001</span></h3>
                     <i class="fa-solid fa-xmark" style="cursor: pointer; color: #a1a5b7; font-size: 16px; padding: 4px;" onclick="closePaymentModal()"></i>
                 </div>
                 <div style="font-size: 13px; color: #64748b; margin-bottom: 20px;" id="paymentModalSubtitle">
-                    Total Rp 0 &middot; Terbayar Rp 0 &middot; Sisa Rp 0
+                    Total Rp 0 · Terbayar Rp 0 · Sisa Rp 0
                 </div>
 
-                <div id="paymentHistoryList" style="margin-bottom: 20px; max-height: 180px; overflow-y: auto;">
+                <div id="paymentHistoryList" style="margin-bottom: 20px; max-height: 220px; overflow-y: auto;">
                     <div style="text-align: center; padding: 20px; color: #a1a5b7; font-size: 13px;">Belum ada pembayaran tercatat.</div>
                 </div>
 
                 <form id="recordPaymentForm" onsubmit="submitRecordPayment(event)">
                     <input type="hidden" id="paymentInvoiceId">
                     <div class="form-group" style="margin-bottom: 12px;">
-                        <input type="text" id="inputPaymentNominal" class="form-control" placeholder="Nominal pembayaran" style="height: 44px; font-size: 14px; font-weight: 600; border-radius: 8px;" oninput="handleCurrencyInput(this)">
+                        <input type="text" id="inputPaymentNominal" class="form-control" placeholder="Nominal pembayaran" style="height: 44px; font-size: 14px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 14px; width: 100%; box-sizing: border-box;" oninput="handleCurrencyInput(this)">
                     </div>
                     <div class="form-row form-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px;">
-                        <div style="position: relative;">
-                            <input type="text" id="inputPaymentDate" class="form-control" placeholder="mm/dd/yyyy" style="height: 44px; font-size: 13px; border-radius: 8px; padding-right: 32px;">
-                            <i class="fa-regular fa-calendar" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #64748b; pointer-events: none;"></i>
+                        <div>
+                            <input type="date" id="inputPaymentDate" class="form-control" style="height: 44px; font-size: 13px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 12px; color: #1e293b; background: white; width: 100%; box-sizing: border-box;">
                         </div>
                         <div>
-                            <input type="text" id="inputPaymentNote" class="form-control" placeholder="Catatan (opsional)" style="height: 44px; font-size: 13px; border-radius: 8px;">
+                            <input type="text" id="inputPaymentNote" class="form-control" placeholder="Catatan (opsional)" style="height: 44px; font-size: 13px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 12px; width: 100%; box-sizing: border-box;">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; height: 46px; background: #6c5ce7; border-radius: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: white;">
+                    <button type="submit" id="btnSubmitPayment" style="width: 100%; height: 46px; background: #9d8ce8; border-radius: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: white; transition: background 0.15s;" onmouseover="this.style.background='#8c7ae6'" onmouseout="this.style.background='#9d8ce8'">
                         Catat Pembayaran
                     </button>
                 </form>
@@ -3722,26 +3721,22 @@ Terima kasih banyak! 🤍`;
         // --- Payment Recording Modal Handlers ---
         let currentPayingInvoice = null;
 
-        function openPaymentHistoryModal(invId) {
-            const inv = savedInvoicesData.find(i => String(i.id) === String(invId));
+        function updatePaymentModalHeaderAndSubtitle(inv) {
             if (!inv) return;
-            currentPayingInvoice = inv;
-
-            const modal = document.getElementById('paymentModal');
-            document.getElementById('paymentInvoiceId').value = inv.id;
-            document.getElementById('paymentModalInvNo').innerText = inv.invoice_number || 'INV';
-            
             const grandTotal = parseFloat(inv.grand_total || 0);
             const totalPaid = parseFloat(inv.total_dp || 0);
             const sisa = Math.max(0, grandTotal - totalPaid);
 
-            document.getElementById('paymentModalSubtitle').innerText = `Total Rp ${formatRupiah(grandTotal)} · Terbayar Rp ${formatRupiah(totalPaid)} · Sisa Rp ${formatRupiah(sisa)}`;
-            document.getElementById('inputPaymentNominal').value = sisa > 0 ? 'Rp ' + formatRupiah(sisa) : '';
-            
-            const now = new Date();
-            document.getElementById('inputPaymentDate').value = `${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}/${now.getFullYear()}`;
+            const subtitleEl = document.getElementById('paymentModalSubtitle');
+            if (subtitleEl) {
+                subtitleEl.innerHTML = `Total Rp ${formatRupiah(grandTotal)} · Terbayar Rp ${formatRupiah(totalPaid)} · Sisa Rp ${formatRupiah(sisa)}`;
+            }
+        }
 
+        function renderPaymentHistoryList(inv) {
             const listContainer = document.getElementById('paymentHistoryList');
+            if (!listContainer) return;
+
             let pHistory = [];
             if (Array.isArray(inv.payments)) {
                 pHistory = inv.payments;
@@ -3752,19 +3747,52 @@ Terima kasih banyak! 🤍`;
             if (pHistory.length > 0) {
                 let phtml = '';
                 pHistory.forEach((p, idx) => {
+                    const payId = p.id || idx;
+                    const amountVal = formatRupiah(p.amount || 0);
+                    const dateVal = p.date || '-';
+                    const noteVal = p.note ? ` · ${p.note}` : '';
                     phtml += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px; font-size: 13px;">
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
                         <div>
-                            <div style="font-weight: 600; color: #181c32;">Rp ${formatRupiah(p.amount || 0)}</div>
-                            <div style="font-size: 11px; color: #888;">${p.date || '-'} ${p.note ? `&bull; ${p.note}` : ''}</div>
+                            <div style="font-weight: 700; font-size: 15px; color: #1e293b;">Rp ${amountVal}</div>
+                            <div style="font-size: 12px; color: #94a3b8; margin-top: 3px;">${dateVal}${noteVal}</div>
                         </div>
-                        <span style="font-size: 11px; color: #10b981; font-weight: 600;">Berhasil</span>
+                        <button type="button" onclick="hapusPembayaran('${inv.id}', '${payId}')" title="${currentLang === 'en' ? 'Delete payment' : 'Hapus pembayaran'}" style="background: none; border: none; cursor: pointer; color: #94a3b8; padding: 6px; font-size: 15px; border-radius: 6px; transition: color 0.15s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
                     </div>`;
                 });
                 listContainer.innerHTML = phtml;
             } else {
-                listContainer.innerHTML = `<div style="text-align: center; padding: 20px; color: #a1a5b7; font-size: 13px;">Belum ada pembayaran tercatat.</div>`;
+                listContainer.innerHTML = `<div style="text-align: center; padding: 24px; color: #a1a5b7; font-size: 13px;">${currentLang === 'en' ? 'No payments recorded yet.' : 'Belum ada pembayaran tercatat.'}</div>`;
             }
+        }
+
+        function openPaymentHistoryModal(invId) {
+            const inv = savedInvoicesData.find(i => String(i.id) === String(invId) || String(i.invoice_number) === String(invId));
+            if (!inv) return;
+            currentPayingInvoice = inv;
+
+            const modal = document.getElementById('paymentModal');
+            document.getElementById('paymentInvoiceId').value = inv.id;
+            document.getElementById('paymentModalInvNo').innerText = inv.invoice_number || 'INV';
+            
+            updatePaymentModalHeaderAndSubtitle(inv);
+
+            // Default date to today (YYYY-MM-DD for native date input)
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const dateInput = document.getElementById('inputPaymentDate');
+            if (dateInput) {
+                dateInput.value = `${yyyy}-${mm}-${dd}`;
+            }
+
+            document.getElementById('inputPaymentNominal').value = '';
+            document.getElementById('inputPaymentNote').value = '';
+
+            renderPaymentHistoryList(inv);
 
             if (modal) modal.style.display = 'flex';
         }
@@ -3782,8 +3810,14 @@ Terima kasih banyak! 🤍`;
             const note = document.getElementById('inputPaymentNote').value;
 
             if (nominal <= 0) {
-                alert("Masukkan nominal pembayaran");
+                alert(currentLang === 'en' ? "Please enter a payment amount" : "Masukkan nominal pembayaran");
                 return;
+            }
+
+            const btnSubmit = document.getElementById('btnSubmitPayment');
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerText = currentLang === 'en' ? "Recording..." : "Mencatat...";
             }
 
             fetch(`/api/invoices/${invId}/record-payment`, {
@@ -3797,16 +3831,86 @@ Terima kasih banyak! 🤍`;
             })
             .then(res => res.json())
             .then(data => {
-                if (data.success) {
-                    showToastNotification("Pembayaran berhasil dicatat");
-                    closePaymentModal();
-                    loadSavedInvoicesTab();
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = "Catat Pembayaran";
+                }
+                if (data.success && data.invoice) {
+                    const updated = data.invoice;
+                    const idx = savedInvoicesData.findIndex(i => String(i.id) === String(invId) || String(i.invoice_number) === String(invId));
+                    if (idx !== -1) {
+                        savedInvoicesData[idx] = { ...savedInvoicesData[idx], ...updated };
+                        currentPayingInvoice = savedInvoicesData[idx];
+                    } else {
+                        currentPayingInvoice = updated;
+                    }
+
+                    // Realtime modal update (keep modal open matching screenshot)
+                    updatePaymentModalHeaderAndSubtitle(currentPayingInvoice);
+                    renderPaymentHistoryList(currentPayingInvoice);
+
+                    // Clear nominal and note inputs
+                    document.getElementById('inputPaymentNominal').value = '';
+                    document.getElementById('inputPaymentNote').value = '';
+
+                    // Update background list
+                    filterSavedInvoices();
+
+                    // Show toast notification
+                    showToastNotification(currentLang === 'en' ? "Payment recorded" : "Pembayaran tercatat");
                 } else {
-                    alert(data.error || "Gagal mencatat pembayaran");
+                    alert(data.error || (currentLang === 'en' ? "Failed to record payment" : "Gagal mencatat pembayaran"));
                 }
             })
             .catch(() => {
-                alert("Terjadi kesalahan sistem");
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = "Catat Pembayaran";
+                }
+                alert(currentLang === 'en' ? "System error occurred" : "Terjadi kesalahan sistem");
+            });
+        }
+
+        function hapusPembayaran(invId, payId) {
+            if (!confirm(currentLang === 'en' ? "Delete this payment record?" : "Hapus catatan pembayaran ini?")) {
+                return;
+            }
+
+            fetch(`/api/invoices/${invId}/payments/${payId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.invoice) {
+                    const updated = data.invoice;
+                    const idx = savedInvoicesData.findIndex(i => String(i.id) === String(invId) || String(i.invoice_number) === String(invId));
+                    if (idx !== -1) {
+                        savedInvoicesData[idx] = { ...savedInvoicesData[idx], ...updated };
+                        currentPayingInvoice = savedInvoicesData[idx];
+                    } else {
+                        currentPayingInvoice = updated;
+                    }
+
+                    // Realtime modal update
+                    updatePaymentModalHeaderAndSubtitle(currentPayingInvoice);
+                    renderPaymentHistoryList(currentPayingInvoice);
+
+                    // Update background list
+                    filterSavedInvoices();
+
+                    // Show toast notification
+                    showToastNotification(currentLang === 'en' ? "Payment deleted" : "Pembayaran dihapus");
+                } else {
+                    alert(data.error || (currentLang === 'en' ? "Failed to delete payment" : "Gagal menghapus pembayaran"));
+                }
+            })
+            .catch(() => {
+                alert(currentLang === 'en' ? "System error occurred" : "Terjadi kesalahan sistem");
             });
         }
 

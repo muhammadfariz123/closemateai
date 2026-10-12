@@ -346,6 +346,9 @@ class InvoiceController extends Controller
             if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
 
             $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
+            if (!$invoice) {
+                $invoice = Invoice::where('user_id', $user->id)->where('invoice_number', $id)->first();
+            }
             if (!$invoice) return response()->json(['error' => 'Not found'], 404);
 
             $amount = (float) $this->parseNumber($request->input('amount', 0));
@@ -357,6 +360,9 @@ class InvoiceController extends Controller
             $note = $request->input('note', '');
 
             $payments = $invoice->payments ?: [];
+            if (is_string($payments)) {
+                $payments = json_decode($payments, true) ?: [];
+            }
             $newPayment = [
                 'id' => (string) Str::uuid(),
                 'amount' => $amount,
@@ -430,15 +436,26 @@ class InvoiceController extends Controller
             if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
 
             $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
+            if (!$invoice) {
+                $invoice = Invoice::where('user_id', $user->id)->where('invoice_number', $id)->first();
+            }
             if (!$invoice) return response()->json(['error' => 'Not found'], 404);
 
             $payments = $invoice->payments ?: [];
-            $filtered = [];
-            foreach ($payments as $p) {
-                if (($p['id'] ?? '') !== $paymentId) {
-                    $filtered[] = $p;
-                }
+            if (is_string($payments)) {
+                $payments = json_decode($payments, true) ?: [];
             }
+            $filtered = [];
+            $removed = false;
+            foreach ($payments as $idx => $p) {
+                $pid = (string) ($p['id'] ?? '');
+                if (!$removed && ($pid === (string) $paymentId || (string) $idx === (string) $paymentId)) {
+                    $removed = true;
+                    continue;
+                }
+                $filtered[] = $p;
+            }
+            $filtered = array_values($filtered);
 
             $totalPaid = 0;
             foreach ($filtered as $p) {
