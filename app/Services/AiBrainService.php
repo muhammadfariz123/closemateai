@@ -384,9 +384,10 @@ PROMPT;
 
         // 6. Terms & Conditions
         $termsSection = "";
-        if (!empty(trim((string)$user->default_terms))) {
+        $termsText = is_array($user->default_terms) ? implode("\n", $user->default_terms) : (string)$user->default_terms;
+        if (!empty(trim($termsText))) {
             $termsSection = "\n\n-- SYARAT & KETENTUAN (TERMS & CONDITIONS) --\n"
-                . trim($user->default_terms) . "\n"
+                . trim($termsText) . "\n"
                 . "\nATURAN SYARAT & KETENTUAN:\n"
                 . "Gunakan aturan resmi di atas jika klien menanyakan tentang sistem pembayaran, DP, pembatalan, pelunasan, atau hak atas file mentah.\n";
         }

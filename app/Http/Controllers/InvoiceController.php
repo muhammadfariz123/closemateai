@@ -696,7 +696,8 @@ class InvoiceController extends Controller
             $user = $this->getUser();
             if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
 
-            $user->default_terms = $request->input('terms', []);
+            $terms = $request->input('terms', []);
+            $user->default_terms = is_array($terms) ? implode("\n", $terms) : (string)$terms;
             $user->save();
 
             return response()->json(['success' => true]);
@@ -723,7 +724,7 @@ class InvoiceController extends Controller
                 'bank_name' => $user->bank_name ?: 'BCA',
                 'bank_account_number' => $user->bank_account_number ?: '0431063867',
                 'bank_account_name' => $user->bank_account_name ?: 'Umi Salamah',
-                'default_terms' => $user->default_terms,
+                'default_terms' => is_string($user->default_terms) ? explode("\n", $user->default_terms) : ($user->default_terms ?: []),
                 'business_name' => $user->business_name ?: $user->name,
                 'saved_count' => $count,
             ]);

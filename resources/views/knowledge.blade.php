@@ -715,7 +715,7 @@
                 <div class="kb-card-title">Terms & Conditions</div>
                 <div class="kb-card-desc">Dikutip AI saat klien menanyakan aturan booking & pembatalan.</div>
                 
-                <textarea id="default_terms_input" class="form-control" style="background: white; border: 1px solid #e1e1e4; margin-bottom: 16px; min-height: 180px;">{{ $user->default_terms ?? "1. Booking tanggal dianggap sah setelah DP 30% diterima.\n2. Pelunasan dilakukan maksimal H-7 sebelum acara.\n3. DP tidak dapat dikembalikan, namun dapat dipindah 1x reschedule (maks. H-60).\n4. Biaya transport & akomodasi tim di luar Jabodetabek ditanggung klien.\n5. File mentah (RAW) tidak diberikan kecuali ada kesepakatan tertulis." }}</textarea>
+                <textarea id="default_terms_input" class="form-control" style="background: white; border: 1px solid #e1e1e4; margin-bottom: 16px; min-height: 180px;">{{ is_array($user->default_terms) ? implode("\n", $user->default_terms) : ($user->default_terms ?? "1. Booking tanggal dianggap sah setelah DP 30% diterima.\n2. Pelunasan dilakukan maksimal H-7 sebelum acara.\n3. DP tidak dapat dikembalikan, namun dapat dipindah 1x reschedule (maks. H-60).\n4. Biaya transport & akomodasi tim di luar Jabodetabek ditanggung klien.\n5. File mentah (RAW) tidak diberikan kecuali ada kesepakatan tertulis.") }}</textarea>
 
                 <button type="button" class="btn btn-primary" onclick="saveTerms()"><i class="fa-regular fa-floppy-disk"></i> Save Changes</button>
             </div>

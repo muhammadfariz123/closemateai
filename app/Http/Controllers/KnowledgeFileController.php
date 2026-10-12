@@ -57,13 +57,30 @@ class KnowledgeFileController extends Controller
         $faqs = $user->faqs()->get();
 
         if (empty($user->default_terms)) {
-            $user->default_terms = "1. Booking tanggal dianggap sah setelah DP 30% diterima.\n2. Pelunasan dilakukan maksimal H-7 sebelum acara.\n3. DP tidak dapat dikembalikan, namun dapat dipindah 1x reschedule (maks. H-60).\n4. Biaya transport & akomodasi tim di luar Jabodetabek ditanggung klien.\n5. File mentah (RAW) tidak diberikan kecuali ada kesepakatan tertulis.";
-            $user->save();
+            $defaultTerms = "1. Booking tanggal dianggap sah setelah DP 30% diterima.\n2. Pelunasan dilakukan maksimal H-7 sebelum acara.\n3. DP tidak dapat dikembalikan, namun dapat dipindah 1x reschedule (maks. H-60).\n4. Biaya transport & akomodasi tim di luar Jabodetabek ditanggung klien.\n5. File mentah (RAW) tidak diberikan kecuali ada kesepakatan tertulis.";
+            try {
+                $user->default_terms = $defaultTerms;
+                $user->save();
+            } catch (\Throwable $e) {
+                try {
+                    if (\Illuminate\Support\Facades\DB::getDriverName() === 'pgsql') {
+                        \Illuminate\Support\Facades\DB::statement('ALTER TABLE users ALTER COLUMN default_terms TYPE text USING default_terms::text');
+                        $user->default_terms = $defaultTerms;
+                        $user->save();
+                    }
+                } catch (\Throwable $ex) {
+                    \Illuminate\Support\Facades\Log::warning('default_terms save error: ' . $ex->getMessage());
+                }
+            }
         }
 
         if (empty($user->ai_prompt)) {
-            $user->ai_prompt = AiBrainService::getDefaultPrompt($user->ai_personality_type ?: 'casual');
-            $user->save();
+            try {
+                $user->ai_prompt = AiBrainService::getDefaultPrompt($user->ai_personality_type ?: 'casual');
+                $user->save();
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('ai_prompt save error: ' . $e->getMessage());
+            }
         }
         
         return view('knowledge', compact('file', 'user', 'faqs'));
@@ -182,8 +199,22 @@ class KnowledgeFileController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
         }
 
-        $user->default_terms = $request->input('default_terms', '');
-        $user->save();
+        $terms = $request->input('default_terms', '');
+        try {
+            $user->default_terms = $terms;
+            $user->save();
+        } catch (\Throwable $e) {
+            try {
+                if (\Illuminate\Support\Facades\DB::getDriverName() === 'pgsql') {
+                    \Illuminate\Support\Facades\DB::statement('ALTER TABLE users ALTER COLUMN default_terms TYPE text USING default_terms::text');
+                    $user->default_terms = $terms;
+                    $user->save();
+                }
+            } catch (\Throwable $ex) {
+                \Illuminate\Support\Facades\Log::error('saveTerms error: ' . $ex->getMessage());
+                return response()->json(['success' => false, 'message' => 'Gagal menyimpan: ' . $ex->getMessage()], 500);
+            }
+        }
 
         return response()->json(['success' => true, 'message' => 'Terms & Conditions berhasil disimpan']);
     }
