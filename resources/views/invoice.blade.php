@@ -1199,26 +1199,27 @@
                         <i class="fa-solid fa-chevron-up"></i>
                     </div>
                     <div class="acc-body">
-                        <div class="form-group">
-                            <label class="form-label" id="labelTerminSaatIni">Termin Saat Ini</label>
-                            <select class="form-control" id="selectTermin" onchange="syncTerminPreview(); updateWaDraft();">
-                                <option value="Uang Muka / DP 1" id="optTermin1" selected>Uang Muka / DP 1</option>
-                                <option value="Termin 2 / DP 2" id="optTermin2">Termin 2 / DP 2</option>
-                                <option value="Pelunasan" id="optTermin3">Pelunasan</option>
-                            </select>
+                        <div class="form-row form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                            <div>
+                                <label class="form-label" id="labelTerminSaatIni">Termin Saat Ini</label>
+                                <select class="form-control" id="selectTermin" onchange="syncTerminPreview(); updateWaDraft();">
+                                    <option value="Uang Muka / DP 1" id="optTermin1" selected>Uang Muka / DP 1</option>
+                                    <option value="Termin 2 / DP 2" id="optTermin2">Termin 2 / DP 2</option>
+                                    <option value="Pelunasan / Final Payment" id="optTermin3">Pelunasan / Final Payment</option>
+                                </select>
+                            </div>
+                            <div id="wrapperDP1">
+                                <label class="form-label" id="labelNominalDP1">Nominal DP 1</label>
+                                <input type="text" class="form-control" value="Rp 3.000.000" id="inputDP1" oninput="handleCurrencyInput(this); calculateTotals();">
+                            </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label class="form-label" id="labelNominalDP1">Nominal DP 1</label>
-                            <input type="text" class="form-control" value="Rp 3.000.000" id="inputDP1" oninput="handleCurrencyInput(this); calculateTotals();">
-                        </div>
-                        
-                        <div class="form-group">
+                        <div class="form-group" id="wrapperDP2">
                             <label class="form-label" id="labelNominalDP2">Nominal DP 2</label>
                             <input type="text" class="form-control" value="Rp 0" id="inputDP2" oninput="handleCurrencyInput(this); calculateTotals();">
                         </div>
                         
-                        <div class="termin-summary-card" style="background: #f8f9fa; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px 20px; margin: 16px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div class="termin-summary-card" id="cardTerminSummary" style="background: #f8f9fa; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px 18px; margin: 16px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span style="color: var(--text-dark); font-weight: 500; font-size: 13px;" id="labelTerminSummary">Total DP 1</span>
                                 <span style="color: var(--text-dark); font-weight: 700; font-size: 14px;" id="valTerminSummary">Rp 3.000.000</span>
@@ -1227,6 +1228,35 @@
                                 <span style="color: var(--text-dark); font-weight: 500; font-size: 13px;" id="labelSisaSummary">Sisa Tagihan</span>
                                 <span style="color: var(--text-dark); font-weight: 700; font-size: 14px;" id="valSisaSummary">Rp 6.500.000</span>
                             </div>
+                        </div>
+
+                        <!-- Card DP Sebelumnya (khusus ketika Pelunasan dipilih) -->
+                        <div id="cardDpSebelumnya" style="display: none; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin: 16px 0; background: #fff;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
+                                <h5 style="margin: 0; font-size: 14px; font-weight: 600; color: #181c32;">DP Sebelumnya</h5>
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="button" id="btnPelunasanAuto" onclick="setPelunasanMode('auto')" style="font-size: 12px; padding: 6px 14px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: 0.15s; background: #6c5ce7; color: #fff; border: 1px solid #6c5ce7;">Hitung Ulang Otomatis</button>
+                                    <button type="button" id="btnPelunasanManual" onclick="setPelunasanMode('manual')" style="font-size: 12px; padding: 6px 14px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: 0.15s; background: #fff; color: #555; border: 1px solid #dcdcdc;">Isi Manual</button>
+                                </div>
+                            </div>
+                            <div id="pelunasanInfoText" style="font-size: 12px; color: #888; margin-bottom: 12px;">Belum ada DP tercatat untuk klien ini.</div>
+
+                            <!-- Input Manual Total DP -->
+                            <div id="pelunasanManualInputGroup" style="display: none; margin-bottom: 14px;">
+                                <label class="form-label" style="font-size: 12px; font-weight: 600; color: #444; margin-bottom: 6px;">Total DP</label>
+                                <input type="text" class="form-control" id="inputManualTotalDP" value="Rp 0" oninput="handleCurrencyInput(this); calculateTotals(); updateWaDraft();" placeholder="Rp 0">
+                            </div>
+
+                            <!-- Baris DP sudah dibayar & Sisa yang harus dibayar -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px;">
+                                <span style="font-weight: 600; color: #181c32;">DP sudah dibayar</span>
+                                <span style="font-weight: 600; color: #181c32;" id="valPelunasanDpSudahDibayar">- Rp 0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 14px;">
+                                <span style="font-weight: 700; color: #181c32;">Sisa yang harus dibayar</span>
+                                <span style="font-weight: 700; color: #181c32;" id="valPelunasanSisaHarusDibayar">Rp 0</span>
+                            </div>
+                            <div id="pelunasanAutoNote" style="font-size: 11px; color: #888; margin-top: 8px;">Nominal pelunasan dihitung otomatis dari DP yang sudah dibayar.</div>
                         </div>
                         
                         <div class="form-group">
@@ -2169,7 +2199,12 @@
             if (selectTermin && selectTermin.value.includes('DP 2')) {
                 termNominal = dp2Val;
             } else if (selectTermin && selectTermin.value.includes('Pelunasan')) {
-                termNominal = Math.max(0, grandTotalVal - (dp1Val + dp2Val));
+                if (typeof pelunasanMode !== 'undefined' && pelunasanMode === 'manual') {
+                    const manualDp = parseCurrency(document.getElementById('inputManualTotalDP')?.value);
+                    termNominal = Math.max(0, grandTotalVal - manualDp);
+                } else {
+                    termNominal = Math.max(0, grandTotalVal - (dp1Val + dp2Val));
+                }
             }
             const terminNominalText = 'Rp ' + formatRupiah(termNominal);
 
@@ -2490,6 +2525,55 @@ Terima kasih banyak! 🤍`;
             syncTerminPreview();
         }
 
+        let pelunasanMode = 'auto'; // 'auto' | 'manual'
+
+        function setPelunasanMode(mode) {
+            pelunasanMode = mode;
+            const btnAuto = document.getElementById('btnPelunasanAuto');
+            const btnManual = document.getElementById('btnPelunasanManual');
+            const manualGroup = document.getElementById('pelunasanManualInputGroup');
+            const autoNote = document.getElementById('pelunasanAutoNote');
+
+            if (mode === 'manual') {
+                if (btnAuto) {
+                    btnAuto.style.background = '#fff';
+                    btnAuto.style.color = '#555';
+                    btnAuto.style.border = '1px solid #dcdcdc';
+                }
+                if (btnManual) {
+                    btnManual.style.background = '#6c5ce7';
+                    btnManual.style.color = '#fff';
+                    btnManual.style.border = '1px solid #6c5ce7';
+                }
+                if (manualGroup) manualGroup.style.display = 'block';
+                if (autoNote) autoNote.style.display = 'none';
+
+                const manualInput = document.getElementById('inputManualTotalDP');
+                if (manualInput && (!manualInput.value || parseCurrency(manualInput.value) === 0)) {
+                    const dp1Val = parseCurrency(document.getElementById('inputDP1')?.value);
+                    const dp2Val = parseCurrency(document.getElementById('inputDP2')?.value);
+                    const initVal = (dp1Val + dp2Val) > 0 ? (dp1Val + dp2Val) : 0;
+                    manualInput.value = 'Rp ' + formatRupiah(initVal);
+                }
+            } else {
+                if (btnAuto) {
+                    btnAuto.style.background = '#6c5ce7';
+                    btnAuto.style.color = '#fff';
+                    btnAuto.style.border = '1px solid #6c5ce7';
+                }
+                if (btnManual) {
+                    btnManual.style.background = '#fff';
+                    btnManual.style.color = '#555';
+                    btnManual.style.border = '1px solid #dcdcdc';
+                }
+                if (manualGroup) manualGroup.style.display = 'none';
+                if (autoNote) autoNote.style.display = 'block';
+            }
+
+            calculateTotals();
+            updateWaDraft();
+        }
+
         function syncTerminPreview() {
             const grandTotal = parseCurrency(document.getElementById('calcGrandTotal')?.innerText);
             const selectTermin = document.getElementById('selectTermin');
@@ -2499,63 +2583,96 @@ Terima kasih banyak! 🤍`;
             const dp1Val = parseCurrency(document.getElementById('inputDP1')?.value);
             const dp2Val = parseCurrency(document.getElementById('inputDP2')?.value);
 
-            let totalPaid = dp1Val;
-            let currentTermNominal = dp1Val;
-
             const isDp2 = terminVal.includes('DP 2');
             const isPelunasan = terminVal.includes('Pelunasan');
 
-            if (isDp2) {
-                currentTermNominal = dp2Val;
-                totalPaid = dp1Val + dp2Val;
-            } else if (isPelunasan) {
-                totalPaid = dp1Val + dp2Val;
-                currentTermNominal = Math.max(0, grandTotal - totalPaid);
-                totalPaid = grandTotal;
+            // Card DP Sebelumnya visibility
+            const cardDpSebelumnya = document.getElementById('cardDpSebelumnya');
+            if (cardDpSebelumnya) {
+                cardDpSebelumnya.style.display = isPelunasan ? 'block' : 'none';
             }
 
-            const sisa = Math.max(0, grandTotal - (dp1Val + dp2Val));
+            // Total dari input DP 1 & DP 2
+            const totalDpInputs = dp1Val + dp2Val;
+            const sisaInput = Math.max(0, grandTotal - totalDpInputs);
 
-            // Summary card
+            // Summary card (Row 3)
             const lblSummary = document.getElementById('labelTerminSummary');
             if (lblSummary) {
-                if (dp2Val > 0) {
+                if (dp2Val > 0 || isPelunasan) {
                     lblSummary.innerText = currentLang === 'en' ? 'Total DP 1 + DP 2' : 'Total DP 1 + DP 2';
                 } else {
                     lblSummary.innerText = currentLang === 'en' ? 'Total DP 1' : 'Total DP 1';
                 }
             }
             const valSummary = document.getElementById('valTerminSummary');
-            if (valSummary) valSummary.innerText = 'Rp ' + formatRupiah(dp1Val + dp2Val);
+            if (valSummary) valSummary.innerText = 'Rp ' + formatRupiah(totalDpInputs);
 
             const valSisa = document.getElementById('valSisaSummary');
-            if (valSisa) valSisa.innerText = 'Rp ' + formatRupiah(sisa);
+            if (valSisa) valSisa.innerText = 'Rp ' + formatRupiah(sisaInput);
+
+            // Perhitungan DP & Sisa untuk Pelunasan
+            let effectiveDpPaid = totalDpInputs;
+            let effectiveSisaHarusDibayar = sisaInput;
+
+            if (isPelunasan) {
+                if (pelunasanMode === 'manual') {
+                    const manualDp = parseCurrency(document.getElementById('inputManualTotalDP')?.value);
+                    effectiveDpPaid = manualDp;
+                    effectiveSisaHarusDibayar = Math.max(0, grandTotal - manualDp);
+                } else {
+                    effectiveDpPaid = totalDpInputs;
+                    effectiveSisaHarusDibayar = sisaInput;
+                }
+
+                const valPelunasanDp = document.getElementById('valPelunasanDpSudahDibayar');
+                if (valPelunasanDp) {
+                    valPelunasanDp.innerText = '- Rp ' + formatRupiah(effectiveDpPaid);
+                }
+                const valPelunasanSisa = document.getElementById('valPelunasanSisaHarusDibayar');
+                if (valPelunasanSisa) {
+                    valPelunasanSisa.innerText = 'Rp ' + formatRupiah(effectiveSisaHarusDibayar);
+                }
+            }
 
             // Paper Preview
             const pTerminLbl = document.getElementById('previewTerminLabel');
             if (pTerminLbl) pTerminLbl.innerText = terminType;
 
             const pDp1 = document.getElementById('previewDP1');
-            if (pDp1) pDp1.innerText = 'Rp ' + formatRupiah(dp1Val);
+            if (pDp1) {
+                pDp1.innerText = isPelunasan ? ('- Rp ' + formatRupiah(dp1Val)) : ('Rp ' + formatRupiah(dp1Val));
+            }
 
             const rowDp2 = document.getElementById('previewDP2Row');
             const pDp2 = document.getElementById('previewDP2');
-            if (dp2Val > 0) {
+            if (dp2Val > 0 || isPelunasan) {
                 if (rowDp2) rowDp2.style.display = 'flex';
-                if (pDp2) pDp2.innerText = 'Rp ' + formatRupiah(dp2Val);
+                if (pDp2) {
+                    pDp2.innerText = isPelunasan ? ('- Rp ' + formatRupiah(dp2Val)) : ('Rp ' + formatRupiah(dp2Val));
+                }
             } else {
                 if (rowDp2) rowDp2.style.display = 'none';
             }
 
             const pTotDp = document.getElementById('previewTotalDP');
             const pTotDpLbl = document.getElementById('previewTotalDPLabel');
-            if (pTotDp) pTotDp.innerText = 'Rp ' + formatRupiah(dp1Val + dp2Val);
+            if (pTotDp) {
+                pTotDp.innerText = isPelunasan ? ('- Rp ' + formatRupiah(totalDpInputs)) : ('Rp ' + formatRupiah(totalDpInputs));
+            }
             if (pTotDpLbl) {
-                pTotDpLbl.innerText = dp2Val > 0 ? (currentLang === 'en' ? 'Total DP 1 + DP 2' : 'Total DP 1 + DP 2') : (currentLang === 'en' ? 'Total DP 1' : 'Total DP 1');
+                pTotDpLbl.innerText = (dp2Val > 0 || isPelunasan) ? (currentLang === 'en' ? 'Total DP 1 + DP 2' : 'Total DP 1 + DP 2') : (currentLang === 'en' ? 'Total DP 1' : 'Total DP 1');
+            }
+
+            const pSisaLbl = document.getElementById('labelPreviewSisaTagihan');
+            if (pSisaLbl) {
+                pSisaLbl.innerText = isPelunasan ? (currentLang === 'en' ? 'Sisa yang harus dibayar' : 'Sisa yang harus dibayar') : (currentLang === 'en' ? 'Remaining Balance' : 'Sisa Tagihan');
             }
 
             const pSisa = document.getElementById('previewSisaTagihan');
-            if (pSisa) pSisa.innerText = 'Rp ' + formatRupiah(sisa);
+            if (pSisa) {
+                pSisa.innerText = 'Rp ' + formatRupiah(isPelunasan ? effectiveSisaHarusDibayar : sisaInput);
+            }
         }
 
         function syncJatuhTempoPreview() {
@@ -3621,6 +3738,26 @@ Terima kasih banyak! 🤍`;
                 if (name || price > 0) addonsList.push({ name, qty, price });
             });
 
+            const terminVal = document.getElementById('selectTermin')?.value || 'Uang Muka / DP 1';
+            const isPelunasan = terminVal.includes('Pelunasan');
+            const grandTotalVal = parseCurrency(document.getElementById('calcGrandTotal')?.innerText);
+            const dp1Val = parseCurrency(document.getElementById('inputDP1')?.value);
+            const dp2Val = parseCurrency(document.getElementById('inputDP2')?.value);
+
+            let effTotalDp = dp1Val + dp2Val;
+            let effRemaining = Math.max(0, grandTotalVal - effTotalDp);
+
+            if (isPelunasan) {
+                if (pelunasanMode === 'manual') {
+                    const manualDp = parseCurrency(document.getElementById('inputManualTotalDP')?.value);
+                    effTotalDp = manualDp;
+                    effRemaining = Math.max(0, grandTotalVal - manualDp);
+                } else {
+                    effTotalDp = dp1Val + dp2Val;
+                    effRemaining = Math.max(0, grandTotalVal - effTotalDp);
+                }
+            }
+
             const payload = {
                 booking_id: selectedBookingId || null,
                 invoice_number: document.getElementById('inputNoInvoice')?.value || 'INV-202610-006',
@@ -3630,17 +3767,18 @@ Terima kasih banyak! 🤍`;
                 client_wa: document.getElementById('inputNoWaKlien')?.value || '081234567890',
                 client_address: document.getElementById('inputAlamatKlien')?.value || '',
                 event_date: document.getElementById('inputTglAcara')?.value || '',
+                termin_label: terminVal,
                 package_name: document.getElementById('inputPaketUtama')?.value || 'Premium Wedding Documentation',
                 package_price: parseCurrency(document.getElementById('inputHargaUtama')?.value),
                 package_qty: parseInt(document.getElementById('inputJumlahPaket')?.value, 10) || 1,
                 discount: parseCurrency(document.getElementById('inputDiskon')?.value),
                 extra_packages: extraPkgs,
                 addons: addonsList,
-                grand_total: parseCurrency(document.getElementById('calcGrandTotal')?.innerText),
-                dp1_amount: parseCurrency(document.getElementById('inputDP1')?.value),
-                dp2_amount: parseCurrency(document.getElementById('inputDP2')?.value),
-                total_dp: parseCurrency(document.getElementById('inputDP1')?.value) + parseCurrency(document.getElementById('inputDP2')?.value),
-                remaining_balance: parseCurrency(document.getElementById('valSisaSummary')?.innerText),
+                grand_total: grandTotalVal,
+                dp1_amount: dp1Val,
+                dp2_amount: dp2Val,
+                total_dp: effTotalDp,
+                remaining_balance: effRemaining,
                 bank_name: document.getElementById('inputNamaBank')?.value || 'BCA',
                 bank_account_number: document.getElementById('inputNoRekening')?.value || '0431063867',
                 bank_account_name: document.getElementById('inputAtasNama')?.value || 'Umi Salamah',
@@ -3749,6 +3887,23 @@ Terima kasih banyak! 🤍`;
                 if (txt) txt.textContent = `Terhubung ke Booking: ${b.client_name || '-'} — ${cleanDate || '-'}`;
             }
 
+            if (b.paid_amount && parseCurrency(b.paid_amount) > 0) {
+                const paidVal = parseCurrency(b.paid_amount);
+                const infoText = document.getElementById('pelunasanInfoText');
+                if (infoText) {
+                    infoText.innerText = `DP tercatat dari booking: Rp ${formatRupiah(paidVal)}`;
+                }
+                const manualInput = document.getElementById('inputManualTotalDP');
+                if (manualInput) {
+                    manualInput.value = 'Rp ' + formatRupiah(paidVal);
+                }
+            } else {
+                const infoText = document.getElementById('pelunasanInfoText');
+                if (infoText) {
+                    infoText.innerText = 'Belum ada DP tercatat untuk klien ini.';
+                }
+            }
+
             syncPreviewClientWa();
             syncPreviewDate();
             calculateTotals();
@@ -3761,6 +3916,10 @@ Terima kasih banyak! 🤍`;
             selectedBookingId = null;
             const box = document.getElementById('bookingConnectedBox');
             if (box) box.style.display = 'none';
+            const infoText = document.getElementById('pelunasanInfoText');
+            if (infoText) {
+                infoText.innerText = 'Belum ada DP tercatat untuk klien ini.';
+            }
             showToastNotification("Hubungan booking diputuskan");
         }
 

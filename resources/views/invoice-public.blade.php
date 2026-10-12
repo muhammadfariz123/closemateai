@@ -358,14 +358,37 @@
 
                 <!-- DP Info -->
                 <div class="inv-dp-box">
-                    <div class="inv-total-line">
-                        <div>Total Terbayar</div>
-                        <div style="font-weight: 600; color: #16a34a;">Rp {{ number_format($invoice->total_dp, 0, ',', '.') }}</div>
-                    </div>
-                    <div class="inv-total-line" style="margin-bottom: 0; font-size: 13px; font-weight: 700; color: #222;">
-                        <div>Sisa Tagihan</div>
-                        <div>Rp {{ number_format($invoice->remaining_balance, 0, ',', '.') }}</div>
-                    </div>
+                    @if(str_contains($invoice->termin_label ?? '', 'Pelunasan'))
+                        @if($invoice->dp1_amount > 0)
+                        <div class="inv-total-line" style="font-size: 11px; margin-bottom: 4px;">
+                            <div>Uang Muka / DP 1</div>
+                            <div style="font-weight: 500; color: #555;">- Rp {{ number_format($invoice->dp1_amount, 0, ',', '.') }}</div>
+                        </div>
+                        @endif
+                        @if($invoice->dp2_amount > 0)
+                        <div class="inv-total-line" style="font-size: 11px; margin-bottom: 4px;">
+                            <div>Termin 2 / DP 2</div>
+                            <div style="font-weight: 500; color: #555;">- Rp {{ number_format($invoice->dp2_amount, 0, ',', '.') }}</div>
+                        </div>
+                        @endif
+                        <div class="inv-total-line" style="font-size: 11px; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed #ddd;">
+                            <div>Total DP</div>
+                            <div style="font-weight: 600; color: #555;">- Rp {{ number_format($invoice->total_dp, 0, ',', '.') }}</div>
+                        </div>
+                        <div class="inv-total-line" style="margin-bottom: 0; font-size: 13px; font-weight: 700; color: #222;">
+                            <div>Sisa yang harus dibayar</div>
+                            <div>Rp {{ number_format($invoice->remaining_balance, 0, ',', '.') }}</div>
+                        </div>
+                    @else
+                        <div class="inv-total-line">
+                            <div>Total Terbayar</div>
+                            <div style="font-weight: 600; color: #16a34a;">Rp {{ number_format($invoice->total_dp, 0, ',', '.') }}</div>
+                        </div>
+                        <div class="inv-total-line" style="margin-bottom: 0; font-size: 13px; font-weight: 700; color: #222;">
+                            <div>Sisa Tagihan</div>
+                            <div>Rp {{ number_format($invoice->remaining_balance, 0, ',', '.') }}</div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

@@ -146,7 +146,13 @@ class InvoiceController extends Controller
             $dp1 = (float) $this->parseNumber($request->input('dp1_amount', 0));
             $dp2 = (float) $this->parseNumber($request->input('dp2_amount', 0));
             $totalDp = $dp1 + $dp2;
+            if ($request->has('total_dp') && $request->input('total_dp') !== null && $request->input('total_dp') !== '') {
+                $totalDp = (float) $this->parseNumber($request->input('total_dp'));
+            }
             $remaining = max(0, $grandTotal - $totalDp);
+            if ($request->has('remaining_balance') && $request->input('remaining_balance') !== null && $request->input('remaining_balance') !== '') {
+                $remaining = (float) $this->parseNumber($request->input('remaining_balance'));
+            }
 
             $existing = Invoice::find($id);
             $payments = $request->has('payments') ? $request->input('payments') : ($existing ? $existing->payments : []);
