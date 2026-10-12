@@ -3411,7 +3411,7 @@ Terima kasih banyak! 🤍`;
 
                 html += `
                 <div class="saved-inv-row" style="display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid #f1f1f4; background: white; transition: 0.15s;" onmouseover="this.style.backgroundColor='#fafafa'" onmouseout="this.style.backgroundColor='#ffffff'">
-                    <div>
+                    <div style="cursor: pointer; flex: 1; padding-right: 12px;" onclick="muatInvoiceKeEditor('${inv.id}')" title="${currentLang === 'en' ? 'Click to select and view this invoice' : 'Klik untuk memilih dan menampilkan invoice ini'}">
                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
                             <span style="font-weight: 600; font-size: 14px; color: #181c32;">${clientDisplay}${invNo}</span>
                             ${badgeHtml}
@@ -3425,6 +3425,8 @@ Terima kasih banyak! 🤍`;
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         ${!isLunas ? `<button type="button" class="btn btn-tandai-lunas" onclick="tandaiLunas('${inv.id}')" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; font-weight: 500; font-size: 12px; padding: 6px 14px; border-radius: 8px; cursor: pointer;">${dict.btn_tandai_lunas}</button>` : ''}
+                        <button type="button" class="btn-icon" onclick="muatInvoiceKeEditor('${inv.id}')" title="Pilih & Tampilkan Invoice" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 8px; background: white; color: #555; cursor: pointer;"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button type="button" class="btn-icon" onclick="unduhPdfDariSaved('${inv.id}')" title="Unduh PDF" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 8px; background: white; color: #555; cursor: pointer;"><i class="fa-regular fa-file-pdf"></i></button>
                         <button type="button" class="btn-icon" onclick="openPaymentHistoryModal('${inv.id}')" title="Riwayat Pembayaran" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 8px; background: white; color: #555; cursor: pointer;"><i class="fa-solid fa-wallet"></i></button>
                         <button type="button" class="btn-icon" onclick="salinLinkPublik('${inv.id}')" title="Salin Link Publik" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 8px; background: white; color: #555; cursor: pointer;"><i class="fa-solid fa-link"></i></button>
                         <button type="button" class="btn-icon" onclick="duplikatInvoice('${inv.id}')" title="Duplikat Invoice" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 8px; background: white; color: #555; cursor: pointer;"><i class="fa-regular fa-copy"></i></button>
@@ -3956,6 +3958,168 @@ Terima kasih banyak! 🤍`;
             });
         }
 
+        function cleanDateOnly(val) {
+            if (!val) return '';
+            if (typeof val === 'string') {
+                if (val.includes('T')) return val.split('T')[0];
+                if (val.includes(' ')) return val.split(' ')[0];
+                return val;
+            }
+            try {
+                const d = new Date(val);
+                if (!isNaN(d.getTime())) {
+                    const yyyy = d.getFullYear();
+                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    return `${yyyy}-${mm}-${dd}`;
+                }
+            } catch(e) {}
+            return '';
+        }
+
+        function muatInvoiceKeEditor(invId) {
+            const inv = savedInvoicesData.find(i => String(i.id) === String(invId));
+            if (!inv) return;
+
+            // 1. Basic Fields
+            if (document.getElementById('inputNoInvoice')) document.getElementById('inputNoInvoice').value = inv.invoice_number || '';
+            if (document.getElementById('inputNamaVendor')) document.getElementById('inputNamaVendor').value = inv.vendor_name || '';
+            if (document.getElementById('inputAlamatVendor')) document.getElementById('inputAlamatVendor').value = inv.vendor_address || '';
+            if (document.getElementById('inputNamaKlien')) document.getElementById('inputNamaKlien').value = inv.client_name || '';
+            if (document.getElementById('inputNoWaKlien')) document.getElementById('inputNoWaKlien').value = inv.client_wa || '';
+            if (document.getElementById('inputAlamatKlien')) document.getElementById('inputAlamatKlien').value = inv.client_address || '';
+            if (document.getElementById('inputTglAcara')) document.getElementById('inputTglAcara').value = cleanDateOnly(inv.event_date);
+            if (document.getElementById('selectTermin')) document.getElementById('selectTermin').value = inv.termin_label || 'Uang Muka / DP 1';
+            if (document.getElementById('inputPaketUtama')) document.getElementById('inputPaketUtama').value = inv.package_name || '';
+            if (document.getElementById('inputHargaUtama')) document.getElementById('inputHargaUtama').value = 'Rp ' + formatRupiah(inv.package_price || 0);
+            if (document.getElementById('inputJumlahPaket')) document.getElementById('inputJumlahPaket').value = inv.package_qty || 1;
+            if (document.getElementById('inputDiskon')) document.getElementById('inputDiskon').value = 'Rp ' + formatRupiah(inv.discount || 0);
+            if (document.getElementById('inputDP1')) document.getElementById('inputDP1').value = 'Rp ' + formatRupiah(inv.dp1_amount || 0);
+            if (document.getElementById('inputDP2')) document.getElementById('inputDP2').value = 'Rp ' + formatRupiah(inv.dp2_amount || 0);
+            if (document.getElementById('inputNamaBank')) document.getElementById('inputNamaBank').value = inv.bank_name || '';
+            if (document.getElementById('inputNoRekening')) document.getElementById('inputNoRekening').value = inv.bank_account_number || '';
+            if (document.getElementById('inputAtasNama')) document.getElementById('inputAtasNama').value = inv.bank_account_name || '';
+            if (document.getElementById('inputTglJatuhTempo')) document.getElementById('inputTglJatuhTempo').value = cleanDateOnly(inv.due_date);
+
+            // 2. Extra Packages
+            const extraPkgContainer = document.getElementById('paketTambahanContainer');
+            if (extraPkgContainer) {
+                extraPkgContainer.innerHTML = '';
+                if (Array.isArray(inv.extra_packages) && inv.extra_packages.length > 0) {
+                    inv.extra_packages.forEach(p => {
+                        const div = document.createElement('div');
+                        div.className = 'paket-tambahan-box';
+                        div.style = "border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 16px; position: relative; background: #ffffff;";
+                        div.innerHTML = `
+                            <button type="button" class="btn-trash" onclick="removePaketTambahan(this)" title="Hapus paket tambahan" style="position: absolute; right: 12px; top: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px;">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label class="form-label">${currentLang === 'en' ? 'Additional Package Name' : 'Nama Paket Tambahan'}</label>
+                                <input type="text" class="form-control pkt-extra-name" value="${escapeTermAttr(p.name || '')}" placeholder="${currentLang === 'en' ? 'Package name' : 'Nama Paket Tambahan'}" oninput="calculateTotals(); updateWaDraft();">
+                            </div>
+                            <div class="form-row form-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div>
+                                    <label class="form-label">${currentLang === 'en' ? 'Package Price' : 'Harga Paket'}</label>
+                                    <input type="text" class="form-control pkt-extra-price" value="Rp ${formatRupiah(p.price || 0)}" placeholder="Rp 0" oninput="handleCurrencyInput(this); calculateTotals();">
+                                </div>
+                                <div>
+                                    <label class="form-label">${currentLang === 'en' ? 'Discount' : 'Diskon'}</label>
+                                    <input type="text" class="form-control pkt-extra-disc" value="Rp ${formatRupiah(p.discount || 0)}" placeholder="Rp 0" oninput="handleCurrencyInput(this); calculateTotals();">
+                                </div>
+                            </div>
+                        `;
+                        extraPkgContainer.appendChild(div);
+                    });
+                }
+            }
+
+            // 3. Addons
+            const addonContainer = document.getElementById('addonContainer');
+            if (addonContainer) {
+                addonContainer.innerHTML = '';
+                if (Array.isArray(inv.addons) && inv.addons.length > 0) {
+                    inv.addons.forEach(a => {
+                        const div = document.createElement('div');
+                        div.className = 'addon-item-box';
+                        div.style = "border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 16px; position: relative; background: #ffffff;";
+                        div.innerHTML = `
+                            <button type="button" class="btn-trash" onclick="removeAddonItem(this)" title="Hapus add-on" style="position: absolute; right: 12px; top: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px;">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label class="form-label">${currentLang === 'en' ? 'Add-on Item Name' : 'Nama Item Add-on'}</label>
+                                <input type="text" class="form-control addon-name" value="${escapeTermAttr(a.name || '')}" placeholder="${currentLang === 'en' ? 'Add-on name' : 'Nama Add-on'}" oninput="calculateTotals(); updateWaDraft();">
+                            </div>
+                            <div class="form-row form-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div>
+                                    <label class="form-label">${currentLang === 'en' ? 'Quantity' : 'Jumlah (Qty)'}</label>
+                                    <input type="number" class="form-control addon-qty" value="${a.qty || 1}" min="1" oninput="calculateTotals(); updateWaDraft();">
+                                </div>
+                                <div>
+                                    <label class="form-label">${currentLang === 'en' ? 'Price per Unit' : 'Harga Satuan'}</label>
+                                    <input type="text" class="form-control addon-price" value="Rp ${formatRupiah(a.price || 0)}" placeholder="Rp 0" oninput="handleCurrencyInput(this); calculateTotals();">
+                                </div>
+                            </div>
+                        `;
+                        addonContainer.appendChild(div);
+                    });
+                }
+            }
+
+            // 4. Terms and conditions
+            if (Array.isArray(inv.terms_and_conditions) && inv.terms_and_conditions.length > 0) {
+                renderTermCards(inv.terms_and_conditions);
+            }
+
+            // 5. Theme
+            if (inv.theme) {
+                currentSelectedTheme = inv.theme;
+                const paper = document.getElementById('invoice-preview');
+                if (paper) {
+                    paper.className = `invoice-paper ${inv.theme}`;
+                }
+                document.querySelectorAll('.design-card').forEach(card => {
+                    if (card.getAttribute('data-theme') === inv.theme) {
+                        card.classList.add('active');
+                    } else {
+                        card.classList.remove('active');
+                    }
+                });
+            }
+
+            selectedBookingId = inv.booking_id || null;
+
+            // 6. Switch view to editor
+            switchView('baru');
+
+            // 7. Sync previews and recalculate
+            calculateTotals();
+            syncPreviewClientWa();
+            syncPreviewDate();
+            syncJatuhTempoPreview();
+            syncBankPreview();
+            syncTerminPreview();
+            syncTermsPreview();
+            updateWaDraft();
+
+            const pNo = document.getElementById('previewNoInvoice');
+            if (pNo) pNo.innerText = inv.invoice_number || 'INV';
+            const pDate = document.getElementById('previewInvoiceDate');
+            if (pDate && inv.created_at) {
+                pDate.innerText = formatTglIndo(inv.created_at);
+            }
+
+            showToastNotification(currentLang === 'en' ? `Invoice ${inv.invoice_number} loaded into preview` : `Invoice ${inv.invoice_number} berhasil dipilih`);
+        }
+
+        function unduhPdfDariSaved(invId) {
+            muatInvoiceKeEditor(invId);
+            setTimeout(() => {
+                unduhPDF();
+            }, 300);
+        }
+
         // --- Booking Modal Handlers ---
         let allBookingsList = [];
 
@@ -4181,21 +4345,103 @@ Terima kasih banyak! 🤍`;
         function unduhPNG() {
             const paper = document.getElementById('invoice-preview');
             if (!paper) return;
-            if (typeof html2canvas !== 'undefined') {
-                html2canvas(paper, { scale: 2 }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = `Invoice_${document.getElementById('previewNoInvoice')?.innerText || 'INV'}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                    showToastNotification(currentLang === 'en' ? "PNG downloaded" : "PNG berhasil diunduh");
-                });
-            } else {
-                window.print();
-            }
+
+            showToastNotification(currentLang === 'en' ? "Preparing PNG..." : "Menyiapkan PNG...");
+            const origShadow = paper.style.boxShadow;
+            const origRadius = paper.style.borderRadius;
+            paper.style.boxShadow = 'none';
+            paper.style.borderRadius = '0';
+
+            html2canvas(paper, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
+                paper.style.boxShadow = origShadow;
+                paper.style.borderRadius = origRadius;
+
+                const invNo = (document.getElementById('previewNoInvoice')?.innerText || 'INV').trim();
+                const link = document.createElement('a');
+                link.download = `Invoice_${invNo}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToastNotification(currentLang === 'en' ? "PNG downloaded" : "PNG berhasil diunduh");
+            }).catch(err => {
+                paper.style.boxShadow = origShadow;
+                paper.style.borderRadius = origRadius;
+                console.error(err);
+                showToastNotification(currentLang === 'en' ? "Failed to download PNG" : "Gagal mengunduh PNG");
+            });
         }
 
         function unduhPDF() {
-            window.print();
+            const paper = document.getElementById('invoice-preview');
+            if (!paper) return;
+
+            showToastNotification(currentLang === 'en' ? "Preparing PDF..." : "Menyiapkan PDF...");
+            const origShadow = paper.style.boxShadow;
+            const origRadius = paper.style.borderRadius;
+            paper.style.boxShadow = 'none';
+            paper.style.borderRadius = '0';
+
+            html2canvas(paper, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
+                paper.style.boxShadow = origShadow;
+                paper.style.borderRadius = origRadius;
+
+                const jsPDFClass = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jsPDF || null);
+                if (!jsPDFClass) {
+                    showToastNotification(currentLang === 'en' ? "PDF library not available" : "Pustaka PDF tidak tersedia");
+                    return;
+                }
+
+                const pdf = new jsPDFClass({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
+
+                const pageWidth = pdf.internal.pageSize.getWidth();   // 210 mm
+                const pageHeight = pdf.internal.pageSize.getHeight(); // 297 mm
+
+                const margin = 8; // Margin 8mm keliling
+                const maxW = pageWidth - (margin * 2);
+                const maxH = pageHeight - (margin * 2);
+
+                const cWidth = canvas.width;
+                const cHeight = canvas.height;
+                const ratio = cWidth / cHeight;
+
+                // Hitung skala agar pas tepat dalam 1 halaman penuh (portrait A4) tanpa terpotong & tanpa tembus ke halaman 2
+                let printW = maxW;
+                let printH = printW / ratio;
+
+                if (printH > maxH) {
+                    printH = maxH;
+                    printW = printH * ratio;
+                }
+
+                const x = (pageWidth - printW) / 2;
+                const y = margin;
+
+                const imgData = canvas.toDataURL('image/png');
+                pdf.addImage(imgData, 'PNG', x, y, printW, printH, undefined, 'FAST');
+
+                const invNo = (document.getElementById('previewNoInvoice')?.innerText || 'INV').trim();
+                pdf.save(`Invoice_${invNo}.pdf`);
+                showToastNotification(currentLang === 'en' ? "PDF downloaded" : "PDF berhasil diunduh");
+            }).catch(err => {
+                paper.style.boxShadow = origShadow;
+                paper.style.borderRadius = origRadius;
+                console.error(err);
+                showToastNotification(currentLang === 'en' ? "Failed to download PDF" : "Gagal mengunduh PDF");
+            });
         }
 
         // --- Toast Notification ---

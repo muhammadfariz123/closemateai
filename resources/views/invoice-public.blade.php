@@ -444,12 +444,20 @@
             const el = document.getElementById('invoice-paper');
             const noInv = '{{ $invoice->invoice_number }}';
 
+            const origShadow = el.style.boxShadow;
+            const origRadius = el.style.borderRadius;
+            el.style.boxShadow = 'none';
+            el.style.borderRadius = '0';
+
             html2canvas(el, {
                 scale: 2,
                 useCORS: true,
                 logging: false,
                 backgroundColor: '#ffffff'
             }).then(canvas => {
+                el.style.boxShadow = origShadow;
+                el.style.borderRadius = origRadius;
+
                 const jsPDFClass = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jsPDF || null);
                 if (!jsPDFClass) {
                     throw new Error("Pustaka PDF tidak tersedia");
@@ -481,13 +489,15 @@
                     printW = printH * ratio;
                 }
 
-                const x = margin + (maxW - printW) / 2;
+                const x = (pageWidth - printW) / 2;
                 const y = margin;
 
-                const imgData = canvas.toDataURL('image/jpeg', 0.98);
-                pdf.addImage(imgData, 'JPEG', x, y, printW, printH, undefined, 'FAST');
-                pdf.save(`${noInv}.pdf`);
+                const imgData = canvas.toDataURL('image/png');
+                pdf.addImage(imgData, 'PNG', x, y, printW, printH, undefined, 'FAST');
+                pdf.save(`Invoice_${noInv}.pdf`);
             }).catch(err => {
+                el.style.boxShadow = origShadow;
+                el.style.borderRadius = origRadius;
                 console.error(err);
                 alert("Gagal mengunduh invoice PDF");
             });
