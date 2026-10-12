@@ -8,6 +8,9 @@ use App\Models\Booking;
 use App\Models\SystemActivity;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 class InvoiceController extends Controller
 {
@@ -16,17 +19,64 @@ class InvoiceController extends Controller
         return auth()->user() ?? \App\Models\User::first();
     }
 
+    protected function ensureSchemaReady()
+    {
+        static $ready = false;
+        if ($ready) return;
+        $ready = true;
+
+        try {
+            if (config('database.default') === 'sqlite') {
+                $dbPath = config('database.connections.sqlite.database');
+                if ($dbPath) {
+                    $dir = dirname($dbPath);
+                    if (!is_dir($dir)) {
+                        @mkdir($dir, 0777, true);
+                    }
+                    if (!file_exists($dbPath)) {
+                        @touch($dbPath);
+                    }
+                    @chmod($dir, 0777);
+                    @chmod($dbPath, 0666);
+                }
+            }
+
+            $needsMigration = false;
+            if (!Schema::hasTable('invoices')) {
+                $needsMigration = true;
+            }
+            if (!Schema::hasColumn('users', 'bank_name')) {
+                $needsMigration = true;
+            }
+            if (Schema::hasTable('invoices') && !Schema::hasColumn('invoices', 'payments')) {
+                $needsMigration = true;
+            }
+
+            if ($needsMigration) {
+                Artisan::call('migrate', ['--force' => true]);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Schema auto-migration error: ' . $e->getMessage());
+        }
+    }
+
     // List all invoices for vendor
     public function getInvoices()
     {
-        $user = $this->getUser();
-        if (!$user) return response()->json([]);
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json([]);
 
-        $invoices = Invoice::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
+            $invoices = Invoice::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        return response()->json($invoices);
+            return response()->json($invoices);
+        } catch (\Throwable $e) {
+            Log::error('getInvoices error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     // Get single invoice
@@ -44,353 +94,377 @@ class InvoiceController extends Controller
     // Save or update invoice with automatic calculations
     public function addInvoice(Request $request)
     {
-        $user = $this->getUser();
-        if (!$user) return response()->json(['success' => false], 401);
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
 
-        $id = $request->input('id');
-        if (empty($id) || str_starts_with($id, 'inv_temp_')) {
-            $id = (string) Str::uuid();
-        }
-
-        // Server-side calculation
-        $pkgPrice = (float) $this->parseNumber($request->input('package_price', 0));
-        $pkgQty = (int) ($request->input('package_qty', 1) ?: 1);
-        $discount = (float) $this->parseNumber($request->input('discount', 0));
-
-        $extraPackages = $request->input('extra_packages', []);
-        if (is_string($extraPackages)) {
-            $extraPackages = json_decode($extraPackages, true) ?: [];
-        }
-
-        $addons = $request->input('addons', []);
-        if (is_string($addons)) {
-            $addons = json_decode($addons, true) ?: [];
-        }
-
-        // Subtotal package
-        $subtotalPackage = $pkgPrice * $pkgQty;
-        $totalDiscount = $discount;
-        foreach ($extraPackages as $extra) {
-            $p = (float) $this->parseNumber($extra['price'] ?? 0);
-            $d = (float) $this->parseNumber($extra['discount'] ?? 0);
-            $subtotalPackage += $p;
-            $totalDiscount += $d;
-        }
-
-        // Total addons
-        $totalAddon = 0;
-        foreach ($addons as $addon) {
-            $qty = (int) ($addon['qty'] ?? 1);
-            if ($qty < 1) $qty = 1;
-            $price = (float) $this->parseNumber($addon['price'] ?? 0);
-            $totalAddon += ($qty * $price);
-        }
-
-        // Grand Total
-        $grandTotal = $subtotalPackage + $totalAddon - $totalDiscount;
-
-        // DP and remaining balance
-        $dp1 = (float) $this->parseNumber($request->input('dp1_amount', 0));
-        $dp2 = (float) $this->parseNumber($request->input('dp2_amount', 0));
-        $totalDp = $dp1 + $dp2;
-        $remaining = max(0, $grandTotal - $totalDp);
-
-        $existing = Invoice::find($id);
-        $payments = $request->has('payments') ? $request->input('payments') : ($existing ? $existing->payments : []);
-        if (is_string($payments)) {
-            $payments = json_decode($payments, true) ?: [];
-        }
-
-        if (!empty($payments)) {
-            $paidFromPayments = 0;
-            foreach ($payments as $p) {
-                $paidFromPayments += (float) $this->parseNumber($p['amount'] ?? 0);
+            $id = $request->input('id');
+            if (empty($id) || str_starts_with($id, 'inv_temp_')) {
+                $id = (string) Str::uuid();
             }
-            if ($paidFromPayments > 0) {
-                $totalDp = $paidFromPayments;
-                $remaining = max(0, $grandTotal - $totalDp);
+
+            // Server-side calculation
+            $pkgPrice = (float) $this->parseNumber($request->input('package_price', 0));
+            $pkgQty = (int) ($request->input('package_qty', 1) ?: 1);
+            $discount = (float) $this->parseNumber($request->input('discount', 0));
+
+            $extraPackages = $request->input('extra_packages', []);
+            if (is_string($extraPackages)) {
+                $extraPackages = json_decode($extraPackages, true) ?: [];
             }
-        } elseif ($totalDp > 0) {
-            $payments = [
-                [
-                    'id' => (string) Str::uuid(),
-                    'amount' => $totalDp,
-                    'date' => $this->parseDate($request->input('invoice_date')) ?: Carbon::now()->toDateString(),
-                    'note' => $request->input('termin_label', 'Uang Muka / DP 1'),
-                ]
-            ];
-        }
 
-        $paymentStatus = 'Belum Dibayar';
-        if ($remaining <= 0 && $grandTotal > 0) {
-            $paymentStatus = 'Lunas';
-        } elseif ($totalDp > 0) {
-            $paymentStatus = 'Terbayar Sebagian';
-        }
+            $addons = $request->input('addons', []);
+            if (is_string($addons)) {
+                $addons = json_decode($addons, true) ?: [];
+            }
 
-        $data = [
-            'id' => $id,
-            'user_id' => $user->id,
-            'booking_id' => $request->input('booking_id'),
-            'invoice_number' => $request->input('invoice_number', 'INV-' . date('Ym') . '-001'),
-            'invoice_date' => $this->parseDate($request->input('invoice_date')),
-            'vendor_name' => $request->input('vendor_name', $user->business_name ?? $user->name),
-            'vendor_address' => $request->input('vendor_address'),
-            'client_name' => $request->input('client_name'),
-            'client_wa' => $request->input('client_wa'),
-            'client_address' => $request->input('client_address'),
-            'event_date' => $this->parseDate($request->input('event_date')),
-            'termin_label' => $request->input('termin_label', 'Uang Muka / DP 1'),
-            'package_name' => $request->input('package_name'),
-            'package_price' => $pkgPrice,
-            'package_qty' => $pkgQty,
-            'discount' => $discount,
-            'extra_packages' => $extraPackages,
-            'addons' => $addons,
-            'subtotal_package' => $subtotalPackage,
-            'total_addon' => $totalAddon,
-            'total_discount' => $totalDiscount,
-            'grand_total' => $grandTotal,
-            'dp1_amount' => $dp1,
-            'dp2_amount' => $dp2,
-            'total_dp' => $totalDp,
-            'remaining_balance' => $remaining,
-            'payments' => $payments,
-            'payment_status' => $paymentStatus,
-            'due_date' => $this->parseDate($request->input('due_date')),
-            'bank_name' => $request->input('bank_name', 'BCA'),
-            'bank_account_number' => $request->input('bank_account_number'),
-            'bank_account_name' => $request->input('bank_account_name'),
-            'terms_and_conditions' => $request->input('terms_and_conditions'),
-            'theme' => $request->input('theme', 'theme-minimalist'),
-            'status' => 'saved',
-        ];
+            // Subtotal package
+            $subtotalPackage = $pkgPrice * $pkgQty;
+            $totalDiscount = $discount;
+            foreach ($extraPackages as $extra) {
+                $p = (float) $this->parseNumber($extra['price'] ?? 0);
+                $d = (float) $this->parseNumber($extra['discount'] ?? 0);
+                $subtotalPackage += $p;
+                $totalDiscount += $d;
+            }
 
-        $invoice = Invoice::updateOrCreate(
-            ['id' => $id],
-            $data
-        );
+            // Total addons
+            $totalAddon = 0;
+            foreach ($addons as $addon) {
+                $qty = (int) ($addon['qty'] ?? 1);
+                if ($qty < 1) $qty = 1;
+                $price = (float) $this->parseNumber($addon['price'] ?? 0);
+                $totalAddon += ($qty * $price);
+            }
 
-        // Sync with Booking if connected
-        if (!empty($data['booking_id'])) {
-            $booking = Booking::where('user_id', $user->id)->find($data['booking_id']);
-            if ($booking) {
-                $booking->paid_amount = $totalDp;
-                if ($totalDp >= $grandTotal && $grandTotal > 0) {
-                    $booking->payment_status = 'Lunas';
-                } elseif ($dp2 > 0) {
-                    $booking->payment_status = 'Termin 2';
-                } elseif ($dp1 > 0) {
-                    $booking->payment_status = 'DP 1';
+            // Grand Total
+            $grandTotal = $subtotalPackage + $totalAddon - $totalDiscount;
+
+            // DP and remaining balance
+            $dp1 = (float) $this->parseNumber($request->input('dp1_amount', 0));
+            $dp2 = (float) $this->parseNumber($request->input('dp2_amount', 0));
+            $totalDp = $dp1 + $dp2;
+            $remaining = max(0, $grandTotal - $totalDp);
+
+            $existing = Invoice::find($id);
+            $payments = $request->has('payments') ? $request->input('payments') : ($existing ? $existing->payments : []);
+            if (is_string($payments)) {
+                $payments = json_decode($payments, true) ?: [];
+            }
+
+            if (!empty($payments)) {
+                $paidFromPayments = 0;
+                foreach ($payments as $p) {
+                    $paidFromPayments += (float) $this->parseNumber($p['amount'] ?? 0);
                 }
-                $booking->save();
+                if ($paidFromPayments > 0) {
+                    $totalDp = $paidFromPayments;
+                    $remaining = max(0, $grandTotal - $totalDp);
+                }
+            } elseif ($totalDp > 0) {
+                $payments = [
+                    [
+                        'id' => (string) Str::uuid(),
+                        'amount' => $totalDp,
+                        'date' => $this->parseDate($request->input('invoice_date')) ?: Carbon::now()->toDateString(),
+                        'note' => $request->input('termin_label', 'Uang Muka / DP 1'),
+                    ]
+                ];
             }
-        }
 
-        // Log system activity if class exists
-        if (class_exists(SystemActivity::class)) {
-            SystemActivity::create([
+            $paymentStatus = 'Belum Dibayar';
+            if ($remaining <= 0 && $grandTotal > 0) {
+                $paymentStatus = 'Lunas';
+            } elseif ($totalDp > 0) {
+                $paymentStatus = 'Terbayar Sebagian';
+            }
+
+            $data = [
+                'id' => $id,
                 'user_id' => $user->id,
-                'type' => 'invoice_created',
-                'description' => "Menyimpan invoice {$invoice->invoice_number} untuk klien " . ($invoice->client_name ?: '-'),
+                'booking_id' => $request->input('booking_id'),
+                'invoice_number' => $request->input('invoice_number', 'INV-' . date('Ym') . '-001'),
+                'invoice_date' => $this->parseDate($request->input('invoice_date')),
+                'vendor_name' => $request->input('vendor_name', $user->business_name ?? $user->name),
+                'vendor_address' => $request->input('vendor_address'),
+                'client_name' => $request->input('client_name'),
+                'client_wa' => $request->input('client_wa'),
+                'client_address' => $request->input('client_address'),
+                'event_date' => $this->parseDate($request->input('event_date')),
+                'termin_label' => $request->input('termin_label', 'Uang Muka / DP 1'),
+                'package_name' => $request->input('package_name'),
+                'package_price' => $pkgPrice,
+                'package_qty' => $pkgQty,
+                'discount' => $discount,
+                'extra_packages' => $extraPackages,
+                'addons' => $addons,
+                'subtotal_package' => $subtotalPackage,
+                'total_addon' => $totalAddon,
+                'total_discount' => $totalDiscount,
+                'grand_total' => $grandTotal,
+                'dp1_amount' => $dp1,
+                'dp2_amount' => $dp2,
+                'total_dp' => $totalDp,
+                'remaining_balance' => $remaining,
+                'payments' => $payments,
+                'payment_status' => $paymentStatus,
+                'due_date' => $this->parseDate($request->input('due_date')),
+                'bank_name' => $request->input('bank_name', 'BCA'),
+                'bank_account_number' => $request->input('bank_account_number'),
+                'bank_account_name' => $request->input('bank_account_name'),
+                'terms_and_conditions' => $request->input('terms_and_conditions'),
+                'theme' => $request->input('theme', 'theme-minimalist'),
+                'status' => 'saved',
+            ];
+
+            $invoice = Invoice::updateOrCreate(
+                ['id' => $id],
+                $data
+            );
+
+            // Sync with Booking if connected
+            if (!empty($data['booking_id'])) {
+                $booking = Booking::where('user_id', $user->id)->find($data['booking_id']);
+                if ($booking) {
+                    $booking->paid_amount = $totalDp;
+                    if ($totalDp >= $grandTotal && $grandTotal > 0) {
+                        $booking->payment_status = 'Lunas';
+                    } elseif ($dp2 > 0) {
+                        $booking->payment_status = 'Termin 2';
+                    } elseif ($dp1 > 0) {
+                        $booking->payment_status = 'DP 1';
+                    }
+                    $booking->save();
+                }
+            }
+
+            // Log system activity if class exists
+            if (class_exists(SystemActivity::class)) {
+                SystemActivity::create([
+                    'user_id' => $user->id,
+                    'type' => 'invoice_created',
+                    'description' => "Menyimpan invoice {$invoice->invoice_number} untuk klien " . ($invoice->client_name ?: '-'),
+                ]);
+            }
+
+            $count = Invoice::where('user_id', $user->id)->count();
+
+            return response()->json([
+                'success' => true,
+                'invoice' => $invoice,
+                'saved_count' => $count
             ]);
+        } catch (\Throwable $e) {
+            Log::error('addInvoice error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
-
-        $count = Invoice::where('user_id', $user->id)->count();
-
-        return response()->json([
-            'success' => true,
-            'invoice' => $invoice,
-            'saved_count' => $count
-        ]);
     }
 
     // Mark invoice as paid
     public function markPaid($id)
     {
-        $user = $this->getUser();
-        if (!$user) return response()->json(['success' => false], 401);
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
 
-        $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
-        if (!$invoice) return response()->json(['error' => 'Not found'], 404);
+            $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
+            if (!$invoice) return response()->json(['error' => 'Not found'], 404);
 
-        $prevTotalDp = (float) $invoice->total_dp;
-        $grandTotal = (float) $invoice->grand_total;
-        $unpaid = max(0, $grandTotal - $prevTotalDp);
+            $prevTotalDp = (float) $invoice->total_dp;
+            $grandTotal = (float) $invoice->grand_total;
+            $unpaid = max(0, $grandTotal - $prevTotalDp);
 
-        $payments = $invoice->payments ?: [];
-        if ($unpaid > 0) {
-            $payments[] = [
-                'id' => (string) Str::uuid(),
-                'amount' => $unpaid,
-                'date' => Carbon::now()->toDateString(),
-                'note' => 'Pelunasan',
-            ];
-        }
-
-        $invoice->payments = $payments;
-        $invoice->total_dp = $grandTotal;
-        $invoice->remaining_balance = 0;
-        $invoice->payment_status = 'Lunas';
-        $invoice->save();
-
-        if (!empty($invoice->booking_id)) {
-            $booking = Booking::where('user_id', $user->id)->find($invoice->booking_id);
-            if ($booking) {
-                $booking->paid_amount = $grandTotal;
-                $booking->payment_status = 'Lunas';
-                $booking->save();
+            $payments = $invoice->payments ?: [];
+            if ($unpaid > 0) {
+                $payments[] = [
+                    'id' => (string) Str::uuid(),
+                    'amount' => $unpaid,
+                    'date' => Carbon::now()->toDateString(),
+                    'note' => 'Pelunasan',
+                ];
             }
-        }
 
-        if (class_exists(SystemActivity::class)) {
-            SystemActivity::create([
-                'user_id' => $user->id,
-                'type' => 'invoice_paid',
-                'description' => "Invoice {$invoice->invoice_number} ditandai lunas",
+            $invoice->payments = $payments;
+            $invoice->total_dp = $grandTotal;
+            $invoice->remaining_balance = 0;
+            $invoice->payment_status = 'Lunas';
+            $invoice->save();
+
+            if (!empty($invoice->booking_id)) {
+                $booking = Booking::where('user_id', $user->id)->find($invoice->booking_id);
+                if ($booking) {
+                    $booking->paid_amount = $grandTotal;
+                    $booking->payment_status = 'Lunas';
+                    $booking->save();
+                }
+            }
+
+            if (class_exists(SystemActivity::class)) {
+                SystemActivity::create([
+                    'user_id' => $user->id,
+                    'type' => 'invoice_paid',
+                    'description' => "Invoice {$invoice->invoice_number} ditandai lunas",
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Invoice ditandai lunas',
+                'invoice' => $invoice
             ]);
+        } catch (\Throwable $e) {
+            Log::error('markPaid error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Invoice ditandai lunas',
-            'invoice' => $invoice
-        ]);
     }
 
     // Record payment
     public function recordPayment(Request $request, $id)
     {
-        $user = $this->getUser();
-        if (!$user) return response()->json(['success' => false], 401);
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
 
-        $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
-        if (!$invoice) return response()->json(['error' => 'Not found'], 404);
+            $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
+            if (!$invoice) return response()->json(['error' => 'Not found'], 404);
 
-        $amount = (float) $this->parseNumber($request->input('amount', 0));
-        if ($amount <= 0) {
-            return response()->json(['success' => false, 'error' => 'Nominal harus lebih dari 0'], 422);
-        }
+            $amount = (float) $this->parseNumber($request->input('amount', 0));
+            if ($amount <= 0) {
+                return response()->json(['success' => false, 'error' => 'Nominal harus lebih dari 0'], 422);
+            }
 
-        $date = $request->input('date') ? $this->parseDate($request->input('date')) : Carbon::now()->toDateString();
-        $note = $request->input('note', '');
+            $date = $request->input('date') ? $this->parseDate($request->input('date')) : Carbon::now()->toDateString();
+            $note = $request->input('note', '');
 
-        $payments = $invoice->payments ?: [];
-        $newPayment = [
-            'id' => (string) Str::uuid(),
-            'amount' => $amount,
-            'date' => $date ?: Carbon::now()->toDateString(),
-            'note' => $note,
-        ];
-        $payments[] = $newPayment;
+            $payments = $invoice->payments ?: [];
+            $newPayment = [
+                'id' => (string) Str::uuid(),
+                'amount' => $amount,
+                'date' => $date ?: Carbon::now()->toDateString(),
+                'note' => $note,
+            ];
+            $payments[] = $newPayment;
 
-        $totalPaid = 0;
-        foreach ($payments as $p) {
-            $totalPaid += (float) ($p['amount'] ?? 0);
-        }
+            $totalPaid = 0;
+            foreach ($payments as $p) {
+                $totalPaid += (float) ($p['amount'] ?? 0);
+            }
 
-        $grandTotal = (float) $invoice->grand_total;
-        $remaining = max(0, $grandTotal - $totalPaid);
+            $grandTotal = (float) $invoice->grand_total;
+            $remaining = max(0, $grandTotal - $totalPaid);
 
-        $invoice->payments = $payments;
-        $invoice->total_dp = $totalPaid;
-        $invoice->remaining_balance = $remaining;
+            $invoice->payments = $payments;
+            $invoice->total_dp = $totalPaid;
+            $invoice->remaining_balance = $remaining;
 
-        $bookingStatus = 'DP 1';
-        if ($remaining <= 0 && $grandTotal > 0) {
-            $invoice->payment_status = 'Lunas';
-            $bookingStatus = 'Lunas';
-        } else {
-            $invoice->payment_status = 'Terbayar Sebagian';
-            $paymentCount = count($payments);
-            if ($paymentCount >= 2) {
-                $bookingStatus = 'Termin ' . $paymentCount;
+            $bookingStatus = 'DP 1';
+            if ($remaining <= 0 && $grandTotal > 0) {
+                $invoice->payment_status = 'Lunas';
+                $bookingStatus = 'Lunas';
             } else {
-                $bookingStatus = 'DP 1';
+                $invoice->payment_status = 'Terbayar Sebagian';
+                $paymentCount = count($payments);
+                if ($paymentCount >= 2) {
+                    $bookingStatus = 'Termin ' . $paymentCount;
+                } else {
+                    $bookingStatus = 'DP 1';
+                }
             }
-        }
-        $invoice->save();
+            $invoice->save();
 
-        if (!empty($invoice->booking_id)) {
-            $booking = Booking::where('user_id', $user->id)->find($invoice->booking_id);
-            if ($booking) {
-                $booking->paid_amount = $totalPaid;
-                $booking->payment_status = $bookingStatus;
-                $booking->save();
+            if (!empty($invoice->booking_id)) {
+                $booking = Booking::where('user_id', $user->id)->find($invoice->booking_id);
+                if ($booking) {
+                    $booking->paid_amount = $totalPaid;
+                    $booking->payment_status = $bookingStatus;
+                    $booking->save();
+                }
             }
-        }
 
-        if (class_exists(SystemActivity::class)) {
-            SystemActivity::create([
-                'user_id' => $user->id,
-                'type' => 'invoice_payment_added',
-                'description' => "Mencatat pembayaran Rp " . number_format($amount, 0, ',', '.') . " untuk invoice {$invoice->invoice_number}",
+            if (class_exists(SystemActivity::class)) {
+                SystemActivity::create([
+                    'user_id' => $user->id,
+                    'type' => 'invoice_payment_added',
+                    'description' => "Mencatat pembayaran Rp " . number_format($amount, 0, ',', '.') . " untuk invoice {$invoice->invoice_number}",
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Pembayaran tercatat dan status Booking diperbarui menjadi {$bookingStatus}.",
+                'booking_status' => $bookingStatus,
+                'invoice' => $invoice
             ]);
+        } catch (\Throwable $e) {
+            Log::error('recordPayment error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => "Pembayaran tercatat dan status Booking diperbarui menjadi {$bookingStatus}.",
-            'booking_status' => $bookingStatus,
-            'invoice' => $invoice
-        ]);
     }
 
     // Delete payment
     public function deletePayment($id, $paymentId)
     {
-        $user = $this->getUser();
-        if (!$user) return response()->json(['success' => false], 401);
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
 
-        $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
-        if (!$invoice) return response()->json(['error' => 'Not found'], 404);
+            $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
+            if (!$invoice) return response()->json(['error' => 'Not found'], 404);
 
-        $payments = $invoice->payments ?: [];
-        $filtered = [];
-        foreach ($payments as $p) {
-            if (($p['id'] ?? '') !== $paymentId) {
-                $filtered[] = $p;
+            $payments = $invoice->payments ?: [];
+            $filtered = [];
+            foreach ($payments as $p) {
+                if (($p['id'] ?? '') !== $paymentId) {
+                    $filtered[] = $p;
+                }
             }
-        }
 
-        $totalPaid = 0;
-        foreach ($filtered as $p) {
-            $totalPaid += (float) ($p['amount'] ?? 0);
-        }
-
-        $grandTotal = (float) $invoice->grand_total;
-        $remaining = max(0, $grandTotal - $totalPaid);
-
-        $invoice->payments = $filtered;
-        $invoice->total_dp = $totalPaid;
-        $invoice->remaining_balance = $remaining;
-
-        if ($totalPaid <= 0) {
-            $invoice->payment_status = 'Belum Dibayar';
-            $bookingStatus = 'Belum DP';
-        } elseif ($remaining <= 0 && $grandTotal > 0) {
-            $invoice->payment_status = 'Lunas';
-            $bookingStatus = 'Lunas';
-        } else {
-            $invoice->payment_status = 'Terbayar Sebagian';
-            $bookingStatus = count($filtered) >= 2 ? 'Termin ' . count($filtered) : 'DP 1';
-        }
-        $invoice->save();
-
-        if (!empty($invoice->booking_id)) {
-            $booking = Booking::where('user_id', $user->id)->find($invoice->booking_id);
-            if ($booking) {
-                $booking->paid_amount = $totalPaid;
-                $booking->payment_status = $bookingStatus;
-                $booking->save();
+            $totalPaid = 0;
+            foreach ($filtered as $p) {
+                $totalPaid += (float) ($p['amount'] ?? 0);
             }
-        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Pembayaran dihapus',
-            'invoice' => $invoice
-        ]);
+            $grandTotal = (float) $invoice->grand_total;
+            $remaining = max(0, $grandTotal - $totalPaid);
+
+            $invoice->payments = $filtered;
+            $invoice->total_dp = $totalPaid;
+            $invoice->remaining_balance = $remaining;
+
+            if ($totalPaid <= 0) {
+                $invoice->payment_status = 'Belum Dibayar';
+                $bookingStatus = 'Belum DP';
+            } elseif ($remaining <= 0 && $grandTotal > 0) {
+                $invoice->payment_status = 'Lunas';
+                $bookingStatus = 'Lunas';
+            } else {
+                $invoice->payment_status = 'Terbayar Sebagian';
+                $bookingStatus = count($filtered) >= 2 ? 'Termin ' . count($filtered) : 'DP 1';
+            }
+            $invoice->save();
+
+            if (!empty($invoice->booking_id)) {
+                $booking = Booking::where('user_id', $user->id)->find($invoice->booking_id);
+                if ($booking) {
+                    $booking->paid_amount = $totalPaid;
+                    $booking->payment_status = $bookingStatus;
+                    $booking->save();
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembayaran dihapus',
+                'invoice' => $invoice
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('deletePayment error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     // Public view for /inv/{id}
@@ -469,45 +543,73 @@ class InvoiceController extends Controller
     // Save vendor bank details to user profile
     public function saveBank(Request $request)
     {
-        $user = $this->getUser();
-        if (!$user) return response()->json(['success' => false], 401);
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
 
-        $user->bank_name = $request->input('bank_name', 'BCA');
-        $user->bank_account_number = $request->input('bank_account_number');
-        $user->bank_account_name = $request->input('bank_account_name');
-        $user->save();
+            $user->bank_name = $request->input('bank_name', 'BCA');
+            $user->bank_account_number = $request->input('bank_account_number');
+            $user->bank_account_name = $request->input('bank_account_name');
+            $user->save();
 
-        return response()->json(['success' => true]);
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            Log::error('saveBank error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     // Save terms & conditions
     public function saveTerms(Request $request)
     {
-        $user = $this->getUser();
-        if (!$user) return response()->json(['success' => false], 401);
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
 
-        $user->default_terms = $request->input('terms', []);
-        $user->save();
+            $user->default_terms = $request->input('terms', []);
+            $user->save();
 
-        return response()->json(['success' => true]);
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            Log::error('saveTerms error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     // Get settings
     public function getSettings()
     {
-        $user = $this->getUser();
-        if (!$user) return response()->json([]);
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json([]);
 
-        $count = Invoice::where('user_id', $user->id)->count();
+            $count = 0;
+            try {
+                $count = Invoice::where('user_id', $user->id)->count();
+            } catch (\Throwable $e) {}
 
-        return response()->json([
-            'bank_name' => $user->bank_name ?: 'BCA',
-            'bank_account_number' => $user->bank_account_number ?: '0431063867',
-            'bank_account_name' => $user->bank_account_name ?: 'Umi Salamah',
-            'default_terms' => $user->default_terms,
-            'business_name' => $user->business_name ?: $user->name,
-            'saved_count' => $count,
-        ]);
+            return response()->json([
+                'bank_name' => $user->bank_name ?: 'BCA',
+                'bank_account_number' => $user->bank_account_number ?: '0431063867',
+                'bank_account_name' => $user->bank_account_name ?: 'Umi Salamah',
+                'default_terms' => $user->default_terms,
+                'business_name' => $user->business_name ?: $user->name,
+                'saved_count' => $count,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('getSettings error: ' . $e->getMessage());
+            return response()->json([
+                'bank_name' => 'BCA',
+                'bank_account_number' => '0431063867',
+                'bank_account_name' => 'Umi Salamah',
+                'default_terms' => [],
+                'business_name' => 'CloseMateAI',
+                'saved_count' => 0,
+            ]);
+        }
     }
 
     protected function parseNumber($val)

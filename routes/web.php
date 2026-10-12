@@ -139,7 +139,29 @@ Route::get('/api/debug/auto-login', function() {
     auth()->login($user);
     return redirect('/chat');
 });
-Route::get('/api/debug/chats', function() {
-    $chats = \App\Models\Chat::with('messages')->get();
-    return response()->json($chats);
+Route::get('/api/debug/migrate', function() {
+    try {
+        $dbPath = config('database.connections.sqlite.database');
+        $dbDir = dirname($dbPath);
+        if (is_dir($dbDir)) {
+            @chmod($dbDir, 0777);
+        }
+        if (file_exists($dbPath)) {
+            @chmod($dbPath, 0666);
+        }
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        return response()->json([
+            'status' => 'success',
+            'database' => $dbPath,
+            'tables' => \Illuminate\Support\Facades\Schema::getAllTables(),
+            'output' => $output
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
 });

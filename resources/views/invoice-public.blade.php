@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
@@ -336,14 +337,55 @@
 
         function unduhPDF() {
             const el = document.getElementById('invoice-paper');
-            const opt = {
-                margin: [0.2, 0.2, 0.2, 0.2],
-                filename: '{{ $invoice->invoice_number }}.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(el).save();
+            const noInv = '{{ $invoice->invoice_number }}';
+
+            html2canvas(el, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
+                const jsPDFClass = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jsPDF || null);
+                if (!jsPDFClass) {
+                    throw new Error("Pustaka PDF tidak tersedia");
+                }
+
+                const pdf = new jsPDFClass({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
+
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+
+                const margin = 8;
+                const maxW = pageWidth - (margin * 2);
+                const maxH = pageHeight - (margin * 2);
+
+                const cWidth = canvas.width;
+                const cHeight = canvas.height;
+                const ratio = cWidth / cHeight;
+
+                let printW = maxW;
+                let printH = printW / ratio;
+
+                if (printH > maxH) {
+                    printH = maxH;
+                    printW = printH * ratio;
+                }
+
+                const x = margin + (maxW - printW) / 2;
+                const y = margin;
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.98);
+                pdf.addImage(imgData, 'JPEG', x, y, printW, printH, undefined, 'FAST');
+                pdf.save(`${noInv}.pdf`);
+            }).catch(err => {
+                console.error(err);
+                alert("Gagal mengunduh invoice PDF");
+            });
         }
     </script>
 </body>

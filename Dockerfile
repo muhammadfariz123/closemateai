@@ -52,22 +52,25 @@ COPY . .
 RUN composer dump-autoload --optimize
 
 # Set permissions
-RUN mkdir -p /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache
-RUN touch /var/www/html/database/database.sqlite || true
-RUN chown -R www-data:www-data /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache
+RUN mkdir -p /app/database /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache
+RUN touch /app/database/database.sqlite /var/www/html/database/database.sqlite || true
+RUN chmod -R 777 /app /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /app /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Create a startup script
 RUN echo '#!/bin/bash\n\
-touch /var/www/html/database/database.sqlite || true\n\
-chown -R www-data:www-data /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache\n\
-chmod -R 775 /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache\n\
+TARGET_DB="${DB_DATABASE:-/var/www/html/database/database.sqlite}"\n\
+TARGET_DIR=$(dirname "$TARGET_DB")\n\
+mkdir -p "$TARGET_DIR" /app/database /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache\n\
+touch "$TARGET_DB" /app/database/database.sqlite /var/www/html/database/database.sqlite || true\n\
+chmod -R 777 "$TARGET_DIR" /app /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache || true\n\
+chown -R www-data:www-data "$TARGET_DIR" /app /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache || true\n\
 \n\
 # Update Apache to listen on Render PORT\n\
 sed -i "s/80/${PORT:-8000}/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf\n\
 \n\
 # Run migrations\n\
-php artisan migrate --force\n\
+php artisan migrate --force || true\n\
 php artisan storage:link || true\n\
 \n\
 # Start apache in foreground\n\
