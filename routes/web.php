@@ -141,20 +141,22 @@ Route::get('/api/debug/auto-login', function() {
 });
 Route::get('/api/debug/migrate', function() {
     try {
-        $dbPath = config('database.connections.sqlite.database');
-        $dbDir = dirname($dbPath);
-        if (is_dir($dbDir)) {
-            @chmod($dbDir, 0777);
-        }
-        if (file_exists($dbPath)) {
-            @chmod($dbPath, 0666);
+        if (config('database.default') === 'sqlite') {
+            $dbPath = config('database.connections.sqlite.database');
+            if ($dbPath) {
+                $dbDir = dirname($dbPath);
+                if (is_dir($dbDir)) @chmod($dbDir, 0777);
+                if (file_exists($dbPath)) @chmod($dbPath, 0666);
+            }
         }
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
         $output = \Illuminate\Support\Facades\Artisan::output();
         return response()->json([
             'status' => 'success',
-            'database' => $dbPath,
-            'tables' => \Illuminate\Support\Facades\Schema::getAllTables(),
+            'connection' => config('database.default'),
+            'has_invoices_table' => \Illuminate\Support\Facades\Schema::hasTable('invoices'),
+            'has_users_bank' => \Illuminate\Support\Facades\Schema::hasColumn('users', 'bank_name'),
+            'has_invoice_payments' => \Illuminate\Support\Facades\Schema::hasColumn('invoices', 'payments'),
             'output' => $output
         ]);
     } catch (\Throwable $e) {
