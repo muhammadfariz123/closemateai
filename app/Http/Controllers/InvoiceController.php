@@ -52,6 +52,9 @@ class InvoiceController extends Controller
             if (Schema::hasTable('invoices') && !Schema::hasColumn('invoices', 'payments')) {
                 $needsMigration = true;
             }
+            if (!Schema::hasTable('invoice_packages')) {
+                $needsMigration = true;
+            }
 
             if ($needsMigration) {
                 Artisan::call('migrate', ['--force' => true]);
@@ -86,7 +89,13 @@ class InvoiceController extends Controller
         $user = $this->getUser();
         if (!$user) return response()->json(['error' => 'Unauthorized'], 401);
 
-        $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
+        $invoice = null;
+        if (Str::isUuid($id)) {
+            $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
+        }
+        if (!$invoice) {
+            $invoice = Invoice::where('user_id', $user->id)->where('invoice_number', $id)->first();
+        }
         if (!$invoice) return response()->json(['error' => 'Not found'], 404);
 
         return response()->json($invoice);
@@ -754,10 +763,14 @@ class InvoiceController extends Controller
 
     public function getPackages()
     {
-        $this->ensureSchemaReady();
         try {
+            $this->ensureSchemaReady();
             $user = $this->getUser();
             if (!$user) return response()->json([]);
+
+            if (!Schema::hasTable('invoice_packages')) {
+                return response()->json([]);
+            }
 
             $packages = InvoicePackage::where('user_id', $user->id)
                 ->orderBy('created_at', 'desc')
