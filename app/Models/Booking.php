@@ -12,10 +12,15 @@ class Booking extends Model
         'addons' => 'array',
         'operational_costs' => 'array',
         'team_members' => 'array',
-        'event_date' => 'date',
-        'payment_date' => 'date',
+        'event_date' => 'date:Y-m-d',
+        'payment_date' => 'date:Y-m-d',
         'production_tracks' => 'array',
     ];
+
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return $date->format('Y-m-d');
+    }
 
     protected static function boot()
     {

@@ -2923,9 +2923,38 @@ Terima kasih banyak! 🤍`;
                 .catch(e => {});
         }
 
+        function cleanDateOnly(rawDate) {
+            if (!rawDate) return '';
+            let s = String(rawDate).trim();
+            const isoMatch = s.match(/^(\d{4}-\d{2}-\d{2})/);
+            if (isoMatch) return isoMatch[1];
+            if (s.includes('T')) s = s.split('T')[0];
+            if (s.includes(' ')) s = s.split(' ')[0];
+            if (s.includes('/')) {
+                const parts = s.split('/');
+                if (parts.length === 3) {
+                    if (parts[2].length === 4) {
+                        const p0 = parseInt(parts[0], 10);
+                        const p1 = parseInt(parts[1], 10);
+                        if (p0 > 12) {
+                            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                        } else if (p1 > 12) {
+                            return `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+                        } else {
+                            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                        }
+                    } else if (parts[0].length === 4) {
+                        return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+                    }
+                }
+            }
+            return s;
+        }
+
         function formatTglIndo(val) {
             if (!val) return '';
             try {
+                val = cleanDateOnly(val);
                 const daysId = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
                 const daysEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
                 const monthsId = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -2938,15 +2967,6 @@ Terima kasih banyak! 🤍`;
                     const p = val.split('-');
                     if (p.length === 3) {
                         d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
-                    }
-                } else if (typeof val === 'string' && val.includes('/')) {
-                    const p = val.split('/');
-                    if (p.length === 3) {
-                        if (p[2].length === 4) {
-                            d = new Date(parseInt(p[2], 10), parseInt(p[0], 10) - 1, parseInt(p[1], 10));
-                        } else if (p[0].length === 4) {
-                            d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
-                        }
                     }
                 }
                 if (!d || isNaN(d.getTime())) {
@@ -3694,11 +3714,12 @@ Terima kasih banyak! 🤍`;
             }
             let html = '';
             list.forEach(b => {
+                const bDateClean = cleanDateOnly(b.event_date);
                 html += `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: 0.15s;" onmouseover="this.style.borderColor='#6c5ce7'" onmouseout="this.style.borderColor='#e2e8f0'" onclick="pilihBooking('${b.id}')">
                     <div>
                         <div style="font-weight: 600; font-size: 14px; color: #181c32;">${b.client_name || '-'}</div>
-                        <div style="font-size: 12px; color: #888;">${b.booking_code || ''} &bull; ${b.event_date || '-'}</div>
+                        <div style="font-size: 12px; color: #888;">${b.booking_code || ''} &bull; ${bDateClean || '-'}</div>
                     </div>
                     <button type="button" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px; border-radius: 6px;">Pilih</button>
                 </div>`;
@@ -3712,10 +3733,12 @@ Terima kasih banyak! 🤍`;
 
             selectedBookingId = b.id;
 
+            const cleanDate = cleanDateOnly(b.event_date);
+
             if (b.client_name) document.getElementById('inputNamaKlien').value = b.client_name;
             if (b.client_phone) document.getElementById('inputNoWaKlien').value = b.client_phone;
             if (b.client_address) document.getElementById('inputAlamatKlien').value = b.client_address;
-            if (b.event_date) document.getElementById('inputTglAcara').value = b.event_date;
+            if (cleanDate) document.getElementById('inputTglAcara').value = cleanDate;
             if (b.package_name) document.getElementById('inputPaketUtama').value = b.package_name;
             if (b.total_price) document.getElementById('inputHargaUtama').value = 'Rp ' + formatRupiah(b.total_price);
 
@@ -3723,7 +3746,7 @@ Terima kasih banyak! 🤍`;
             if (box) {
                 box.style.display = 'block';
                 const txt = document.getElementById('bookingConnectedText');
-                if (txt) txt.textContent = `Terhubung ke Booking: ${b.client_name || '-'} — ${b.event_date || '-'}`;
+                if (txt) txt.textContent = `Terhubung ke Booking: ${b.client_name || '-'} — ${cleanDate || '-'}`;
             }
 
             syncPreviewClientWa();
