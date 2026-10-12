@@ -28,6 +28,7 @@ Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallbac
 Route::get('/api/public/calendar/{token}.ics', [CalendarController::class, 'export']);
 Route::get('/q/{id}', [QuotationController::class, 'showPublic']);
 Route::post('/q/{id}/approve', [QuotationController::class, 'approveQuotation']);
+Route::get('/inv/{id}', [\App\Http\Controllers\InvoiceController::class, 'showPublic']);
 Route::match(['get', 'post'], '/api/public/wa/{secret}', [WebhookController::class, 'handle']);
 Route::get('/progress/{uuid}', [App\Http\Controllers\ProgressController::class, 'showPublic']);
 
@@ -74,9 +75,13 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/api/invoices', [\App\Http\Controllers\InvoiceController::class, 'getInvoices']);
     Route::get('/api/invoices/settings', [\App\Http\Controllers\InvoiceController::class, 'getSettings']);
+    Route::get('/api/invoices/export/csv', [\App\Http\Controllers\InvoiceController::class, 'exportCsv']);
     Route::get('/api/invoices/{id}', [\App\Http\Controllers\InvoiceController::class, 'getInvoice']);
     Route::post('/api/invoices', [\App\Http\Controllers\InvoiceController::class, 'addInvoice']);
     Route::delete('/api/invoices/{id}', [\App\Http\Controllers\InvoiceController::class, 'deleteInvoice']);
+    Route::post('/api/invoices/{id}/mark-paid', [\App\Http\Controllers\InvoiceController::class, 'markPaid']);
+    Route::post('/api/invoices/{id}/payments', [\App\Http\Controllers\InvoiceController::class, 'recordPayment']);
+    Route::delete('/api/invoices/{id}/payments/{paymentId}', [\App\Http\Controllers\InvoiceController::class, 'deletePayment']);
     Route::post('/api/invoices/save-bank', [\App\Http\Controllers\InvoiceController::class, 'saveBank']);
     Route::post('/api/invoices/save-terms', [\App\Http\Controllers\InvoiceController::class, 'saveTerms']);
 

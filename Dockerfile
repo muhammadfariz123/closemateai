@@ -52,11 +52,17 @@ COPY . .
 RUN composer dump-autoload --optimize
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN mkdir -p /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache
+RUN touch /var/www/html/database/database.sqlite || true
+RUN chown -R www-data:www-data /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 775 /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Create a startup script
 RUN echo '#!/bin/bash\n\
+touch /var/www/html/database/database.sqlite || true\n\
+chown -R www-data:www-data /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache\n\
+chmod -R 775 /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache\n\
+\n\
 # Update Apache to listen on Render PORT\n\
 sed -i "s/80/${PORT:-8000}/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf\n\
 \n\

@@ -14,6 +14,7 @@ class Invoice extends Model
         'extra_packages' => 'array',
         'addons' => 'array',
         'terms_and_conditions' => 'array',
+        'payments' => 'array',
         'invoice_date' => 'date',
         'event_date' => 'date',
         'due_date' => 'date',

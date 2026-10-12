@@ -95,6 +95,39 @@ class InvoiceController extends Controller
         $totalDp = $dp1 + $dp2;
         $remaining = max(0, $grandTotal - $totalDp);
 
+        $existing = Invoice::find($id);
+        $payments = $request->has('payments') ? $request->input('payments') : ($existing ? $existing->payments : []);
+        if (is_string($payments)) {
+            $payments = json_decode($payments, true) ?: [];
+        }
+
+        if (!empty($payments)) {
+            $paidFromPayments = 0;
+            foreach ($payments as $p) {
+                $paidFromPayments += (float) $this->parseNumber($p['amount'] ?? 0);
+            }
+            if ($paidFromPayments > 0) {
+                $totalDp = $paidFromPayments;
+                $remaining = max(0, $grandTotal - $totalDp);
+            }
+        } elseif ($totalDp > 0) {
+            $payments = [
+                [
+                    'id' => (string) Str::uuid(),
+                    'amount' => $totalDp,
+                    'date' => $this->parseDate($request->input('invoice_date')) ?: Carbon::now()->toDateString(),
+                    'note' => $request->input('termin_label', 'Uang Muka / DP 1'),
+                ]
+            ];
+        }
+
+        $paymentStatus = 'Belum Dibayar';
+        if ($remaining <= 0 && $grandTotal > 0) {
+            $paymentStatus = 'Lunas';
+        } elseif ($totalDp > 0) {
+            $paymentStatus = 'Terbayar Sebagian';
+        }
+
         $data = [
             'id' => $id,
             'user_id' => $user->id,
@@ -122,6 +155,8 @@ class InvoiceController extends Controller
             'dp2_amount' => $dp2,
             'total_dp' => $totalDp,
             'remaining_balance' => $remaining,
+            'payments' => $payments,
+            'payment_status' => $paymentStatus,
             'due_date' => $this->parseDate($request->input('due_date')),
             'bank_name' => $request->input('bank_name', 'BCA'),
             'bank_account_number' => $request->input('bank_account_number'),
@@ -168,6 +203,252 @@ class InvoiceController extends Controller
             'invoice' => $invoice,
             'saved_count' => $count
         ]);
+    }
+
+    // Mark invoice as paid
+    public function markPaid($id)
+    {
+        $user = $this->getUser();
+        if (!$user) return response()->json(['success' => false], 401);
+
+        $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
+        if (!$invoice) return response()->json(['error' => 'Not found'], 404);
+
+        $prevTotalDp = (float) $invoice->total_dp;
+        $grandTotal = (float) $invoice->grand_total;
+        $unpaid = max(0, $grandTotal - $prevTotalDp);
+
+        $payments = $invoice->payments ?: [];
+        if ($unpaid > 0) {
+            $payments[] = [
+                'id' => (string) Str::uuid(),
+                'amount' => $unpaid,
+                'date' => Carbon::now()->toDateString(),
+                'note' => 'Pelunasan',
+            ];
+        }
+
+        $invoice->payments = $payments;
+        $invoice->total_dp = $grandTotal;
+        $invoice->remaining_balance = 0;
+        $invoice->payment_status = 'Lunas';
+        $invoice->save();
+
+        if (!empty($invoice->booking_id)) {
+            $booking = Booking::where('user_id', $user->id)->find($invoice->booking_id);
+            if ($booking) {
+                $booking->paid_amount = $grandTotal;
+                $booking->payment_status = 'Lunas';
+                $booking->save();
+            }
+        }
+
+        if (class_exists(SystemActivity::class)) {
+            SystemActivity::create([
+                'user_id' => $user->id,
+                'type' => 'invoice_paid',
+                'description' => "Invoice {$invoice->invoice_number} ditandai lunas",
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Invoice ditandai lunas',
+            'invoice' => $invoice
+        ]);
+    }
+
+    // Record payment
+    public function recordPayment(Request $request, $id)
+    {
+        $user = $this->getUser();
+        if (!$user) return response()->json(['success' => false], 401);
+
+        $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
+        if (!$invoice) return response()->json(['error' => 'Not found'], 404);
+
+        $amount = (float) $this->parseNumber($request->input('amount', 0));
+        if ($amount <= 0) {
+            return response()->json(['success' => false, 'error' => 'Nominal harus lebih dari 0'], 422);
+        }
+
+        $date = $request->input('date') ? $this->parseDate($request->input('date')) : Carbon::now()->toDateString();
+        $note = $request->input('note', '');
+
+        $payments = $invoice->payments ?: [];
+        $newPayment = [
+            'id' => (string) Str::uuid(),
+            'amount' => $amount,
+            'date' => $date ?: Carbon::now()->toDateString(),
+            'note' => $note,
+        ];
+        $payments[] = $newPayment;
+
+        $totalPaid = 0;
+        foreach ($payments as $p) {
+            $totalPaid += (float) ($p['amount'] ?? 0);
+        }
+
+        $grandTotal = (float) $invoice->grand_total;
+        $remaining = max(0, $grandTotal - $totalPaid);
+
+        $invoice->payments = $payments;
+        $invoice->total_dp = $totalPaid;
+        $invoice->remaining_balance = $remaining;
+
+        $bookingStatus = 'DP 1';
+        if ($remaining <= 0 && $grandTotal > 0) {
+            $invoice->payment_status = 'Lunas';
+            $bookingStatus = 'Lunas';
+        } else {
+            $invoice->payment_status = 'Terbayar Sebagian';
+            $paymentCount = count($payments);
+            if ($paymentCount >= 2) {
+                $bookingStatus = 'Termin ' . $paymentCount;
+            } else {
+                $bookingStatus = 'DP 1';
+            }
+        }
+        $invoice->save();
+
+        if (!empty($invoice->booking_id)) {
+            $booking = Booking::where('user_id', $user->id)->find($invoice->booking_id);
+            if ($booking) {
+                $booking->paid_amount = $totalPaid;
+                $booking->payment_status = $bookingStatus;
+                $booking->save();
+            }
+        }
+
+        if (class_exists(SystemActivity::class)) {
+            SystemActivity::create([
+                'user_id' => $user->id,
+                'type' => 'invoice_payment_added',
+                'description' => "Mencatat pembayaran Rp " . number_format($amount, 0, ',', '.') . " untuk invoice {$invoice->invoice_number}",
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Pembayaran tercatat dan status Booking diperbarui menjadi {$bookingStatus}.",
+            'booking_status' => $bookingStatus,
+            'invoice' => $invoice
+        ]);
+    }
+
+    // Delete payment
+    public function deletePayment($id, $paymentId)
+    {
+        $user = $this->getUser();
+        if (!$user) return response()->json(['success' => false], 401);
+
+        $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
+        if (!$invoice) return response()->json(['error' => 'Not found'], 404);
+
+        $payments = $invoice->payments ?: [];
+        $filtered = [];
+        foreach ($payments as $p) {
+            if (($p['id'] ?? '') !== $paymentId) {
+                $filtered[] = $p;
+            }
+        }
+
+        $totalPaid = 0;
+        foreach ($filtered as $p) {
+            $totalPaid += (float) ($p['amount'] ?? 0);
+        }
+
+        $grandTotal = (float) $invoice->grand_total;
+        $remaining = max(0, $grandTotal - $totalPaid);
+
+        $invoice->payments = $filtered;
+        $invoice->total_dp = $totalPaid;
+        $invoice->remaining_balance = $remaining;
+
+        if ($totalPaid <= 0) {
+            $invoice->payment_status = 'Belum Dibayar';
+            $bookingStatus = 'Belum DP';
+        } elseif ($remaining <= 0 && $grandTotal > 0) {
+            $invoice->payment_status = 'Lunas';
+            $bookingStatus = 'Lunas';
+        } else {
+            $invoice->payment_status = 'Terbayar Sebagian';
+            $bookingStatus = count($filtered) >= 2 ? 'Termin ' . count($filtered) : 'DP 1';
+        }
+        $invoice->save();
+
+        if (!empty($invoice->booking_id)) {
+            $booking = Booking::where('user_id', $user->id)->find($invoice->booking_id);
+            if ($booking) {
+                $booking->paid_amount = $totalPaid;
+                $booking->payment_status = $bookingStatus;
+                $booking->save();
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pembayaran dihapus',
+            'invoice' => $invoice
+        ]);
+    }
+
+    // Public view for /inv/{id}
+    public function showPublic($id)
+    {
+        $invoice = Invoice::where('id', $id)->first();
+        if (!$invoice) {
+            $invoice = Invoice::where('invoice_number', $id)->first();
+        }
+        if (!$invoice) {
+            abort(404, 'Invoice tidak ditemukan');
+        }
+
+        $user = \App\Models\User::find($invoice->user_id);
+
+        return view('invoice-public', compact('invoice', 'user'));
+    }
+
+    // Export CSV
+    public function exportCsv()
+    {
+        $user = $this->getUser();
+        if (!$user) return response()->json(['error' => 'Unauthorized'], 401);
+
+        $invoices = Invoice::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
+
+        $filename = "invoices-" . date('Ymd-His') . ".csv";
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $columns = ['No Invoice', 'Klien', 'No WhatsApp', 'Tanggal Invoice', 'Tanggal Acara', 'Total', 'Terbayar', 'Sisa', 'Status'];
+
+        $callback = function() use ($invoices, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($invoices as $inv) {
+                fputcsv($file, [
+                    $inv->invoice_number,
+                    $inv->client_name,
+                    $inv->client_wa,
+                    $inv->invoice_date ? (is_string($inv->invoice_date) ? $inv->invoice_date : $inv->invoice_date->format('d/m/Y')) : '',
+                    $inv->event_date ? (is_string($inv->event_date) ? $inv->event_date : $inv->event_date->format('d/m/Y')) : '',
+                    $inv->grand_total,
+                    $inv->total_dp,
+                    $inv->remaining_balance,
+                    $inv->payment_status ?: 'Belum Dibayar'
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     // Delete invoice

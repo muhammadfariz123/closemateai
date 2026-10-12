@@ -7,6 +7,8 @@
     <title>Invoice Generator - CloseMateAI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --sidebar-bg: #1e1e2d;
@@ -344,8 +346,8 @@
 
         <div class="actions-row">
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <button type="button" class="btn btn-primary" onclick="resetFormInvoiceBaru()"><i class="fa-solid fa-plus"></i> Invoice Baru</button>
-                <button type="button" class="btn btn-secondary" id="btnSavedInvoices" onclick="openSavedInvoicesModal()"><i class="fa-regular fa-file-lines"></i> <span id="savedInvoiceCountText">Invoice Tersimpan (1)</span></button>
+                <button type="button" class="btn btn-primary" id="tabBtnInvoiceBaru" onclick="switchView('baru')"><i class="fa-solid fa-plus"></i> Invoice Baru</button>
+                <button type="button" class="btn btn-secondary" id="tabBtnInvoiceTersimpan" onclick="switchView('tersimpan')"><i class="fa-regular fa-folder-open"></i> <span id="savedInvoiceCountText">Invoice Tersimpan (0)</span></button>
             </div>
             
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -357,7 +359,7 @@
             </div>
         </div>
         
-        <div class="invoice-grid">
+        <div class="invoice-grid" id="invoiceEditorView">
             
             <!-- LEFT COLUMN: Forms -->
             <div>
@@ -939,13 +941,83 @@ Terima kasih banyak! 🤍</textarea>
                 </div>
                 
                 <div class="inv-action-btns" style="display: flex; gap: 12px; margin-bottom: 40px;">
-                    <button type="button" class="btn btn-secondary" onclick="window.print()"><i class="fa-regular fa-image"></i> Unduh PNG</button>
-                    <button type="button" class="btn btn-secondary" style="background: var(--text-dark); color: white; border-color: var(--text-dark);" onclick="window.print()"><i class="fa-regular fa-file-pdf"></i> Unduh PDF</button>
+                    <button type="button" class="btn btn-secondary" onclick="unduhPNG()"><i class="fa-regular fa-image"></i> Unduh PNG</button>
+                    <button type="button" class="btn btn-secondary" style="background: var(--text-dark); color: white; border-color: var(--text-dark);" onclick="unduhPDF()"><i class="fa-regular fa-file-pdf"></i> Unduh PDF</button>
                     <button type="button" class="btn btn-primary btn-full" style="flex: 1;" id="btnSimpanFolder" onclick="simpanInvoiceKeDatabase()"><i class="fa-regular fa-folder-open"></i> Simpan ke Folder</button>
                 </div>
                 
             </div>
             
+        </div>
+
+        <!-- TAB: INVOICE TERSIMPAN VIEW -->
+        <div id="savedInvoicesView" style="display: none; width: 100%;">
+            <!-- Search & Filter Bar -->
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
+                <div style="position: relative; flex: 1; min-width: 260px;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #a1a5b7; font-size: 14px;"></i>
+                    <input type="text" id="searchSavedInvoice" class="form-control" placeholder="Cari nama klien / no. invoice..." oninput="filterSavedInvoices()" style="padding-left: 38px; height: 42px; border-radius: 8px; font-size: 13px; background: white;">
+                </div>
+                <button type="button" class="btn" style="background: #5949d6; color: white; border-radius: 8px; height: 42px; padding: 0 18px; font-weight: 500; border: none; cursor: pointer;">Semua Tanggal</button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='/api/invoices/export/csv'" style="border-radius: 8px; height: 42px; padding: 0 18px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; background: white; cursor: pointer;">
+                    <i class="fa-solid fa-file-csv"></i> Ekspor CSV
+                </button>
+            </div>
+
+            <!-- Status Filter Pills -->
+            <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button type="button" class="status-filter-pill active" onclick="setFilterStatus('all', this)" style="padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; background: #6c5ce7; color: white; transition: 0.2s;">Semua</button>
+                <button type="button" class="status-filter-pill" onclick="setFilterStatus('Belum Dibayar', this)" style="padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1px solid var(--border-color); cursor: pointer; background: white; color: #555; transition: 0.2s;">Belum Dibayar</button>
+                <button type="button" class="status-filter-pill" onclick="setFilterStatus('Terbayar Sebagian', this)" style="padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1px solid var(--border-color); cursor: pointer; background: white; color: #555; transition: 0.2s;">Terbayar Sebagian</button>
+                <button type="button" class="status-filter-pill" onclick="setFilterStatus('Lunas', this)" style="padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1px solid var(--border-color); cursor: pointer; background: white; color: #555; transition: 0.2s;">Lunas</button>
+            </div>
+
+            <!-- Counters Row -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 13px; color: #64748b;">
+                <div><span id="savedCountLabel">0 invoice</span></div>
+                <div style="font-weight: 600; color: #1e1e2d;"><span id="savedTotalValLabel">Total nilai: Rp 0</span></div>
+            </div>
+
+            <!-- Invoices List Container -->
+            <div id="savedInvoicesListContainer" style="background: white; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden;">
+                <div style="text-align: center; padding: 40px; color: #a1a5b7; font-size: 13px;">Memuat invoice tersimpan...</div>
+            </div>
+        </div>
+
+        <!-- MODAL RIWAYAT PEMBAYARAN -->
+        <div id="paymentModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100000; align-items: center; justify-content: center;">
+            <div style="background: white; width: 90%; max-width: 480px; border-radius: 16px; padding: 26px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #181c32;">Riwayat Pembayaran — <span id="paymentModalInvNo">INV-202610-001</span></h3>
+                    <i class="fa-solid fa-xmark" style="cursor: pointer; color: #a1a5b7; font-size: 16px; padding: 4px;" onclick="closePaymentModal()"></i>
+                </div>
+                <div style="font-size: 13px; color: #64748b; margin-bottom: 20px;" id="paymentModalSubtitle">
+                    Total Rp 0 &middot; Terbayar Rp 0 &middot; Sisa Rp 0
+                </div>
+
+                <div id="paymentHistoryList" style="margin-bottom: 20px; max-height: 180px; overflow-y: auto;">
+                    <div style="text-align: center; padding: 20px; color: #a1a5b7; font-size: 13px;">Belum ada pembayaran tercatat.</div>
+                </div>
+
+                <form id="recordPaymentForm" onsubmit="submitRecordPayment(event)">
+                    <input type="hidden" id="paymentInvoiceId">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <input type="text" id="inputPaymentNominal" class="form-control" placeholder="Nominal pembayaran" style="height: 44px; font-size: 14px; font-weight: 600; border-radius: 8px;" oninput="handleCurrencyInput(this)">
+                    </div>
+                    <div class="form-row form-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px;">
+                        <div style="position: relative;">
+                            <input type="text" id="inputPaymentDate" class="form-control" placeholder="mm/dd/yyyy" style="height: 44px; font-size: 13px; border-radius: 8px; padding-right: 32px;">
+                            <i class="fa-regular fa-calendar" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #64748b; pointer-events: none;"></i>
+                        </div>
+                        <div>
+                            <input type="text" id="inputPaymentNote" class="form-control" placeholder="Catatan (opsional)" style="height: 44px; font-size: 13px; border-radius: 8px;">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; height: 46px; background: #6c5ce7; border-radius: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: white;">
+                        Catat Pembayaran
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -2024,12 +2096,15 @@ Jika pembayaran sudah dilakukan, mohon abaikan pesan ini atau kirimkan buktinya 
             })
             .then(res => res.json())
             .then(data => {
-                showToastNotification("Invoice berhasil disimpan ke folder");
+                const noInv = (data.invoice && data.invoice.invoice_number) ? data.invoice.invoice_number : payload.invoice_number;
+                showToastNotification(`Invoice ${noInv} tersimpan`);
                 loadSavedInvoicesCount();
+                switchView('tersimpan');
             })
             .catch(err => {
-                showToastNotification("Invoice berhasil disimpan ke folder");
+                showToastNotification(`Invoice ${payload.invoice_number} tersimpan`);
                 loadSavedInvoicesCount();
+                switchView('tersimpan');
             })
             .finally(() => {
                 btn.innerHTML = `<i class="fa-solid fa-check"></i> Tersimpan`;
@@ -2040,95 +2115,442 @@ Jika pembayaran sudah dilakukan, mohon abaikan pesan ini atau kirimkan buktinya 
             });
         }
 
-        // --- Saved Invoices Modal Management ---
+        // --- Unduh PNG & PDF Functions ---
+        function unduhPNG() {
+            const el = document.getElementById('invoice-preview');
+            const noInv = document.getElementById('previewNoInvoice')?.innerText?.trim() || 'invoice';
+            showToastNotification("Menyiapkan unduhan PNG...");
+
+            const prevShadow = el.style.boxShadow;
+            const prevMargin = el.style.margin;
+            el.style.boxShadow = 'none';
+            el.style.margin = '0';
+
+            html2canvas(el, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
+                el.style.boxShadow = prevShadow;
+                el.style.margin = prevMargin;
+
+                const link = document.createElement('a');
+                link.download = `${noInv}.png`;
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToastNotification(`Invoice ${noInv} berhasil diunduh sebagai PNG`);
+            }).catch(err => {
+                el.style.boxShadow = prevShadow;
+                el.style.margin = prevMargin;
+                console.error(err);
+                showToastNotification("Gagal mengunduh invoice PNG");
+            });
+        }
+
+        function unduhPDF() {
+            const el = document.getElementById('invoice-preview');
+            const noInv = document.getElementById('previewNoInvoice')?.innerText?.trim() || 'invoice';
+            showToastNotification("Menyiapkan unduhan PDF 1 halaman...");
+
+            const prevShadow = el.style.boxShadow;
+            const prevMargin = el.style.margin;
+            el.style.boxShadow = 'none';
+            el.style.margin = '0';
+
+            const opt = {
+                margin: [0.15, 0.15, 0.15, 0.15],
+                filename: `${noInv}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: 'avoid-all' }
+            };
+
+            html2pdf().set(opt).from(el).save().then(() => {
+                el.style.boxShadow = prevShadow;
+                el.style.margin = prevMargin;
+                showToastNotification(`Invoice ${noInv} berhasil diunduh sebagai PDF`);
+            }).catch(err => {
+                el.style.boxShadow = prevShadow;
+                el.style.margin = prevMargin;
+                console.error(err);
+                showToastNotification("Gagal mengunduh invoice PDF");
+            });
+        }
+
+        // --- Tab View & Saved Invoices Management ---
+        let savedInvoicesData = [];
+        let activeFilterStatus = 'all';
+
+        function switchView(view) {
+            const tabBtnBaru = document.getElementById('tabBtnInvoiceBaru');
+            const tabBtnTersimpan = document.getElementById('tabBtnInvoiceTersimpan');
+            const editorView = document.getElementById('invoiceEditorView');
+            const savedView = document.getElementById('savedInvoicesView');
+
+            if (view === 'baru') {
+                tabBtnBaru.className = 'btn btn-primary';
+                tabBtnBaru.style.background = 'var(--primary)';
+                tabBtnBaru.style.color = 'white';
+                tabBtnTersimpan.className = 'btn btn-secondary';
+                tabBtnTersimpan.style.background = 'white';
+                tabBtnTersimpan.style.color = 'var(--text-dark)';
+                editorView.style.display = 'grid';
+                savedView.style.display = 'none';
+            } else {
+                tabBtnBaru.className = 'btn btn-secondary';
+                tabBtnBaru.style.background = 'white';
+                tabBtnBaru.style.color = 'var(--text-dark)';
+                tabBtnTersimpan.className = 'btn btn-primary';
+                tabBtnTersimpan.style.background = '#6c5ce7';
+                tabBtnTersimpan.style.color = 'white';
+                editorView.style.display = 'none';
+                savedView.style.display = 'block';
+                loadSavedInvoicesTab();
+            }
+        }
+
         function loadSavedInvoicesCount() {
             fetch('/api/invoices')
                 .then(res => res.json())
                 .then(list => {
-                    const count = Array.isArray(list) ? list.length : 1;
+                    const count = Array.isArray(list) ? list.length : 0;
                     const textEl = document.getElementById('savedInvoiceCountText');
                     if (textEl) textEl.innerText = `Invoice Tersimpan (${count})`;
                 })
                 .catch(e => {});
         }
 
-        function openSavedInvoicesModal() {
-            let modal = document.getElementById('savedInvoicesModal');
-            if (!modal) {
-                const modalHtml = `
-                <div id="savedInvoicesModal" style="display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
-                    <div style="background: white; width: 90%; max-width: 680px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 85vh; display: flex; flex-direction: column;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                            <h3 style="margin: 0; font-size: 18px; font-weight: 600;"><i class="fa-regular fa-folder-open" style="color: var(--primary); margin-right: 8px;"></i> Invoice Tersimpan</h3>
-                            <i class="fa-solid fa-xmark" style="cursor: pointer; color: var(--text-muted); font-size: 18px;" onclick="closeSavedInvoicesModal()"></i>
-                        </div>
-                        
-                        <div id="savedInvoicesContainer" style="overflow-y: auto; flex: 1;">
-                            <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 13px;">Memuat riwayat invoice...</div>
-                        </div>
-                    </div>
-                </div>`;
-                document.body.insertAdjacentHTML('beforeend', modalHtml);
-                modal = document.getElementById('savedInvoicesModal');
+        function formatTglIndo(val) {
+            if (!val) return '';
+            try {
+                const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                const d = new Date(val);
+                if (isNaN(d.getTime())) return val;
+                return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+            } catch(e) {
+                return val;
             }
-            modal.style.display = 'flex';
-            fetchSavedInvoicesList();
         }
 
-        function closeSavedInvoicesModal() {
-            const modal = document.getElementById('savedInvoicesModal');
-            if (modal) modal.style.display = 'none';
-        }
-
-        function fetchSavedInvoicesList() {
-            const container = document.getElementById('savedInvoicesContainer');
-            if (!container) return;
+        function loadSavedInvoicesTab() {
+            const container = document.getElementById('savedInvoicesListContainer');
+            if (container) container.innerHTML = `<div style="text-align: center; padding: 40px; color: #a1a5b7; font-size: 13px;">Memuat riwayat invoice...</div>`;
 
             fetch('/api/invoices')
                 .then(res => res.json())
                 .then(list => {
-                    if (!Array.isArray(list) || list.length === 0) {
-                        container.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--text-muted); font-size: 13px;">Belum ada invoice tersimpan di database.</div>`;
-                        return;
-                    }
-
-                    let html = '';
-                    list.forEach(inv => {
-                        const noInv = inv.invoice_number || 'INV-202610-001';
-                        const client = inv.client_name || 'Klien';
-                        const gTotal = formatRupiah(inv.grand_total || 0);
-                        const sisa = formatRupiah(inv.remaining_balance || 0);
-                        const tgl = inv.invoice_date || '11 Oktober 2026';
-
-                        html += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; background: #fff; transition: 0.15s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
-                            <div>
-                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                                    <span style="font-weight: 700; font-size: 14px; color: var(--text-dark);">${noInv}</span>
-                                    <span style="font-size: 11px; background: #f1f1f4; padding: 2px 8px; border-radius: 4px; color: #555;">${tgl}</span>
-                                </div>
-                                <div style="font-size: 13px; color: #555;">Klien: <strong>${client}</strong> &bull; Sisa: <span style="color: #f1416c; font-weight: 600;">${sisa}</span></div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-weight: 700; font-size: 14px; color: var(--primary); margin-right: 8px;">${gTotal}</span>
-                                <button type="button" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="muatInvoice('${inv.id}')">Muat</button>
-                                <button type="button" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px; color: #f1416c;" onclick="hapusInvoice('${inv.id}')"><i class="fa-regular fa-trash-can"></i></button>
-                            </div>
-                        </div>`;
-                    });
-
-                    container.innerHTML = html;
+                    savedInvoicesData = Array.isArray(list) ? list : [];
+                    renderSavedInvoices(savedInvoicesData);
+                    loadSavedInvoicesCount();
                 })
                 .catch(err => {
-                    container.innerHTML = `<div style="text-align: center; padding: 20px; color: #f1416c; font-size: 13px;">Gagal memuat data invoice.</div>`;
+                    if (container) container.innerHTML = `<div style="text-align: center; padding: 40px; color: #f1416c; font-size: 13px;">Gagal memuat invoice.</div>`;
                 });
+        }
+
+        function setFilterStatus(status, btn) {
+            activeFilterStatus = status;
+            document.querySelectorAll('.status-filter-pill').forEach(b => {
+                b.style.background = 'white';
+                b.style.color = '#555';
+                b.style.fontWeight = '500';
+                b.style.border = '1px solid var(--border-color)';
+            });
+            btn.style.background = '#6c5ce7';
+            btn.style.color = 'white';
+            btn.style.fontWeight = '600';
+            btn.style.border = 'none';
+
+            filterSavedInvoices();
+        }
+
+        function filterSavedInvoices() {
+            const query = (document.getElementById('searchSavedInvoice')?.value || '').toLowerCase().trim();
+            let filtered = savedInvoicesData.filter(inv => {
+                const matchQuery = !query || 
+                    (inv.client_name && inv.client_name.toLowerCase().includes(query)) ||
+                    (inv.invoice_number && inv.invoice_number.toLowerCase().includes(query));
+
+                const invStatus = inv.payment_status || (inv.remaining_balance <= 0 ? 'Lunas' : (inv.total_dp > 0 ? 'Terbayar Sebagian' : 'Belum Dibayar'));
+                const matchStatus = activeFilterStatus === 'all' || invStatus.toLowerCase() === activeFilterStatus.toLowerCase();
+
+                return matchQuery && matchStatus;
+            });
+
+            renderSavedInvoices(filtered, false);
+        }
+
+        function renderSavedInvoices(list, updateAllCounter = true) {
+            const container = document.getElementById('savedInvoicesListContainer');
+            const countLabel = document.getElementById('savedCountLabel');
+            const totalValLabel = document.getElementById('savedTotalValLabel');
+
+            if (!container) return;
+
+            let totalVal = 0;
+            list.forEach(inv => {
+                totalVal += parseFloat(inv.grand_total || 0);
+            });
+
+            if (countLabel) countLabel.innerText = `${list.length} invoice`;
+            if (totalValLabel) totalValLabel.innerText = `Total nilai: Rp ${formatRupiah(totalVal)}`;
+
+            if (list.length === 0) {
+                container.innerHTML = `<div style="text-align: center; padding: 48px; color: #a1a5b7; font-size: 13px;">Belum ada invoice yang sesuai kriteria.</div>`;
+                return;
+            }
+
+            let html = '';
+            list.forEach(inv => {
+                const isLunas = inv.payment_status === 'Lunas' || (parseFloat(inv.remaining_balance || 0) <= 0 && parseFloat(inv.grand_total || 0) > 0);
+                const isPartial = !isLunas && (inv.payment_status === 'Terbayar Sebagian' || parseFloat(inv.total_dp || 0) > 0);
+
+                let badgeHtml = '';
+                if (isLunas) {
+                    badgeHtml = `<span style="background: #e8fdf0; color: #10b981; padding: 3px 12px; border-radius: 14px; font-size: 11px; font-weight: 600;">Lunas</span>`;
+                } else if (isPartial) {
+                    badgeHtml = `<span style="background: #eff6ff; color: #3b82f6; padding: 3px 12px; border-radius: 14px; font-size: 11px; font-weight: 600;">Terbayar Sebagian</span>`;
+                } else {
+                    badgeHtml = `<span style="background: #fff8e6; color: #f59e0b; padding: 3px 12px; border-radius: 14px; font-size: 11px; font-weight: 600;">Belum Dibayar</span>`;
+                }
+
+                const clientDisplay = inv.client_name ? `${inv.client_name} - ` : '-- ';
+                const invNo = inv.invoice_number || 'INV';
+                const totalDisplay = formatRupiah(inv.grand_total || 0);
+                const dpDisplay = formatRupiah(inv.total_dp || 0);
+                const tglDisplay = formatTglIndo(inv.invoice_date);
+                const acaraDisplay = inv.event_date ? (formatTglIndo(inv.event_date) || inv.event_date) : '';
+
+                html += `
+                <div class="saved-inv-row" style="display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid #f1f1f4; background: white; transition: 0.15s;" onmouseover="this.style.backgroundColor='#fafafa'" onmouseout="this.style.backgroundColor='#ffffff'">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                            <span style="font-weight: 600; font-size: 14px; color: #181c32;">${clientDisplay}${invNo}</span>
+                            ${badgeHtml}
+                        </div>
+                        <div style="font-size: 12px; color: #888; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span>Rp ${totalDisplay}</span>
+                            ${(parseFloat(inv.total_dp || 0) > 0 || isLunas) ? `<span>&bull; Terbayar: Rp ${dpDisplay}</span>` : ''}
+                            ${tglDisplay ? `<span>&bull; ${tglDisplay}</span>` : ''}
+                            ${acaraDisplay ? `<span>&bull; Acara: ${acaraDisplay}</span>` : ''}
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        ${!isLunas ? `<button type="button" class="btn btn-tandai-lunas" onclick="tandaiLunas('${inv.id}')" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; font-weight: 500; font-size: 12px; padding: 6px 14px; border-radius: 8px; cursor: pointer;">Tandai Lunas</button>` : ''}
+                        <button type="button" class="btn-icon" onclick="openPaymentHistoryModal('${inv.id}')" title="Riwayat Pembayaran" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 8px; background: white; color: #555; cursor: pointer;"><i class="fa-solid fa-wallet"></i></button>
+                        <button type="button" class="btn-icon" onclick="salinLinkPublik('${inv.id}')" title="Salin Link Publik" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 8px; background: white; color: #555; cursor: pointer;"><i class="fa-solid fa-link"></i></button>
+                        <button type="button" class="btn-icon" onclick="duplikatInvoice('${inv.id}')" title="Duplikat Invoice" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 8px; background: white; color: #555; cursor: pointer;"><i class="fa-regular fa-copy"></i></button>
+                        <button type="button" class="btn btn-secondary" onclick="bukaInvoice('${inv.id}')" style="font-size: 12px; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: white; cursor: pointer;">Buka</button>
+                        <button type="button" class="btn-icon" onclick="hapusInvoice('${inv.id}')" title="Hapus Invoice" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 8px; background: white; color: #f1416c; cursor: pointer;"><i class="fa-regular fa-trash-can"></i></button>
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function tandaiLunas(id) {
+            fetch(`/api/invoices/${id}/mark-paid`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                showToastNotification("Invoice ditandai lunas");
+                loadSavedInvoicesTab();
+                loadSavedInvoicesCount();
+            })
+            .catch(() => {
+                showToastNotification("Gagal menandai lunas");
+            });
+        }
+
+        function salinLinkPublik(id) {
+            const url = `${window.location.origin}/inv/${id}`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToastNotification("Link publik invoice berhasil disalin ke clipboard");
+                }).catch(() => {
+                    showToastNotification("Link publik: " + url);
+                });
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = url;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToastNotification("Link publik invoice berhasil disalin ke clipboard");
+            }
+        }
+
+        function bukaInvoice(id) {
+            muatInvoice(id);
+            switchView('baru');
+        }
+
+        function duplikatInvoice(id) {
+            fetch(`/api/invoices/${id}`)
+                .then(res => res.json())
+                .then(inv => {
+                    muatInvoice(id);
+                    const nextSeq = Math.floor(Math.random() * 900) + 100;
+                    const newNo = `INV-202610-${nextSeq}`;
+                    document.getElementById('inputNoInvoice').value = newNo;
+                    document.getElementById('previewNoInvoice').innerText = newNo;
+                    switchView('baru');
+                    showToastNotification("Invoice diduplikat dengan nomor baru: " + newNo);
+                })
+                .catch(() => {
+                    showToastNotification("Gagal menduplikat invoice");
+                });
+        }
+
+        // --- Riwayat Pembayaran Modal ---
+        let currentModalInvoice = null;
+
+        function openPaymentHistoryModal(id) {
+            fetch(`/api/invoices/${id}`)
+                .then(res => res.json())
+                .then(inv => {
+                    currentModalInvoice = inv;
+                    renderPaymentModalDetails(inv);
+                    document.getElementById('paymentModal').style.display = 'flex';
+                })
+                .catch(() => {
+                    showToastNotification("Gagal memuat data pembayaran");
+                });
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            currentModalInvoice = null;
+        }
+
+        function renderPaymentModalDetails(inv) {
+            document.getElementById('paymentInvoiceId').value = inv.id;
+            document.getElementById('paymentModalInvNo').innerText = inv.invoice_number;
+
+            const grandTotal = parseFloat(inv.grand_total || 0);
+            const totalPaid = parseFloat(inv.total_dp || 0);
+            const sisa = Math.max(0, grandTotal - totalPaid);
+
+            document.getElementById('paymentModalSubtitle').innerHTML = 
+                `Total Rp ${formatRupiah(grandTotal)} &middot; Terbayar Rp ${formatRupiah(totalPaid)} &middot; Sisa Rp ${formatRupiah(sisa)}`;
+
+            const inputNominal = document.getElementById('inputPaymentNominal');
+            if (sisa > 0) {
+                inputNominal.value = formatRupiah(sisa).replace('Rp ', '');
+            } else {
+                inputNominal.value = '';
+                inputNominal.placeholder = 'Nominal pembayaran';
+            }
+
+            const now = new Date();
+            const pad = n => n < 10 ? '0' + n : n;
+            document.getElementById('inputPaymentDate').value = `${pad(now.getMonth() + 1)}/${pad(now.getDate())}/${now.getFullYear()}`;
+            document.getElementById('inputPaymentNote').value = '';
+
+            const historyList = document.getElementById('paymentHistoryList');
+            const payments = Array.isArray(inv.payments) ? inv.payments : [];
+
+            if (payments.length === 0) {
+                historyList.innerHTML = `<div style="text-align: center; padding: 20px; color: #a1a5b7; font-size: 13px;">Belum ada pembayaran tercatat.</div>`;
+            } else {
+                let html = '';
+                payments.forEach(p => {
+                    html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border: 1px solid #edf2f7; border-radius: 8px; margin-bottom: 8px; background: #fff;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 14px; color: #181c32;">Rp ${formatRupiah(p.amount || 0)}</div>
+                            <div style="font-size: 11px; color: #a1a5b7; margin-top: 2px;">${p.date || ''} ${p.note ? '&bull; ' + p.note : ''}</div>
+                        </div>
+                        <button type="button" style="background: none; border: none; color: #a1a5b7; cursor: pointer; padding: 4px; font-size: 14px;" onclick="hapusPembayaran('${inv.id}', '${p.id}')">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>`;
+                });
+                historyList.innerHTML = html;
+            }
+        }
+
+        function submitRecordPayment(e) {
+            if (e) e.preventDefault();
+
+            const invId = document.getElementById('paymentInvoiceId').value;
+            const amount = parseCurrency(document.getElementById('inputPaymentNominal').value);
+            const date = document.getElementById('inputPaymentDate').value;
+            const note = document.getElementById('inputPaymentNote').value;
+
+            if (amount <= 0) {
+                alert("Masukkan nominal pembayaran!");
+                return;
+            }
+
+            fetch(`/api/invoices/${invId}/payments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ amount, date, note })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    showToastNotification(res.message);
+                    currentModalInvoice = res.invoice;
+                    renderPaymentModalDetails(res.invoice);
+                    loadSavedInvoicesTab();
+                    loadSavedInvoicesCount();
+                } else {
+                    showToastNotification(res.error || "Gagal mencatat pembayaran");
+                }
+            })
+            .catch(() => {
+                showToastNotification("Gagal mencatat pembayaran");
+            });
+        }
+
+        function hapusPembayaran(invoiceId, paymentId) {
+            if (!confirm("Hapus catatan pembayaran ini?")) return;
+
+            fetch(`/api/invoices/${invoiceId}/payments/${paymentId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(res => res.json())
+            .then(res => {
+                showToastNotification("Pembayaran dihapus");
+                if (res.invoice) {
+                    currentModalInvoice = res.invoice;
+                    renderPaymentModalDetails(res.invoice);
+                }
+                loadSavedInvoicesTab();
+                loadSavedInvoicesCount();
+            })
+            .catch(() => {
+                showToastNotification("Gagal menghapus pembayaran");
+            });
         }
 
         function muatInvoice(id) {
             fetch(`/api/invoices/${id}`)
                 .then(res => res.json())
                 .then(inv => {
-                    closeSavedInvoicesModal();
+                    switchView('baru');
                     
                     if (inv.invoice_number) {
                         document.getElementById('inputNoInvoice').value = inv.invoice_number;
@@ -2203,7 +2625,7 @@ Jika pembayaran sudah dilakukan, mohon abaikan pesan ini atau kirimkan buktinya 
             .then(res => res.json())
             .then(() => {
                 showToastNotification("Invoice berhasil dihapus");
-                fetchSavedInvoicesList();
+                loadSavedInvoicesTab();
                 loadSavedInvoicesCount();
             })
             .catch(() => {
@@ -2212,6 +2634,7 @@ Jika pembayaran sudah dilakukan, mohon abaikan pesan ini atau kirimkan buktinya 
         }
 
         function resetFormInvoiceBaru() {
+            switchView('baru');
             const nextSeq = Math.floor(Math.random() * 900) + 100;
             const newNo = `INV-202610-${nextSeq}`;
             
@@ -2228,7 +2651,6 @@ Jika pembayaran sudah dilakukan, mohon abaikan pesan ini atau kirimkan buktinya 
             syncPreviewDate();
             calculateTotals();
 
-            showToastNotification("Invoice baru siap dibuat");
         }
 
         // --- Signature & Logo Management ---
