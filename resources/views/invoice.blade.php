@@ -1137,7 +1137,7 @@
                                 </div>
                             </div>
                             <!-- Floating Dropdown Menu Paket Tersimpan -->
-                            <div id="paketDropdownMenu" style="display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px); background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); z-index: 1000; overflow: hidden; padding: 6px;"></div>
+                            <div id="paketDropdownMenu" style="display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px); background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); z-index: 1000; max-height: 280px; overflow-y: auto; padding: 6px;"></div>
                         </div>
                         
                         <div class="form-group">
@@ -3982,12 +3982,12 @@ Terima kasih banyak! 🤍`;
                     list.forEach(p => {
                         const safeName = (p.name || '').replace(/'/g, "\\'");
                         html += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #f1f1f4; cursor: pointer; transition: 0.15s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'">
-                            <div style="flex: 1;" onclick="pilihPresetPaket('${safeName}', ${p.price || 0}, ${p.discount || 0})">
-                                <div style="font-weight: 500; font-size: 13px; color: #181c32;">${p.name || '-'}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #f1f1f4; cursor: pointer; transition: 0.15s; position: relative;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'">
+                            <div style="flex: 1; min-width: 0; padding-right: 12px;" onclick="pilihPresetPaket('${safeName}', ${p.price || 0}, ${p.discount || 0})">
+                                <div style="font-weight: 500; font-size: 13px; color: #181c32; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.name || '-'}</div>
                                 <div style="font-size: 11px; color: #888; margin-top: 2px;">Rp ${formatRupiah(p.price || 0)}</div>
                             </div>
-                            <button type="button" class="btn-trash" onclick="hapusPaketTersimpan(${p.id}, event)" style="background: none; border: none; color: #a1a5b7; cursor: pointer; font-size: 14px; padding: 6px; border-radius: 4px;" title="Hapus paket" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#a1a5b7'">
+                            <button type="button" class="btn-hapus-paket-preset" onclick="hapusPaketTersimpan(${p.id}, event)" style="position: relative; top: auto; right: auto; background: none; border: none; color: #a1a5b7; cursor: pointer; font-size: 15px; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: 0.15s;" title="Hapus paket" onmouseover="this.style.color='#ef4444'; this.style.background='rgba(239, 68, 68, 0.08)'" onmouseout="this.style.color='#a1a5b7'; this.style.background='transparent'">
                                 <i class="fa-regular fa-trash-can"></i>
                             </button>
                         </div>`;
