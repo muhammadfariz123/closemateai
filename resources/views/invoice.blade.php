@@ -1298,12 +1298,39 @@
                         <div id="termsContainer">
                             <div class="term-point-card" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #fff; position: relative;">
                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 8px;">
-                                    <input type="text" class="form-control term-title" placeholder="Judul (cth: Pelunasan:)" value="Pelunasan" oninput="syncTermsPreview()" style="font-weight: 500; font-size: 13px;">
+                                    <input type="text" class="form-control term-title" placeholder="Judul (cth: Konfirmasi Pembayaran:)" value="Konfirmasi Pembayaran:" oninput="syncTermsPreview()" style="font-weight: 500; font-size: 13px;">
                                     <button type="button" class="btn-trash" onclick="removeTermPoint(this)" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px; padding: 4px;" title="Hapus poin">
                                         <i class="fa-regular fa-trash-can"></i>
                                     </button>
                                 </div>
-                                <textarea class="form-control term-content" placeholder="Isi ketentuan..." rows="2" oninput="syncTermsPreview()" style="font-size: 12px; resize: vertical;">Pelunasan wajib dibayarkan maksimal H-7 sebelum acara berlangsung.</textarea>
+                                <textarea class="form-control term-content" placeholder="Isi ketentuan..." rows="2" oninput="syncTermsPreview()" style="font-size: 12px; resize: vertical;">Pembayaran dianggap sah jika dana sudah masuk ke rekening yang tertera di atas dan klien telah mengirimkan bukti transfer.</textarea>
+                            </div>
+                            <div class="term-point-card" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #fff; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 8px;">
+                                    <input type="text" class="form-control term-title" placeholder="Judul (cth: Kebijakan Pembatalan:)" value="Kebijakan Pembatalan:" oninput="syncTermsPreview()" style="font-weight: 500; font-size: 13px;">
+                                    <button type="button" class="btn-trash" onclick="removeTermPoint(this)" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px; padding: 4px;" title="Hapus poin">
+                                        <i class="fa-regular fa-trash-can"></i>
+                                    </button>
+                                </div>
+                                <textarea class="form-control term-content" placeholder="Isi ketentuan..." rows="2" oninput="syncTermsPreview()" style="font-size: 12px; resize: vertical;">DP bersifat non-refundable. Reschedule mohon konfirmasi maksimal 1-2 bulan sebelum tanggal acara, subjek pada ketersediaan jadwal.</textarea>
+                            </div>
+                            <div class="term-point-card" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #fff; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 8px;">
+                                    <input type="text" class="form-control term-title" placeholder="Judul (cth: Pelunasan:)" value="Pelunasan:" oninput="syncTermsPreview()" style="font-weight: 500; font-size: 13px;">
+                                    <button type="button" class="btn-trash" onclick="removeTermPoint(this)" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px; padding: 4px;" title="Hapus poin">
+                                        <i class="fa-regular fa-trash-can"></i>
+                                    </button>
+                                </div>
+                                <textarea class="form-control term-content" placeholder="Isi ketentuan..." rows="2" oninput="syncTermsPreview()" style="font-size: 12px; resize: vertical;">Pelunasan wajib selambat-lambatnya 1 minggu sebelum hari H acara.</textarea>
+                            </div>
+                            <div class="term-point-card" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #fff; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 8px;">
+                                    <input type="text" class="form-control term-title" placeholder="Judul (cth: Invoice ini:)" value="Invoice ini:" oninput="syncTermsPreview()" style="font-weight: 500; font-size: 13px;">
+                                    <button type="button" class="btn-trash" onclick="removeTermPoint(this)" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px; padding: 4px;" title="Hapus poin">
+                                        <i class="fa-regular fa-trash-can"></i>
+                                    </button>
+                                </div>
+                                <textarea class="form-control term-content" placeholder="Isi ketentuan..." rows="2" oninput="syncTermsPreview()" style="font-size: 12px; resize: vertical;">merupakan satu kesatuan dengan Surat Perjanjian Kerja Sama (SPK) yang telah ditandatangani.</textarea>
                             </div>
                         </div>
 
@@ -1478,7 +1505,10 @@
                         <div style="margin-bottom: 24px;">
                             <p style="font-weight: 700; font-size: 10px; margin-bottom: 8px; color: #555; text-transform: uppercase; letter-spacing: 0.5px;" id="labelPreviewTermsHeader">SYARAT & KETENTUAN</p>
                             <div id="previewTermsList" style="font-size: 10px; color: #555; line-height: 1.6; margin-bottom: 20px;">
-                                <div style="margin-bottom: 4px;">1. <strong>Pelunasan</strong> Pelunasan wajib dibayarkan maksimal H-7 sebelum acara berlangsung.</div>
+                                <div style="margin-bottom: 4px;">1. <strong>Konfirmasi Pembayaran:</strong> Pembayaran dianggap sah jika dana sudah masuk ke rekening yang tertera di atas dan klien telah mengirimkan bukti transfer.</div>
+                                <div style="margin-bottom: 4px;">2. <strong>Kebijakan Pembatalan:</strong> DP bersifat non-refundable. Reschedule mohon konfirmasi maksimal 1-2 bulan sebelum tanggal acara, subjek pada ketersediaan jadwal.</div>
+                                <div style="margin-bottom: 4px;">3. <strong>Pelunasan:</strong> Pelunasan wajib selambat-lambatnya 1 minggu sebelum hari H acara.</div>
+                                <div style="margin-bottom: 4px;">4. <strong>Invoice ini:</strong> merupakan satu kesatuan dengan Surat Perjanjian Kerja Sama (SPK) yang telah ditandatangani.</div>
                             </div>
                             
                             <!-- Line divider and signature -->
@@ -2971,6 +3001,69 @@ Terima kasih banyak! 🤍`;
         }
 
         // --- Terms & Conditions Handlers ---
+        const defaultTermsID = [
+            {
+                title: 'Konfirmasi Pembayaran:',
+                content: 'Pembayaran dianggap sah jika dana sudah masuk ke rekening yang tertera di atas dan klien telah mengirimkan bukti transfer.'
+            },
+            {
+                title: 'Kebijakan Pembatalan:',
+                content: 'DP bersifat non-refundable. Reschedule mohon konfirmasi maksimal 1-2 bulan sebelum tanggal acara, subjek pada ketersediaan jadwal.'
+            },
+            {
+                title: 'Pelunasan:',
+                content: 'Pelunasan wajib selambat-lambatnya 1 minggu sebelum hari H acara.'
+            },
+            {
+                title: 'Invoice ini:',
+                content: 'merupakan satu kesatuan dengan Surat Perjanjian Kerja Sama (SPK) yang telah ditandatangani.'
+            }
+        ];
+
+        const defaultTermsEN = [
+            {
+                title: 'Payment Confirmation:',
+                content: 'Payment is deemed valid once funds have entered the account listed above and the client has sent proof of transfer.'
+            },
+            {
+                title: 'Cancellation Policy:',
+                content: 'Down payment is non-refundable. Reschedule confirmation must be made 1-2 months before the event date, subject to schedule availability.'
+            },
+            {
+                title: 'Settlement:',
+                content: 'Settlement must be completed no later than 1 week before the event date.'
+            },
+            {
+                title: 'This invoice:',
+                content: 'is an integral part of the signed Cooperation Agreement (SPK).'
+            }
+        ];
+
+        function escapeTermAttr(str) {
+            return String(str || '').replace(/"/g, '&quot;');
+        }
+
+        function escapeTermText(str) {
+            return String(str || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function renderTermCards(terms) {
+            const container = document.getElementById('termsContainer');
+            if (!container) return;
+            container.innerHTML = terms.map(term => `
+                <div class="term-point-card" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #fff; position: relative;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 8px;">
+                        <input type="text" class="form-control term-title" placeholder="${currentLang === 'en' ? 'Title (e.g. Settlement:)' : 'Judul (cth: Pelunasan:)'}" value="${escapeTermAttr(term.title || '')}" oninput="syncTermsPreview()" style="font-weight: 500; font-size: 13px;">
+                        <button type="button" class="btn-trash" onclick="removeTermPoint(this)" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px; padding: 4px;" title="Hapus poin">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>
+                    <textarea class="form-control term-content" placeholder="${currentLang === 'en' ? 'Clause content...' : 'Isi ketentuan...'}" rows="2" oninput="syncTermsPreview()" style="font-size: 12px; resize: vertical;">${escapeTermText(term.content || '')}</textarea>
+                </div>
+            `).join('');
+            syncTermsPreview();
+        }
+
         function addTermPoint() {
             const container = document.getElementById('termsContainer');
             if (!container) return;
@@ -2996,20 +3089,11 @@ Terima kasih banyak! 🤍`;
         }
 
         function resetTermsToDefault() {
-            const container = document.getElementById('termsContainer');
-            if (!container) return;
-            container.innerHTML = `
-                <div class="term-point-card" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #fff; position: relative;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 8px;">
-                        <input type="text" class="form-control term-title" placeholder="Judul (cth: Pelunasan:)" value="Pelunasan" oninput="syncTermsPreview()" style="font-weight: 500; font-size: 13px;">
-                        <button type="button" class="btn-trash" onclick="removeTermPoint(this)" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 15px; padding: 4px;" title="Hapus poin">
-                            <i class="fa-regular fa-trash-can"></i>
-                        </button>
-                    </div>
-                    <textarea class="form-control term-content" placeholder="Isi ketentuan..." rows="2" oninput="syncTermsPreview()" style="font-size: 12px; resize: vertical;">Pelunasan wajib dibayarkan maksimal H-7 sebelum acara berlangsung.</textarea>
-                </div>
-            `;
-            syncTermsPreview();
+            const list = currentLang === 'en' ? defaultTermsEN : defaultTermsID;
+            renderTermCards(list);
+            try {
+                localStorage.removeItem('custom_invoice_terms');
+            } catch(e) {}
             showToastNotification(currentLang === 'en' ? "Terms reset to default" : "Syarat & ketentuan di-reset");
         }
 
@@ -3018,15 +3102,39 @@ Terima kasih banyak! 🤍`;
             if (!listEl) return;
             let html = '';
             let count = 1;
+            const savedList = [];
             document.querySelectorAll('.term-point-card').forEach(card => {
                 const title = card.querySelector('.term-title')?.value || '';
                 const content = card.querySelector('.term-content')?.value || '';
                 if (title || content) {
                     html += `<div style="margin-bottom: 4px;">${count}. <strong>${title}</strong> ${content}</div>`;
+                    savedList.push({ title, content });
                     count++;
                 }
             });
             listEl.innerHTML = html || (currentLang === 'en' ? '<div>No terms specified.</div>' : '<div>Tidak ada ketentuan.</div>');
+
+            try {
+                if (savedList.length > 0) {
+                    localStorage.setItem('custom_invoice_terms', JSON.stringify(savedList));
+                } else {
+                    localStorage.removeItem('custom_invoice_terms');
+                }
+            } catch(e) {}
+        }
+
+        function loadStoredTermsOnStartup() {
+            try {
+                const stored = localStorage.getItem('custom_invoice_terms');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        renderTermCards(parsed);
+                        return;
+                    }
+                }
+            } catch(e) {}
+            syncTermsPreview();
         }
 
         // --- Tabs Navigation ---
@@ -3769,6 +3877,13 @@ Terima kasih banyak! 🤍`;
                 if (name || price > 0) addonsList.push({ name, qty, price });
             });
 
+            const termsList = [];
+            document.querySelectorAll('.term-point-card').forEach(card => {
+                const title = card.querySelector('.term-title')?.value || '';
+                const content = card.querySelector('.term-content')?.value || '';
+                if (title || content) termsList.push({ title, content });
+            });
+
             const terminVal = document.getElementById('selectTermin')?.value || 'Uang Muka / DP 1';
             const isPelunasan = terminVal.includes('Pelunasan');
             const grandTotalVal = parseCurrency(document.getElementById('calcGrandTotal')?.innerText);
@@ -3814,6 +3929,7 @@ Terima kasih banyak! 🤍`;
                 bank_account_number: document.getElementById('inputNoRekening')?.value || '0431063867',
                 bank_account_name: document.getElementById('inputAtasNama')?.value || 'Umi Salamah',
                 due_date: document.getElementById('inputTglJatuhTempo')?.value || '',
+                terms_and_conditions: termsList,
                 theme: currentSelectedTheme || 'theme-minimalist'
             };
 
@@ -4109,7 +4225,7 @@ Terima kasih banyak! 🤍`;
             syncJatuhTempoPreview();
             syncBankPreview();
             syncTerminPreview();
-            syncTermsPreview();
+            loadStoredTermsOnStartup();
             loadSavedInvoicesCount();
             initCalendarMonths();
             updateWaDraft();
