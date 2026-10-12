@@ -66,6 +66,7 @@ return new class extends Migration
                 $table->timestamps();
 
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            });
         } else {
             Schema::table('invoices', function (Blueprint $table) {
                 if (!Schema::hasColumn('invoices', 'client_wa')) {
