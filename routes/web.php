@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/invoices/packages', [\App\Http\Controllers\InvoiceController::class, 'getPackages']);
     Route::post('/api/invoices/save-package', [\App\Http\Controllers\InvoiceController::class, 'savePackage']);
     Route::delete('/api/invoices/packages/{id}', [\App\Http\Controllers\InvoiceController::class, 'deletePackage']);
+    Route::post('/api/invoices/packages/{id}/delete', [\App\Http\Controllers\InvoiceController::class, 'deletePackage']);
     Route::post('/api/invoices/save-bank', [\App\Http\Controllers\InvoiceController::class, 'saveBank']);
     Route::post('/api/invoices/save-terms', [\App\Http\Controllers\InvoiceController::class, 'saveTerms']);
     Route::post('/api/invoices/save-business', [\App\Http\Controllers\InvoiceController::class, 'saveBusiness']);

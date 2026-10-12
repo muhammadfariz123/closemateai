@@ -2414,15 +2414,17 @@ Terima kasih banyak! 🤍`;
         }
 
         function calculateTotals() {
-            const mainName = document.getElementById('inputPaketUtama')?.value || (currentLang === 'en' ? 'Main Package' : 'Paket Utama');
+            const rawMainName = document.getElementById('inputPaketUtama')?.value?.trim();
             const mainPrice = parseCurrency(document.getElementById('inputHargaUtama')?.value);
             const mainQty = parseInt(document.getElementById('inputJumlahPaket')?.value, 10) || 1;
             const discount = parseCurrency(document.getElementById('inputDiskon')?.value);
 
-            let subtotalPaket = Math.max(0, (mainPrice * mainQty) - discount);
+            let subtotalPaket = mainPrice * mainQty;
+            let totalDiscount = discount;
 
             let liveRowsHtml = '';
-            if (mainPrice > 0 || mainName) {
+            if (mainPrice > 0 || rawMainName) {
+                const mainName = rawMainName || (currentLang === 'en' ? 'Main Package' : 'Paket Utama');
                 liveRowsHtml += `
                 <tr>
                     <td style="padding: 12px 16px; border-bottom: 1px solid #f1f1f4;">
@@ -2438,21 +2440,23 @@ Terima kasih banyak! 🤍`;
             // Loop Paket Tambahan
             const extraBoxes = document.querySelectorAll('.paket-tambahan-box');
             extraBoxes.forEach(box => {
-                const name = box.querySelector('.pkt-extra-name')?.value || (currentLang === 'en' ? 'Additional Package' : 'Paket Tambahan');
+                const rawName = box.querySelector('.pkt-extra-name')?.value?.trim();
                 const price = parseCurrency(box.querySelector('.pkt-extra-price')?.value);
                 const disc = parseCurrency(box.querySelector('.pkt-extra-disc')?.value);
-                const lineTotal = Math.max(0, price - disc);
-                subtotalPaket += lineTotal;
 
-                if (price > 0 || name) {
+                subtotalPaket += price;
+                totalDiscount += disc;
+
+                if (price > 0 || disc > 0 || rawName) {
+                    const name = rawName || (currentLang === 'en' ? 'Additional Package' : 'Paket Tambahan');
                     liveRowsHtml += `
                     <tr>
                         <td style="padding: 12px 16px; border-bottom: 1px solid #f1f1f4;">
                             <div style="font-size: 13px; font-weight: 500; color: #333; margin-bottom: 2px;">${name}</div>
-                            ${disc > 0 ? `<div style="font-size: 10px; color: #f1416c;">${currentLang === 'en' ? 'Discount' : 'Diskon'}: - Rp ${formatRupiah(disc)}</div>` : ''}
+                            <div style="font-size: 10px; color: #888;">${currentLang === 'en' ? 'Additional Package' : 'Paket Tambahan'}</div>
                         </td>
                         <td style="text-align: right; padding: 12px 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #333;">
-                            Rp ${formatRupiah(lineTotal)}
+                            Rp ${formatRupiah(price)}
                         </td>
                     </tr>`;
                 }
@@ -2462,7 +2466,7 @@ Terima kasih banyak! 🤍`;
             let totalAddon = 0;
             const addonBoxes = document.querySelectorAll('.addon-item-box');
             addonBoxes.forEach(box => {
-                const name = box.querySelector('.addon-name')?.value || 'Add-on';
+                const rawName = box.querySelector('.addon-name')?.value?.trim();
                 const qty = parseInt(box.querySelector('.addon-qty')?.value, 10) || 1;
                 const price = parseCurrency(box.querySelector('.addon-price')?.value);
                 const lineTotal = qty * price;
@@ -2473,7 +2477,8 @@ Terima kasih banyak! 🤍`;
                 if (formulaEl) formulaEl.innerText = `${qty} x Rp ${formatRupiah(price)} = `;
                 if (resultEl) resultEl.innerText = `Rp ${formatRupiah(lineTotal)}`;
 
-                if (price > 0 || name) {
+                if (price > 0 || rawName) {
+                    const name = rawName || 'Add-on';
                     liveRowsHtml += `
                     <tr>
                         <td style="padding: 12px 16px; border-bottom: 1px solid #f1f1f4;">
@@ -2487,9 +2492,23 @@ Terima kasih banyak! 🤍`;
                 }
             });
 
-            const grandTotal = subtotalPaket + totalAddon;
+            // Unified Discount Row in Table (Image 5)
+            if (totalDiscount > 0) {
+                liveRowsHtml += `
+                <tr>
+                    <td style="padding: 12px 16px; border-bottom: 1px solid #f1f1f4;">
+                        <div style="font-size: 13px; font-weight: 500; color: #333; margin-bottom: 2px;">${currentLang === 'en' ? 'Discount / Price Reduction' : 'Diskon / Potongan Harga'}</div>
+                        <div style="font-size: 10px; color: #888;">${currentLang === 'en' ? 'Special offer' : 'Penawaran khusus'}</div>
+                    </td>
+                    <td style="text-align: right; padding: 12px 16px; border-bottom: 1px solid #f1f1f4; font-size: 13px; color: #f1416c; font-weight: 500;">
+                        - Rp ${formatRupiah(totalDiscount)}
+                    </td>
+                </tr>`;
+            }
 
-            // Update UI Counters
+            const grandTotal = Math.max(0, (subtotalPaket + totalAddon) - totalDiscount);
+
+            // Update UI Counters in Form
             const calcSubtotal = document.getElementById('calcSubtotal');
             if (calcSubtotal) calcSubtotal.innerText = 'Rp ' + formatRupiah(subtotalPaket);
 
@@ -2511,9 +2530,9 @@ Terima kasih banyak! 🤍`;
 
             const pDis = document.getElementById('previewDiskon');
             const rowDis = document.getElementById('rowPreviewDiskon');
-            if (discount > 0) {
+            if (totalDiscount > 0) {
                 if (rowDis) rowDis.style.display = 'flex';
-                if (pDis) pDis.innerText = '- Rp ' + formatRupiah(discount);
+                if (pDis) pDis.innerText = '- Rp ' + formatRupiah(totalDiscount);
             } else {
                 if (rowDis) rowDis.style.display = 'none';
             }
@@ -2762,12 +2781,23 @@ Terima kasih banyak! 🤍`;
 
         function simpanBiaya() {
             const name = document.getElementById('inputPaketUtama')?.value?.trim();
-            if (!name) {
+            const price = parseCurrency(document.getElementById('inputHargaUtama')?.value);
+            const discount = parseCurrency(document.getElementById('inputDiskon')?.value);
+
+            const extraPackages = [];
+            document.querySelectorAll('.paket-tambahan-box').forEach(box => {
+                const eName = box.querySelector('.pkt-extra-name')?.value?.trim();
+                const ePrice = parseCurrency(box.querySelector('.pkt-extra-price')?.value);
+                const eDisc = parseCurrency(box.querySelector('.pkt-extra-disc')?.value);
+                if (eName || ePrice > 0) {
+                    extraPackages.push({ name: eName || (currentLang === 'en' ? 'Additional Package' : 'Paket Tambahan'), price: ePrice, discount: eDisc });
+                }
+            });
+
+            if (!name && extraPackages.length === 0) {
                 alert("Silakan masukkan nama paket terlebih dahulu");
                 return;
             }
-            const price = parseCurrency(document.getElementById('inputHargaUtama')?.value);
-            const discount = parseCurrency(document.getElementById('inputDiskon')?.value);
 
             fetch('/api/invoices/save-package', {
                 method: 'POST',
@@ -2776,7 +2806,7 @@ Terima kasih banyak! 🤍`;
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': csrfToken
                 },
-                body: JSON.stringify({ name, price, discount })
+                body: JSON.stringify({ name, price, discount, extra_packages: extraPackages })
             })
             .then(res => res.json())
             .then(data => {
@@ -2901,6 +2931,7 @@ Terima kasih banyak! 🤍`;
         function removePaketTambahan(btn) {
             btn.closest('.paket-tambahan-box')?.remove();
             calculateTotals();
+            updateWaDraft();
         }
 
         function addAddonItem() {
@@ -3973,6 +4004,8 @@ Terima kasih banyak! 🤍`;
             document.getElementById('inputHargaUtama').value = 'Rp ' + formatRupiah(price);
             if (disc > 0) {
                 document.getElementById('inputDiskon').value = 'Rp ' + formatRupiah(disc);
+            } else {
+                document.getElementById('inputDiskon').value = 'Rp 0';
             }
             calculateTotals();
             updateWaDraft();
@@ -3981,7 +4014,10 @@ Terima kasih banyak! 🤍`;
         }
 
         function hapusPaketTersimpan(id, e) {
-            e.stopPropagation();
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             if (!confirm("Hapus paket tersimpan ini?")) return;
             fetch(`/api/invoices/packages/${id}`, {
                 method: 'DELETE',
@@ -3992,9 +4028,31 @@ Terima kasih banyak! 🤍`;
                 }
             })
             .then(res => res.json())
-            .then(() => {
-                showToastNotification("Paket berhasil dihapus");
+            .then(data => {
+                if (data.success) {
+                    showToastNotification(currentLang === 'en' ? "Package deleted" : "Paket berhasil dihapus");
+                } else {
+                    showToastNotification(data.error || (currentLang === 'en' ? "Failed to delete package" : "Gagal menghapus paket"));
+                }
                 loadAndRenderPaketDropdown();
+            })
+            .catch(() => {
+                fetch(`/api/invoices/packages/${id}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    showToastNotification(currentLang === 'en' ? "Package deleted" : "Paket berhasil dihapus");
+                    loadAndRenderPaketDropdown();
+                })
+                .catch(() => {
+                    showToastNotification("Gagal menghapus paket");
+                });
             });
         }
 

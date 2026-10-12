@@ -772,11 +772,14 @@ class InvoiceController extends Controller
                 return response()->json([]);
             }
 
+            $cacheKey = 'invoice_packages_seeded_' . $user->id;
+            $hasSeeded = Cache::has($cacheKey);
+
             $packages = InvoicePackage::where('user_id', $user->id)
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            if ($packages->isEmpty()) {
+            if (!$hasSeeded && $packages->isEmpty()) {
                 $defaults = [
                     ['name' => 'paket 111', 'price' => 9000, 'discount' => 0],
                     ['name' => 'Penawaran QT-202610-236', 'price' => 9000, 'discount' => 0],
@@ -790,7 +793,10 @@ class InvoiceController extends Controller
                         'discount' => $def['discount'],
                     ]);
                 }
+                Cache::forever($cacheKey, true);
                 $packages = InvoicePackage::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
+            } else if (!$hasSeeded && !$packages->isEmpty()) {
+                Cache::forever($cacheKey, true);
             }
 
             return response()->json($packages);
@@ -808,16 +814,36 @@ class InvoiceController extends Controller
             if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
 
             $name = trim((string)$request->input('name', ''));
-            if (empty($name)) {
-                return response()->json(['success' => false, 'error' => 'Nama paket tidak boleh kosong'], 400);
-            }
-            $price = (float) $this->parseNumber($request->input('price', 0));
-            $discount = (float) $this->parseNumber($request->input('discount', 0));
+            $pkg = null;
+            if (!empty($name)) {
+                $price = (float) $this->parseNumber($request->input('price', 0));
+                $discount = (float) $this->parseNumber($request->input('discount', 0));
 
-            $pkg = InvoicePackage::updateOrCreate(
-                ['user_id' => $user->id, 'name' => $name],
-                ['price' => $price, 'discount' => $discount]
-            );
+                $pkg = InvoicePackage::updateOrCreate(
+                    ['user_id' => $user->id, 'name' => $name],
+                    ['price' => $price, 'discount' => $discount]
+                );
+            }
+
+            $extraPackages = $request->input('extra_packages', []);
+            if (is_string($extraPackages)) {
+                $extraPackages = json_decode($extraPackages, true) ?: [];
+            }
+            if (is_array($extraPackages)) {
+                foreach ($extraPackages as $extra) {
+                    $eName = trim((string)($extra['name'] ?? ''));
+                    if (!empty($eName)) {
+                        $ePrice = (float) $this->parseNumber($extra['price'] ?? 0);
+                        $eDisc = (float) $this->parseNumber($extra['discount'] ?? 0);
+                        InvoicePackage::updateOrCreate(
+                            ['user_id' => $user->id, 'name' => $eName],
+                            ['price' => $ePrice, 'discount' => $eDisc]
+                        );
+                    }
+                }
+            }
+
+            Cache::forever('invoice_packages_seeded_' . $user->id, true);
 
             return response()->json(['success' => true, 'package' => $pkg]);
         } catch (\Throwable $e) {
@@ -834,6 +860,7 @@ class InvoiceController extends Controller
             if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
 
             InvoicePackage::where('user_id', $user->id)->where('id', $id)->delete();
+            Cache::forever('invoice_packages_seeded_' . $user->id, true);
 
             return response()->json(['success' => true]);
         } catch (\Throwable $e) {
