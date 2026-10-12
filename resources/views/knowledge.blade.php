@@ -556,6 +556,10 @@
                     <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">Jumlah balasan AI di awal chat</div>
                     <input type="number" id="ai_max_replies" class="form-control" value="{{ $user->ai_max_replies ?? 3 }}" min="1" max="50" oninput="document.getElementById('lbl_ai_max_replies').innerText = this.value || 0;">
                     <div style="font-size: 12px; color: var(--text-muted); margin-top: 12px; margin-bottom: 16px;">Setelah AI membalas <span id="lbl_ai_max_replies">{{ $user->ai_max_replies ?? 3 }}</span>x pada satu percakapan, chat otomatis dialihkan ke admin (human takeover) dan Anda mendapat notifikasi WhatsApp.</div>
+
+                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">Pesan Otomatis Saat Batas Balasan Tercapai (Dialihkan ke Admin)</div>
+                    <textarea id="ai_limit_reached_message" class="form-control" rows="3" style="font-size: 13px; line-height: 1.5; margin-bottom: 8px;" placeholder="Tulis pesan pengalihan ke admin yang ramah dan alami...">{{ $user->ai_limit_reached_message ?? "Baik Kak, pertanyaan & detail obrolan kita sudah aku catat yaa ✨ Sebentar ya Kak, chat ini langsung aku sambungkan ke tim admin kami untuk bantu info lebih lengkap & proses selanjutnya. Mohon tunggu sebentar ya Kakak 🙏😊" }}</textarea>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Pesan ini otomatis dikirim ke calon klien begitu batas tercapai, memberi tahu bahwa admin sedang dihubungkan sehingga terkesan profesional, humanis, dan tidak ghosting.</div>
                     
                     <button class="btn btn-secondary" style="border: 1px solid var(--border-color); font-weight: 600;" onclick="saveAiLimits('Batasan Balasan AI berhasil disimpan')">
                         <i class="fa-regular fa-floppy-disk"></i> Simpan Batasan
@@ -1467,6 +1471,7 @@ Jika kamu di tanya AI atau bukan, jangan mengaku-ngaku kamu AI atau asisten virt
             const data = {
                 ai_limit_enabled: document.getElementById('ai_limit_enabled').checked ? 1 : 0,
                 ai_max_replies: document.getElementById('ai_max_replies') ? document.getElementById('ai_max_replies').value : 3,
+                ai_limit_reached_message: document.getElementById('ai_limit_reached_message') ? document.getElementById('ai_limit_reached_message').value : '',
                 ai_multi_bubble_enabled: document.getElementById('ai_multi_bubble_enabled').checked ? 1 : 0,
                 ai_max_bubbles: document.getElementById('ai_max_bubbles').value,
                 ai_require_data_before_price: document.getElementById('ai_require_data_before_price').checked ? 1 : 0,

@@ -92,6 +92,31 @@ class WebhookController extends Controller
             $chat->is_human_takeover = true;
             $chat->save();
 
+            // Ambil pesan penutup / handover yang natural dan profesional
+            $handoverMsg = trim((string)$user->ai_limit_reached_message);
+            if (empty($handoverMsg)) {
+                $personality = $user->ai_personality_type ?: 'casual';
+                if ($personality === 'casual') {
+                    $handoverMsg = "Baik Kak, detail obrolan kita sudah aku catat yaa ✨ Sebentar ya Kak, chat ini langsung aku sambungkan ke tim admin kami untuk bantu info lebih lengkap & proses selanjutnya. Mohon tunggu sebentar ya Kakak 🙏😊";
+                } elseif ($personality === 'jaksel') {
+                    $handoverMsg = "Got it Kak! Detailnya udah aku note ya ✨ Biar informasinya lebih clear & seamless, chat ini langsung aku sambungkan ke tim admin kita ya. Mohon tunggu sebentar, nanti langsung di-handle sama admin kami! 🙌";
+                } else {
+                    $handoverMsg = "Baik Kak, pertanyaan & kebutuhan Kakak sudah kami catat dengan baik yaa ✨ Selanjutnya chat ini langsung kami hubungkan ke tim admin kami untuk info lebih lanjut. Mohon ditunggu sebentar ya Kakak! 🙏😊";
+                }
+            }
+
+            // Simpan pesan penutup ini ke database Message agar tampil di Live Chat Inbox
+            Message::create([
+                'chat_id' => $chat->id,
+                'sender' => 'ai',
+                'message' => $handoverMsg
+            ]);
+
+            // Kirim pesan penutup ke WhatsApp klien
+            if ($user->fonnte_token && $chat->client_wa_number) {
+                $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, $handoverMsg);
+            }
+
             // Kirim notifikasi ke nomor bisnis User (Admin) jika toggle aktif
             if ($user->notify_human_takeover) {
                 $targetNumber = $user->notification_number ?: ($user->owner_whatsapp ?: ($user->business_wa_number ?: $user->wa_number));
@@ -100,7 +125,7 @@ class WebhookController extends Controller
                 }
             }
             
-            return response()->json(['status' => true, 'message' => 'AI Limit reached. Handed over to human.']);
+            return response()->json(['status' => true, 'message' => 'AI Limit reached. Handover message sent to client.']);
         }
 
         // 7. Panggil AI

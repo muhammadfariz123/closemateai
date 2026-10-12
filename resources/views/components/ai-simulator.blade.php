@@ -141,17 +141,74 @@ document.addEventListener('DOMContentLoaded', function() {
         placeholder.style.display = 'block';
     });
     
-    function updateCounter() {
-        counterText.textContent = `Balasan AI: ${replyCount}/${MAX_REPLIES}`;
+    function getMaxReplies() {
+        const el = document.getElementById('ai_max_replies');
+        return el ? (parseInt(el.value) || 3) : 3;
     }
-    
+
+    function isLimitEnabled() {
+        const el = document.getElementById('ai_limit_enabled');
+        return el ? el.checked : true;
+    }
+
+    function updateCounter() {
+        const isLimit = isLimitEnabled();
+        const max = getMaxReplies();
+        counterText.textContent = isLimit ? `Balasan AI: ${replyCount}/${max}` : `Balasan AI: ${replyCount} (Tanpa Batas)`;
+    }
+
     // Send Message
     async function sendMessage() {
         const msg = inputMsg.value.trim();
         if (!msg) return;
         
-        if (replyCount >= MAX_REPLIES) {
-            alert('Batas simulasi tercapai. Silakan reset simulator untuk mengulang.');
+        const isLimit = isLimitEnabled();
+        const maxReplies = getMaxReplies();
+
+        if (isLimit && replyCount >= maxReplies) {
+            // Hide placeholder
+            placeholder.style.display = 'none';
+
+            // Add User Bubble
+            const userBubble = document.createElement('div');
+            userBubble.className = 'sim-bubble sim-bubble-user';
+            userBubble.textContent = msg;
+            chatArea.insertBefore(userBubble, typingIndicator);
+
+            inputMsg.value = '';
+            scrollToBottom();
+
+            // Show typing indicator briefly
+            typingIndicator.classList.add('active');
+            scrollToBottom();
+
+            setTimeout(() => {
+                typingIndicator.classList.remove('active');
+
+                // Add Handover AI Bubble
+                const wrapper = document.createElement('div');
+                wrapper.className = 'sim-ai-wrapper';
+
+                const handoverText = (document.getElementById('ai_limit_reached_message')?.value || '').trim() || 
+                    "Baik Kak, pertanyaan & detail obrolan kita sudah aku catat yaa ✨ Sebentar ya Kak, chat ini langsung aku sambungkan ke tim admin kami untuk bantu info lebih lengkap & proses selanjutnya. Mohon tunggu sebentar ya Kakak 🙏😊";
+
+                const aiBubble = document.createElement('div');
+                aiBubble.className = 'sim-bubble sim-bubble-ai';
+                aiBubble.style.borderColor = 'var(--primary)';
+                aiBubble.style.backgroundColor = '#fbfbfe';
+                aiBubble.innerHTML = handoverText.replace(/\n/g, '<br>');
+                wrapper.appendChild(aiBubble);
+
+                const meta = document.createElement('div');
+                meta.className = 'sim-meta';
+                meta.style.color = '#ef4444';
+                meta.style.fontWeight = '600';
+                meta.innerHTML = `<i class="fa-solid fa-headset"></i> [Human Takeover Aktif] Batas balasan AI (${maxReplies}x) tercapai. Chat resmi dialihkan ke Admin.`;
+                wrapper.appendChild(meta);
+
+                chatArea.insertBefore(wrapper, typingIndicator);
+                scrollToBottom();
+            }, 800);
             return;
         }
         

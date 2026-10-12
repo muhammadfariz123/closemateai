@@ -253,6 +253,9 @@ class KnowledgeFileController extends Controller
         }
         
         $user->ai_custom_questions = $request->input('ai_custom_questions');
+        if ($request->has('ai_limit_reached_message')) {
+            $user->ai_limit_reached_message = $request->input('ai_limit_reached_message');
+        }
         $user->save();
 
         return response()->json(['success' => true, 'message' => 'Batasan Balasan AI berhasil disimpan']);

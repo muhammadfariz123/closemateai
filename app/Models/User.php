@@ -50,6 +50,7 @@ class User extends Authenticatable
         'google_calendar_url',
         'ai_prompt',
         'ai_personality_type',
+        'ai_limit_reached_message',
     ];
 
     /**
