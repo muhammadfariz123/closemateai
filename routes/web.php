@@ -109,6 +109,14 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/finance', function () { return view('finance'); });
     Route::get('/production', function () { return view('production'); });
+    Route::get('/team', [\App\Http\Controllers\TeamController::class, 'index']);
+    Route::get('/teams', [\App\Http\Controllers\TeamController::class, 'index']);
+    Route::get('/team-management', [\App\Http\Controllers\TeamController::class, 'index']);
+    Route::get('/api/team/members', [\App\Http\Controllers\TeamController::class, 'getMembers']);
+    Route::post('/api/team/invite', [\App\Http\Controllers\TeamController::class, 'invite']);
+    Route::delete('/api/team/members/{id}', [\App\Http\Controllers\TeamController::class, 'deleteMember']);
+    Route::post('/api/team/members/{id}/resend', [\App\Http\Controllers\TeamController::class, 'resendInvite']);
+    Route::post('/api/team/members/{id}/toggle-status', [\App\Http\Controllers\TeamController::class, 'toggleStatus']);
     Route::get('/activity', function () { return view('activity'); });
 
     Route::get('/settings', [SettingsController::class, 'index']);
