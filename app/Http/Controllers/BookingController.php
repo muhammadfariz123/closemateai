@@ -51,13 +51,22 @@ class BookingController extends Controller
         if ($request->has('id') && $request->input('id')) {
             $booking = Booking::where('user_id', $user->id)->find($request->input('id'));
             if (!$booking) return response()->json(['success' => false], 404);
+        } elseif ($request->has('quotation_id') && $request->input('quotation_id')) {
+            // Check if booking already exists for this quotation
+            $booking = Booking::where('user_id', $user->id)
+                ->where('quotation_id', $request->input('quotation_id'))
+                ->first();
+            if (!$booking) {
+                $booking = new Booking();
+                $booking->user_id = $user->id;
+            }
         } else {
             $booking = new Booking();
             $booking->user_id = $user->id;
         }
         
         $fields = [
-            'client_name', 'client_wa_number', 'client_address', 'event_date', 
+            'quotation_id', 'client_name', 'client_wa_number', 'client_address', 'event_date', 
             'start_time', 'end_time', 'package_name', 'package_price', 'package_qty', 
             'paid_amount', 'discount', 'addons', 'operational_costs', 'total_income', 
             'total_operational_cost', 'net_profit', 'payment_date', 'payment_status', 

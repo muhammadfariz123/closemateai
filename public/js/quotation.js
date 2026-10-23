@@ -386,7 +386,7 @@ function handleSearch(query) {
 }
 
 function deleteQuotation(id) {
-    if(!confirm('Yakin ingin menghapus penawaran ini?')) return;
+    if(!confirm('Yakin ingin menghapus penawaran ini? Data booking terkait di Booking & Operasional juga akan otomatis ikut terhapus.')) return;
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     fetch('/api/quotations/' + id, {
         method: 'DELETE',
@@ -394,8 +394,14 @@ function deleteQuotation(id) {
             'X-CSRF-TOKEN': csrfToken
         }
     })
-        .then(() => loadQuotations())
-        .catch(e => console.error(e));
+        .then(() => {
+            if (window.showToast) window.showToast('Penawaran dan booking terkait berhasil dihapus!');
+            loadQuotations();
+        })
+        .catch(e => {
+            console.error(e);
+            alert('Gagal menghapus penawaran.');
+        });
 }
 
 function renderQuotationsList() {
@@ -869,6 +875,7 @@ window.convertToBooking = async function(id) {
         let notesText = `Dibuat dari penawaran ${q.q_no} \u00B7 Lokasi: ${venueStr}`;
 
         const bookingPayload = {
+            quotation_id: q.id,
             client_name: q.client || '',
             client_wa_number: q.phone || '',
             client_address: venueStr,
@@ -890,7 +897,7 @@ window.convertToBooking = async function(id) {
             production_status: 'Pre-Event',
             result_link: '',
             team_members: [],
-            notes: notesText
+            notes: notesText + ` [qid:${q.id}]`
         };
 
         await fetch('/api/bookings', {
