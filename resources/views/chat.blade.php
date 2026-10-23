@@ -124,13 +124,16 @@
         .chat-banner { background: var(--danger-bg); padding: 10px 24px; color: var(--danger); font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(241, 65, 108, 0.1); }
         
         .chat-messages { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 12px; }
-        .bubble-wrapper { display: flex; flex-direction: column; max-width: 70%; }
+        .bubble-wrapper { display: flex; flex-direction: column; max-width: 75%; }
         .bubble-wrapper.right { align-self: flex-end; align-items: flex-end; }
         .bubble-wrapper.left { align-self: flex-start; align-items: flex-start; }
         
-        .bubble { padding: 12px 16px; border-radius: 12px; font-size: 13px; line-height: 1.5; position: relative; word-break: break-word; overflow-wrap: break-word; }
+        .bubble { padding: 12px 16px; border-radius: 12px; font-size: 13px; line-height: 1.6; position: relative; word-break: break-word; overflow-wrap: break-word; white-space: pre-wrap; }
         .bubble-right { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
         .bubble-left { background: white; color: var(--text-dark); border: 1px solid var(--border-color); border-bottom-left-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .bubble strong { font-weight: 700; color: inherit; }
+        .bubble em { font-style: italic; color: inherit; }
+        .bubble del { text-decoration: line-through; opacity: 0.8; }
         
         .bubble-time { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
         .bubble-time.right { text-align: right; }
@@ -466,6 +469,41 @@
         // Dummy Audio for notification (short tick)
         const notifSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
+        // WhatsApp Text Formatter (Newline, Bold, Italic, Strikethrough, Code)
+        function formatWhatsAppMessage(text) {
+            if (!text) return '';
+            
+            // Normalize newline
+            let s = String(text).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            
+            // Escape HTML
+            s = s.replace(/&/g, '&amp;')
+                 .replace(/</g, '&lt;')
+                 .replace(/>/g, '&gt;');
+            
+            // Code block ```code```
+            s = s.replace(/```([\s\S]*?)```/g, function(match, code) {
+                return '<pre style="background: rgba(0,0,0,0.15); padding: 6px 10px; border-radius: 6px; font-family: monospace; font-size: 12px; margin: 4px 0; overflow-x: auto; white-space: pre-wrap;"><code>' + code + '</code></pre>';
+            });
+
+            // Inline code `code`
+            s = s.replace(/`([^`\n]+)`/g, '<code style="background: rgba(0,0,0,0.15); padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 12px;">$1</code>');
+
+            // WhatsApp Bold: *text*
+            s = s.replace(/\*([^\*\n]+?)\*/g, '<strong>$1</strong>');
+
+            // WhatsApp Italic: _text_
+            s = s.replace(/_([^_\n]+?)_/g, '<em>$1</em>');
+
+            // WhatsApp Strikethrough: ~text~
+            s = s.replace(/~([^~\n]+?)~/g, '<del>$1</del>');
+
+            // Convert newlines to <br>
+            s = s.replace(/\n/g, '<br>');
+
+            return s;
+        }
+
         async function fetchChats() {
             try {
                 let res = await fetch('/api/chats?_=' + new Date().getTime());
@@ -550,7 +588,8 @@
             
             let html = '';
             chats.forEach(chat => {
-                let lastMsg = chat.messages && chat.messages.length > 0 ? chat.messages[0].message : 'Tidak ada pesan';
+                let rawMsg = chat.messages && chat.messages.length > 0 ? chat.messages[0].message : 'Tidak ada pesan';
+                let cleanPreview = rawMsg.replace(/[\*_~`]/g, '').replace(/\r?\n+/g, ' ').trim();
                 let time = chat.updated_at ? new Date(chat.updated_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
                 let isActive = chat.id === activeChatId ? 'active' : '';
                 let tagColor = chat.is_human_takeover ? 'tag-danger' : 'tag-primary';
@@ -571,7 +610,7 @@
                             <div class="chat-item-time">${time}</div>
                         </div>
                         <div class="chat-item-subtitle">${chat.client_wa_number}</div>
-                        <div class="chat-item-msg">${lastMsg.substring(0, 50)}${lastMsg.length > 50 ? '...' : ''}</div>
+                        <div class="chat-item-msg">${cleanPreview.substring(0, 48)}${cleanPreview.length > 48 ? '...' : ''}</div>
                         <div class="chat-item-tags">
                             <div class="tag ${tagColor}">${tagText}</div>
                             ${statusTag}
@@ -669,12 +708,14 @@
                     let badge = msg.sender === 'ai' ? '<div class="ai-badge">AI</div>' : '';
                     let bgColor = msg.sender === 'admin' ? '#4a3da8' : 'var(--primary)'; // slightly different for human
                     
+                    let formattedMsg = formatWhatsAppMessage(msg.message);
+                    
                     if (isRight) {
                         html += `
                             <div class="bubble-wrapper right">
                                 <div class="bubble bubble-right" style="background: ${bgColor};">
                                     ${badge}
-                                    ${msg.message.replace(/\\n/g, '<br>')}
+                                    ${formattedMsg}
                                 </div>
                                 <div class="bubble-time right">${time}</div>
                             </div>
@@ -683,7 +724,7 @@
                         html += `
                             <div class="bubble-wrapper left">
                                 <div class="bubble bubble-left">
-                                    ${msg.message.replace(/\\n/g, '<br>')}
+                                    ${formattedMsg}
                                 </div>
                                 <div class="bubble-time">${time}</div>
                             </div>
@@ -766,10 +807,11 @@
             // Optimistic UI
             const msgBox = document.getElementById('chatMessagesBox');
             let time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            let formattedOpt = formatWhatsAppMessage(text);
             msgBox.innerHTML += `
                 <div class="bubble-wrapper right" style="opacity: 0.7;">
                     <div class="bubble bubble-right" style="background: #4a3da8;">
-                        ${text.replace(/\\n/g, '<br>')}
+                        ${formattedOpt}
                     </div>
                     <div class="bubble-time right">${time} (Sending...)</div>
                 </div>
