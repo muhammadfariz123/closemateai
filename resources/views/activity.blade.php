@@ -278,7 +278,11 @@
             </div>
             <div class="filter-row" style="border-top: 1px solid var(--border-color); padding-top: 20px;" id="sub_filters">
                 <div class="badge-tab active-gray" style="border: none;" onclick="setSubFilter('Semua Anggota')">Semua Anggota</div>
-                <div class="badge-tab-text" onclick="setSubFilter('Penapict (Owner)')">Penapict (Owner)</div>
+                @php
+                    $effOwner = auth()->check() ? auth()->user()->getEffectiveOwner() : \App\Models\User::first();
+                    $ownerLabel = ($effOwner ? ($effOwner->business_name ?: $effOwner->name) : 'Owner') . ' (Owner)';
+                @endphp
+                <div class="badge-tab-text" onclick="setSubFilter('Owner')">{{ $ownerLabel }}</div>
                 <div class="badge-tab-text" onclick="setSubFilter('Sistem / AI')">Sistem / AI</div>
             </div>
         </div>
@@ -349,7 +353,7 @@
                 let matchMain = (currentMainFilter === 'Semua') || (a.type === currentMainFilter);
                 
                 let matchSub = true;
-                if (currentSubFilter === 'Penapict (Owner)') {
+                if (currentSubFilter === 'Owner' || currentSubFilter === 'Penapict (Owner)') {
                     matchSub = (a.actor !== 'Sistem');
                 } else if (currentSubFilter === 'Sistem / AI') {
                     matchSub = (a.actor === 'Sistem');
@@ -367,24 +371,30 @@
             
             let html = '';
             filtered.forEach(a => {
-                let timeStr = a.time;
+                let timeStr = a.time || '';
                 if (a.created_at) {
                     const d = new Date(a.created_at);
                     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
                     timeStr = `${d.getDate().toString().padStart(2, '0')} ${months[d.getMonth()]}, ${d.getHours().toString().padStart(2, '0')}.${d.getMinutes().toString().padStart(2, '0')}`;
                 }
                 
+                let title = a.title || a.type || 'Aktivitas';
+                let desc = a.desc || a.description || '';
+                let actor = a.actor || 'Sistem';
+                let icon = a.icon || 'fa-bolt';
+                let color = a.color || 'purple';
+
                 html += `
                 <div class="activity-item">
-                    <div class="activity-icon icon-${a.color}">
-                        <i class="fa-solid ${a.icon}"></i>
+                    <div class="activity-icon icon-${color}">
+                        <i class="fa-solid ${icon}"></i>
                     </div>
                     <div class="activity-details">
-                        <h4>${a.title}</h4>
-                        <p>${a.desc}</p>
+                        <h4>${title}</h4>
+                        <p>${desc}</p>
                     </div>
                     <div class="activity-meta">
-                        <span>${a.actor}</span>
+                        <span>${actor}</span>
                         <small>${timeStr}</small>
                     </div>
                 </div>

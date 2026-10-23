@@ -62,26 +62,37 @@ class DashboardController extends Controller
                 ->get();
         }
 
-        $activities = $activities->map(function($act) {
-                // Map to frontend feed format
-                $icon = $act->icon ?: 'fa-solid fa-bell';
-                $color = $act->color ?: 'purple';
-                if ($color == 'purple') $colorCode = 'var(--primary)';
-                else if ($color == 'green') $colorCode = '#50cd89';
-                else if ($color == 'orange') $colorCode = '#ffc700';
-                else if ($color == 'blue') $colorCode = '#009EF7';
-                else $colorCode = '#a1a5b7';
-                
-                return [
-                    'actor' => $act->actor,
-                    'title' => $act->title,
-                    'desc' => $act->desc,
-                    'icon' => $icon,
-                    'color' => $colorCode,
-                    'time' => $act->created_at ? $act->created_at->diffForHumans() : '',
-                    'timestamp' => $act->created_at ? $act->created_at->timestamp : 0
-                ];
-            });
+        $ownerName = $user->business_name ?: ($user->name ?: 'Owner');
+        $activities = $activities->map(function($act) use ($ownerName) {
+            $desc = $act->desc ?: ($act->description ?? '');
+            $title = $act->title;
+            $actor = $act->actor ?: (($act->type === 'chat_in' || str_contains((string)$act->type, 'follow_up')) ? 'Sistem' : $ownerName);
+            $icon = $act->icon ?: 'fa-solid fa-bell';
+            $color = $act->color ?: 'purple';
+
+            if (empty($title)) {
+                $title = ucwords(str_replace('_', ' ', $act->type ?: 'Aktivitas Sistem'));
+            }
+            if (empty($desc)) {
+                $desc = $title;
+            }
+
+            if ($color == 'purple') $colorCode = 'var(--primary)';
+            else if ($color == 'green') $colorCode = '#50cd89';
+            else if ($color == 'orange') $colorCode = '#ffc700';
+            else if ($color == 'blue') $colorCode = '#009EF7';
+            else $colorCode = '#a1a5b7';
+            
+            return [
+                'actor' => $actor,
+                'title' => $title,
+                'desc' => $desc,
+                'icon' => $icon,
+                'color' => $colorCode,
+                'time' => $act->created_at ? $act->created_at->diffForHumans() : '',
+                'timestamp' => $act->created_at ? $act->created_at->timestamp : 0
+            ];
+        });
             
         $feed = collect($activities)->values();
 

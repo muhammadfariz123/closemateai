@@ -80,6 +80,54 @@ class User extends Authenticatable
         return empty($this->owner_id) && ($this->role === 'owner' || empty($this->role));
     }
 
+    public function getAttribute($key)
+    {
+        $value = parent::getAttribute($key);
+
+        $sharedWorkspaceAttributes = [
+            'wa_status',
+            'fonnte_token',
+            'wa_number',
+            'business_name',
+            'business_wa_number',
+            'business_description',
+            'price_list_links',
+            'bank_name',
+            'bank_account_number',
+            'bank_account_name',
+            'default_terms',
+            'invoice_format',
+            'vendor_address',
+            'google_calendar_url',
+            'fu_is_active',
+            'fu_1_days',
+            'fu_1_template',
+            'fu_2_days',
+            'fu_2_template',
+            'fu_3_days',
+            'fu_3_template',
+            'ai_limit_enabled',
+            'ai_multi_bubble_enabled',
+            'ai_max_bubbles',
+            'ai_require_data_before_price',
+            'ai_required_data',
+            'ai_custom_questions',
+            'ai_max_replies',
+            'ai_prompt',
+            'ai_personality_type',
+            'ai_limit_reached_message',
+        ];
+
+        if (isset($this->attributes['owner_id']) && !empty($this->attributes['owner_id']) && in_array($key, $sharedWorkspaceAttributes)) {
+            $owner = $this->getEffectiveOwner();
+            if ($owner && $owner->id !== ($this->attributes['id'] ?? null)) {
+                return $owner->getAttribute($key);
+            }
+        }
+
+        return $value;
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

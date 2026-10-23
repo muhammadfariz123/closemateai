@@ -121,7 +121,7 @@ class FollowUpController extends Controller
             $template = $user->fu_3_template ?? 'Halo Kak {nama}, apakah ada opsi penyesuaian budget atau isi paket {paket} yang ingin disesuaikan dengan kebutuhan Kakak?';
         }
 
-        $chats = \App\Models\Chat::where('status', $status_from)->get();
+        $chats = \App\Models\Chat::where('user_id', $user->id)->where('status', $status_from)->get();
         $count = $chats->count();
         $sentCount = 0;
         
