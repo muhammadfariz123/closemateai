@@ -14,6 +14,7 @@ class TeamMember extends Model
     protected $casts = [
         'invited_at' => 'datetime',
         'joined_at' => 'datetime',
+        'reset_sent_at' => 'datetime',
     ];
 
     public function user()

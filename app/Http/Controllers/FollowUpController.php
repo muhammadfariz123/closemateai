@@ -6,9 +6,16 @@ use Illuminate\Http\Request;
 
 class FollowUpController extends Controller
 {
-    public function index()
+    protected function getUser()
     {
         $user = auth()->user() ?? \App\Models\User::first();
+        return $user ? $user->getEffectiveOwner() : null;
+    }
+
+    public function index()
+    {
+        $user = $this->getUser();
+        if (!$user) return redirect('/login');
         
         // Default values if null
         $settings = [
@@ -22,20 +29,18 @@ class FollowUpController extends Controller
         ];
 
         // Fetch contacts for each follow-up stage
-        $fu1_contacts = \App\Models\Chat::where('status', 'Follow Up')->get();
-        $fu2_contacts = \App\Models\Chat::where('status', 'Done Follow-up 1')->get();
-        $fu3_contacts = \App\Models\Chat::where('status', 'Done Follow-up 2')->get();
+        $fu1_contacts = \App\Models\Chat::where('user_id', $user->id)->where('status', 'Follow Up')->get();
+        $fu2_contacts = \App\Models\Chat::where('user_id', $user->id)->where('status', 'Done Follow-up 1')->get();
+        $fu3_contacts = \App\Models\Chat::where('user_id', $user->id)->where('status', 'Done Follow-up 2')->get();
         
-        // Fetch follow up activity history (from system_activities or create a new table, or just filter system activities for type follow_up)
-        // Let's use system_activities for now, or just chats updated recently
-        $activities = \App\Models\SystemActivity::where('type', 'follow_up')->orderBy('created_at', 'desc')->take(20)->get();
+        $activities = \App\Models\SystemActivity::where('user_id', $user->id)->where('type', 'follow_up')->orderBy('created_at', 'desc')->take(20)->get();
 
         return view('followup', compact('settings', 'fu1_contacts', 'fu2_contacts', 'fu3_contacts', 'activities'));
     }
 
     public function saveSettings(Request $request)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         
         $user->update([
             'fu_is_active' => $request->fu_is_active ? 1 : 0,
@@ -52,7 +57,7 @@ class FollowUpController extends Controller
 
     public function toggleSettings(Request $request)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         
         $isActive = $request->fu_is_active ? 1 : 0;
         $user->update([
@@ -65,7 +70,7 @@ class FollowUpController extends Controller
 
     public function processManual(Request $request, $level)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         if (!$user->fonnte_token) {
             return response()->json(['success' => false, 'message' => 'WhatsApp belum terhubung', 'wa_connected' => false]);
         }

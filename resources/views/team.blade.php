@@ -352,29 +352,7 @@
             </div>
         </div>
         
-        <div class="nav-menu">
-            <a class="nav-item"><i class="fa-regular fa-circle-play"></i> <span>Video Tutorial</span></a>
-            <a href="/dashboard" class="nav-item {{ request()->is('dashboard') ? 'active' : '' }}"><i class="fa-solid fa-border-all"></i> <span>Dashboard & WA Status</span></a>
-            <a href="/chat" class="nav-item {{ request()->is('chat') ? 'active' : '' }}"><i class="fa-solid fa-message"></i> <span>Live Chat Inbox</span></a>
-            <a href="/knowledge" class="nav-item {{ request()->is('knowledge') ? 'active' : '' }}"><i class="fa-solid fa-book"></i> <span>Knowledge Base</span></a>
-            <a href="/leads" class="nav-item {{ request()->is('leads') ? 'active' : '' }}"><i class="fa-solid fa-users"></i> <span>Leads CRM</span></a>
-            <a href="/followup" class="nav-item {{ request()->is('followup') ? 'active' : '' }}"><i class="fa-solid fa-clock-rotate-left"></i> <span>Follow-Up Otomatis</span></a>
-            <a href="/booking" class="nav-item {{ request()->is('booking') ? 'active' : '' }}"><i class="fa-regular fa-calendar-check"></i> <span>Booking & Operasional</span></a>
-            <a href="/invoice" class="nav-item {{ request()->is('invoice') ? 'active' : '' }}"><i class="fa-solid fa-file-invoice"></i> <span>Invoice Generator</span></a>
-            <a href="/quotations" class="nav-item {{ request()->is('quotations') ? 'active' : '' }}"><i class="fa-solid fa-file-contract"></i> <span>Quotation Generator</span></a>
-            <a href="/finance" class="nav-item {{ request()->is('finance') ? 'active' : '' }}"><i class="fa-solid fa-chart-pie"></i> <span>Laporan Keuangan</span></a>
-            <a href="/production" class="nav-item {{ request()->is('production') ? 'active' : '' }}"><i class="fa-solid fa-list-check"></i> <span>Progres Produksi</span></a>
-            <a href="/team" class="nav-item active"><i class="fa-solid fa-user-group"></i> <span>Manajemen Tim</span></a>
-            <a href="/activity" class="nav-item {{ request()->is('activity') ? 'active' : '' }}"><i class="fa-solid fa-clock-rotate-left"></i> <span>Riwayat Aktivitas</span></a>
-            <a class="nav-item"><i class="fa-regular fa-credit-card"></i> <span>Langganan & Pembayaran</span></a>
-            
-            <div style="margin-top: 30px;"></div>
-            
-            <a href="/settings" class="nav-item {{ request()->is('settings') ? 'active' : '' }}"><i class="fa-solid fa-gear"></i> <span>Settings & Profile</span></a>
-            <a class="nav-item" id="btn-collapse" style="margin-top: auto; opacity: 0.7;">
-                <i class="fa-solid fa-angles-left" id="collapse-icon" style="transition: transform 0.3s;"></i> <span>Collapse</span>
-            </a>
-        </div>
+        @include('components.sidebar-nav')
     </div>
 
     <!-- Main Content -->
@@ -511,26 +489,28 @@
                 <div id="pendingListContainer">
                     @if(count($pendingMembers) > 0)
                         @foreach($pendingMembers as $p)
-                        <div class="member-row" id="pending-row-{{ $p->id }}">
-                            <div class="member-info">
-                                <div class="member-avatar avatar-pending">
+                        <div class="member-row" id="pending-row-{{ $p->id }}" style="display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; border-bottom: 1px solid #f1f1f4;">
+                            <div class="member-info" style="display: flex; align-items: center; gap: 14px;">
+                                <div style="width: 42px; height: 42px; border-radius: 50%; background: #fef3c7; display: flex; align-items: center; justify-content: center; color: #d97706; font-size: 16px; flex-shrink: 0;">
                                     <i class="fa-regular fa-clock"></i>
                                 </div>
                                 <div class="member-text">
-                                    <h3>{{ $p->name }}</h3>
-                                    <p>{{ $p->email }} &bull; Diundang {{ $p->invited_at ? $p->invited_at->format('d M Y') : 'Baru saja' }}</p>
+                                    <h3 style="font-size: 14px; font-weight: 700; color: #181c32; margin-bottom: 2px;">{{ $p->name ?: 'Admin CS' }}</h3>
+                                    <p style="font-size: 13px; color: #64748b; margin: 0;">{{ $p->email }}</p>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span class="role-badge badge-pending">Menunggu Konfirmasi</span>
-                                <button type="button" onclick="activateTeamMember({{ $p->id }})" class="btn" style="background: #eef2ff; color: #6366f1; border: 1px solid #c7d2fe; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer;">
-                                    Aktifkan
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <span style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
+                                    <span>⏳</span> Menunggu Konfirmasi
+                                </span>
+                                <button type="button" onclick="resendInvite({{ $p->id }})" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='#6c5ce7'; this.style.color='#6c5ce7'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
+                                    <i class="fa-regular fa-paper-plane" style="font-size: 12px;"></i> Kirim Ulang Email
                                 </button>
-                                <button type="button" onclick="resendInvite({{ $p->id }})" title="Kirim Ulang Undangan" style="background: none; border: none; cursor: pointer; color: #64748b; padding: 6px; font-size: 14px;" onmouseover="this.style.color='#6c5ce7'" onmouseout="this.style.color='#64748b'">
-                                    <i class="fa-solid fa-arrow-rotate-right"></i>
+                                <button type="button" onclick="sendResetPassword({{ $p->id }})" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='#6c5ce7'; this.style.color='#6c5ce7'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
+                                    <i class="fa-solid fa-key" style="font-size: 12px;"></i> Kirim Reset Password
                                 </button>
-                                <button type="button" onclick="deleteTeamMember({{ $p->id }})" title="Batalkan Undangan" style="background: none; border: none; cursor: pointer; color: #a1a5b7; padding: 6px; font-size: 14px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#a1a5b7'">
-                                    <i class="fa-regular fa-trash-can"></i>
+                                <button type="button" onclick="deleteTeamMember({{ $p->id }})" style="background: none; border: none; color: #ef4444; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 6px 8px;">
+                                    <i class="fa-regular fa-trash-can" style="font-size: 13px;"></i> Hapus Undangan
                                 </button>
                             </div>
                         </div>
@@ -553,43 +533,32 @@
         </div>
     </div>
 
-    <!-- Modal Undang Admin CS -->
+    <!-- Modal Undang Admin CS (Image 1) -->
     <div class="modal-overlay" id="inviteModal" onclick="if(event.target === this) closeInviteModal()">
-        <div class="modal-box">
+        <div class="modal-box" style="background: white; width: 90%; max-width: 440px; border-radius: 16px; padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); position: relative;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
                 <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #181c32;">Undang Admin CS</h3>
                 <i class="fa-solid fa-xmark" style="cursor: pointer; color: #a1a5b7; font-size: 16px; padding: 4px;" onclick="closeInviteModal()"></i>
             </div>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 18px;">
-                Kirimkan tautan aktivasi ke email calon Admin CS kamu.
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px; line-height: 1.5;">
+                Kami akan mengirim email undangan berisi link untuk membuat password.
             </p>
 
             <form id="inviteForm" onsubmit="submitInvite(event)">
-                <div class="form-group">
-                    <label>Nama Admin CS</label>
-                    <input type="text" id="inputInviteName" class="form-control" placeholder="Contoh: Sarah Anindita" required>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #181c32; margin-bottom: 6px;">Nama Admin</label>
+                    <input type="text" id="inputInviteName" class="form-control" placeholder="Admin Maya" style="width: 100%; height: 42px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 14px; font-size: 13px; color: #181c32; outline: none; box-sizing: border-box;">
                 </div>
-                <div class="form-group">
-                    <label>Alamat Email</label>
-                    <input type="email" id="inputInviteEmail" class="form-control" placeholder="admin@example.com" required>
-                </div>
-                <div class="form-group">
-                    <label>Nomor WhatsApp (Opsional)</label>
-                    <input type="text" id="inputInvitePhone" class="form-control" placeholder="08xxxxxxxxxx">
-                </div>
-                <div class="form-group" style="margin-bottom: 22px;">
-                    <label>Hak Akses</label>
-                    <div style="background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-size: 13px; font-weight: 600; color: #181c32;">Admin CS</span>
-                        <span style="font-size: 11px; background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 12px; font-weight: 600;">Shared Inbox</span>
-                    </div>
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #181c32; margin-bottom: 6px;">Email Admin</label>
+                    <input type="email" id="inputInviteEmail" class="form-control" placeholder="maya@vendor.com" required style="width: 100%; height: 42px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 14px; font-size: 13px; color: #181c32; outline: none; box-sizing: border-box;">
                 </div>
 
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" onclick="closeInviteModal()" style="height: 40px; padding: 0 16px; border: 1px solid #e2e8f0; background: white; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; color: #64748b;">
+                    <button type="button" onclick="closeInviteModal()" style="height: 38px; padding: 0 20px; border: 1px solid #e2e8f0; background: white; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; color: #181c32;">
                         Batal
                     </button>
-                    <button type="submit" id="btnSubmitInvite" style="height: 40px; padding: 0 20px; background: #6c5ce7; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: white;">
+                    <button type="submit" id="btnSubmitInvite" style="height: 38px; padding: 0 20px; background: #8c7ae6; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: white;">
                         Kirim Undangan
                     </button>
                 </div>
@@ -597,12 +566,12 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
+    <!-- Toast Notification (Image 2) -->
     <div id="teamToast" class="toast-notif">
-        <span style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: #181c32; color: #fff; border-radius: 50%; font-size: 11px;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: #181c32; color: #fff; border-radius: 50%; font-size: 11px; flex-shrink: 0;">
             <i class="fa-solid fa-check"></i>
         </span>
-        <span id="teamToastText">Undangan berhasil dikirim</span>
+        <span id="teamToastText">Undangan terkirim. Admin CS akan menerima email aktivasi akun.</span>
     </div>
 
     @include('components.whatsapp-widget')
@@ -644,7 +613,6 @@
         function openInviteModal() {
             document.getElementById('inputInviteName').value = '';
             document.getElementById('inputInviteEmail').value = '';
-            document.getElementById('inputInvitePhone').value = '';
             document.getElementById('inviteModal').style.display = 'flex';
         }
 
@@ -657,7 +625,6 @@
             e.preventDefault();
             const name = document.getElementById('inputInviteName').value.trim();
             const email = document.getElementById('inputInviteEmail').value.trim();
-            const phone = document.getElementById('inputInvitePhone').value.trim();
 
             if (!email) {
                 alert("Harap masukkan alamat email Admin CS");
@@ -675,7 +642,7 @@
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': csrfToken
                 },
-                body: JSON.stringify({ name, email, phone })
+                body: JSON.stringify({ name, email })
             })
             .then(res => res.json())
             .then(data => {
@@ -722,8 +689,15 @@
             });
         }
 
-        // Resend invitation
-        function resendInvite(id) {
+        // Resend invitation email
+        function resendInvite(id, btnEl) {
+            const btn = btnEl || event?.currentTarget;
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size: 12px;"></i> Mengirim...';
+            }
+
             fetch(`/api/team/members/${id}/resend`, {
                 method: 'POST',
                 headers: {
@@ -734,13 +708,59 @@
             })
             .then(res => res.json())
             .then(data => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origHtml;
+                }
                 if (data.success) {
-                    showTeamToast(data.message || "Undangan dikirim ulang");
+                    showTeamToast(data.message || "Undangan berhasil dikirim ulang.");
                 } else {
                     alert(data.error || "Gagal mengirim ulang undangan");
                 }
             })
             .catch(() => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origHtml;
+                }
+                alert("Terjadi kesalahan sistem");
+            });
+        }
+
+        // Send reset password email
+        function sendResetPassword(id, btnEl) {
+            const btn = btnEl || event?.currentTarget;
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size: 12px;"></i> Mengirim...';
+            }
+
+            fetch(`/api/team/members/${id}/reset-password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origHtml;
+                }
+                if (data.success) {
+                    showTeamToast(data.message || "Email reset password berhasil dikirim.");
+                } else {
+                    alert(data.error || "Gagal mengirim email reset password");
+                }
+            })
+            .catch(() => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origHtml;
+                }
                 alert("Terjadi kesalahan sistem");
             });
         }
@@ -814,32 +834,34 @@
                         activeContainer.innerHTML = `<div class="empty-state" id="emptyStateActive">Belum ada Admin CS aktif. Undang mereka lewat email.</div>`;
                     }
 
-                    // Update Pending list
+                    // Update Pending list matching Image 3
                     const pendingContainer = document.getElementById('pendingListContainer');
                     if (data.pending_members && data.pending_members.length > 0) {
                         let phtml = '';
                         data.pending_members.forEach(p => {
                             phtml += `
-                            <div class="member-row" id="pending-row-${p.id}">
-                                <div class="member-info">
-                                    <div class="member-avatar avatar-pending">
+                            <div class="member-row" id="pending-row-${p.id}" style="display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; border-bottom: 1px solid #f1f1f4;">
+                                <div class="member-info" style="display: flex; align-items: center; gap: 14px;">
+                                    <div style="width: 42px; height: 42px; border-radius: 50%; background: #fef3c7; display: flex; align-items: center; justify-content: center; color: #d97706; font-size: 16px; flex-shrink: 0;">
                                         <i class="fa-regular fa-clock"></i>
                                     </div>
                                     <div class="member-text">
-                                        <h3>${escapeHtml(p.name || 'Admin CS')}</h3>
-                                        <p>${escapeHtml(p.email)} &bull; Menunggu Aktivasi</p>
+                                        <h3 style="font-size: 14px; font-weight: 700; color: #181c32; margin-bottom: 2px;">${escapeHtml(p.name || 'Admin CS')}</h3>
+                                        <p style="font-size: 13px; color: #64748b; margin: 0;">${escapeHtml(p.email)}</p>
                                     </div>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span class="role-badge badge-pending">Menunggu Konfirmasi</span>
-                                    <button type="button" onclick="activateTeamMember(${p.id})" style="background: #eef2ff; color: #6366f1; border: 1px solid #c7d2fe; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer;">
-                                        Aktifkan
+                                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                    <span style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
+                                        <span>⏳</span> Menunggu Konfirmasi
+                                    </span>
+                                    <button type="button" onclick="resendInvite(${p.id}, this)" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='#6c5ce7'; this.style.color='#6c5ce7'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
+                                        <i class="fa-regular fa-paper-plane" style="font-size: 12px;"></i> Kirim Ulang Email
                                     </button>
-                                    <button type="button" onclick="resendInvite(${p.id})" title="Kirim Ulang Undangan" style="background: none; border: none; cursor: pointer; color: #64748b; padding: 6px; font-size: 14px;" onmouseover="this.style.color='#6c5ce7'" onmouseout="this.style.color='#64748b'">
-                                        <i class="fa-solid fa-arrow-rotate-right"></i>
+                                    <button type="button" onclick="sendResetPassword(${p.id}, this)" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='#6c5ce7'; this.style.color='#6c5ce7'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
+                                        <i class="fa-solid fa-key" style="font-size: 12px;"></i> Kirim Reset Password
                                     </button>
-                                    <button type="button" onclick="deleteTeamMember(${p.id})" title="Batalkan Undangan" style="background: none; border: none; cursor: pointer; color: #a1a5b7; padding: 6px; font-size: 14px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#a1a5b7'">
-                                        <i class="fa-regular fa-trash-can"></i>
+                                    <button type="button" onclick="deleteTeamMember(${p.id})" style="background: none; border: none; color: #ef4444; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 6px 8px;">
+                                        <i class="fa-regular fa-trash-can" style="font-size: 13px;"></i> Hapus Undangan
                                     </button>
                                 </div>
                             </div>`;

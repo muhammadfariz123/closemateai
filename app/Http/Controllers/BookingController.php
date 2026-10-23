@@ -7,9 +7,15 @@ use App\Models\Booking;
 
 class BookingController extends Controller
 {
-    public function getBookings()
+    protected function getUser()
     {
         $user = auth()->user() ?? \App\Models\User::first();
+        return $user ? $user->getEffectiveOwner() : null;
+    }
+
+    public function getBookings()
+    {
+        $user = $this->getUser();
         if (!$user) return response()->json([]);
 
         $bookings = Booking::where('user_id', $user->id)
@@ -29,7 +35,7 @@ class BookingController extends Controller
 
     public function addBooking(Request $request)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         if (!$user) return response()->json(['success' => false], 401);
 
         // If ID is provided, update existing
@@ -63,7 +69,7 @@ class BookingController extends Controller
 
     public function deleteBooking($id)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         if (!$user) return response()->json(['success' => false], 401);
 
         Booking::where('user_id', $user->id)->where('id', $id)->delete();

@@ -18,7 +18,8 @@ class InvoiceController extends Controller
 {
     protected function getUser()
     {
-        return auth()->user() ?? \App\Models\User::first();
+        $user = auth()->user() ?? \App\Models\User::first();
+        return $user ? $user->getEffectiveOwner() : null;
     }
 
     protected function ensureSchemaReady()

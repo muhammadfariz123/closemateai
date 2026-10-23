@@ -10,9 +10,15 @@ use Illuminate\Support\Facades\Log;
 
 class ChatController extends Controller
 {
-    public function getChats()
+    protected function getUser()
     {
         $user = auth()->user() ?? \App\Models\User::first();
+        return $user ? $user->getEffectiveOwner() : null;
+    }
+
+    public function getChats()
+    {
+        $user = $this->getUser();
         if (!$user) return response()->json([]);
 
         $chats = Chat::with(['messages' => function($query) {
@@ -26,7 +32,7 @@ class ChatController extends Controller
 
     public function getMessages($chatId)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         if (!$user) return response()->json([]);
 
         $chat = Chat::where('id', $chatId)->where('user_id', $user->id)->firstOrFail();
@@ -40,7 +46,7 @@ class ChatController extends Controller
 
     public function sendMessage(Request $request, $chatId)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         if (!$user) return response()->json(['success' => false]);
 
         $chat = Chat::where('id', $chatId)->where('user_id', $user->id)->firstOrFail();
@@ -79,7 +85,7 @@ class ChatController extends Controller
 
     public function toggleTakeover(Request $request, $chatId)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         if (!$user) return response()->json(['success' => false]);
 
         $chat = Chat::where('id', $chatId)->where('user_id', $user->id)->firstOrFail();
@@ -97,7 +103,7 @@ class ChatController extends Controller
 
     public function clearChatHistory(Request $request, $chatId)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         if (!$user) return response()->json(['success' => false]);
 
         $chat = Chat::where('id', $chatId)->where('user_id', $user->id)->firstOrFail();
@@ -115,7 +121,7 @@ class ChatController extends Controller
 
     public function setHandler(Request $request, $chatId)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         if (!$user) return response()->json(['success' => false]);
 
         $chat = Chat::where('id', $chatId)->where('user_id', $user->id)->firstOrFail();
@@ -127,7 +133,7 @@ class ChatController extends Controller
 
     public function editChat(Request $request, $chatId)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         if (!$user) return response()->json(['success' => false]);
 
         $chat = Chat::where('id', $chatId)->where('user_id', $user->id)->firstOrFail();
@@ -146,7 +152,7 @@ class ChatController extends Controller
     
     public function deleteChat(Request $request, $chatId)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         if (!$user) return response()->json(['success' => false]);
         
         $chat = Chat::where('id', $chatId)->where('user_id', $user->id)->firstOrFail();
@@ -160,7 +166,7 @@ class ChatController extends Controller
 
     public function addChat(Request $request)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         if (!$user) return response()->json(['success' => false]);
 
         $chat = new Chat();

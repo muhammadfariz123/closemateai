@@ -53,7 +53,32 @@ class User extends Authenticatable
         'ai_limit_reached_message',
         'vendor_address',
         'invoice_format',
+        'role',
+        'owner_id',
     ];
+
+    public function getEffectiveOwner()
+    {
+        if ($this->owner_id) {
+            return self::find($this->owner_id) ?: $this;
+        }
+        return $this;
+    }
+
+    public function getEffectiveOwnerId()
+    {
+        return $this->owner_id ?: $this->id;
+    }
+
+    public function isAdminCs()
+    {
+        return $this->role === 'admin_cs';
+    }
+
+    public function isOwner()
+    {
+        return empty($this->owner_id) && ($this->role === 'owner' || empty($this->role));
+    }
 
     /**
      * The attributes that should be hidden for serialization.

@@ -10,10 +10,16 @@ use Carbon\Carbon;
 
 class QuotationController extends Controller
 {
+    protected function getUser()
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        return $user ? $user->getEffectiveOwner() : null;
+    }
+
     // API for vendor dashboard
     public function getQuotations()
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         if (!$user) return response()->json([]);
 
         return response()->json(Quotation::where('user_id', $user->id)->orderBy('created_at', 'desc')->get());
@@ -21,7 +27,7 @@ class QuotationController extends Controller
 
     public function addQuotation(Request $request)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         if (!$user) return response()->json(['success' => false], 401);
 
         $data = $request->all();
@@ -45,7 +51,7 @@ class QuotationController extends Controller
 
     public function deleteQuotation($id)
     {
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = $this->getUser();
         if (!$user) return response()->json(['success' => false], 401);
 
         Quotation::where('user_id', $user->id)->where('id', $id)->delete();

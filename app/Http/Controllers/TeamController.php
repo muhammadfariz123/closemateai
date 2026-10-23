@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\TeamAccountActivatedEmail;
+use App\Mail\TeamInvitationEmail;
+use App\Mail\TeamResetPasswordEmail;
 use App\Models\SystemActivity;
 use App\Models\TeamMember;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class TeamController extends Controller
@@ -21,6 +27,11 @@ class TeamController extends Controller
         $user = $this->getUser();
         if (!$user) {
             return redirect('/login');
+        }
+
+        // If user is Admin CS, restrict access to Team Management
+        if ($user->role === 'admin_cs') {
+            return redirect('/dashboard')->with('error', 'Akses dibatasi untuk Admin CS.');
         }
 
         $totalSeats = 99;
@@ -98,34 +109,35 @@ class TeamController extends Controller
             return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
         }
 
+        if ($user->role === 'admin_cs') {
+            return response()->json(['success' => false, 'error' => 'Admin CS tidak dapat mengundang anggota.'], 403);
+        }
+
         $request->validate([
             'email' => 'required|email',
         ]);
 
         $email = strtolower(trim($request->input('email')));
         $name = trim($request->input('name') ?: explode('@', $email)[0]);
-        $phone = trim($request->input('phone', ''));
 
         // Check if owner's email
         if (strtolower($user->email) === $email) {
             return response()->json([
                 'success' => false,
-                'error' => 'Email ini adalah email Owner.'
+                'error' => 'Email ini adalah email akun Owner.'
             ], 422);
         }
 
-        // Check if already invited or active
-        $exists = TeamMember::where('user_id', $user->id)->where('email', $email)->first();
-        if ($exists) {
+        // Check if already in active team
+        $existing = TeamMember::where('user_id', $user->id)->where('email', $email)->first();
+        if ($existing && $existing->status === 'active') {
             return response()->json([
                 'success' => false,
-                'error' => $exists->status === 'active' 
-                    ? 'Email ini sudah menjadi Admin CS aktif.' 
-                    : 'Undangan untuk email ini sudah pernah dikirim.'
+                'error' => 'Email ini sudah menjadi Admin CS aktif.'
             ], 422);
         }
 
-        // Check seats capacity
+        // Capacity check
         $activeAdminCount = TeamMember::where('user_id', $user->id)->where('status', 'active')->count();
         if ((1 + $activeAdminCount) >= 99) {
             return response()->json([
@@ -134,16 +146,33 @@ class TeamController extends Controller
             ], 422);
         }
 
-        $member = TeamMember::create([
-            'user_id' => $user->id,
-            'name' => $name,
-            'email' => $email,
-            'phone' => $phone,
-            'role' => 'Admin CS',
-            'status' => 'pending',
-            'invited_at' => now(),
-            'token' => Str::random(40),
-        ]);
+        $token = Str::random(60);
+
+        if ($existing) {
+            $existing->name = $name;
+            $existing->token = $token;
+            $existing->status = 'pending';
+            $existing->invited_at = now();
+            $existing->save();
+            $member = $existing;
+        } else {
+            $member = TeamMember::create([
+                'user_id' => $user->id,
+                'name' => $name,
+                'email' => $email,
+                'role' => 'Admin CS',
+                'status' => 'pending',
+                'invited_at' => now(),
+                'token' => $token,
+            ]);
+        }
+
+        // Send invitation email
+        try {
+            Mail::to($email)->send(new TeamInvitationEmail($member, $user));
+        } catch (\Throwable $e) {
+            Log::error('TeamInvitationEmail failed: ' . $e->getMessage());
+        }
 
         if (class_exists(SystemActivity::class)) {
             SystemActivity::create([
@@ -155,8 +184,67 @@ class TeamController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Undangan berhasil dikirim ke {$email}",
+            'message' => 'Undangan terkirim. Admin CS akan menerima email aktivasi akun.',
             'member' => $member,
+        ]);
+    }
+
+    public function resendInvite($id)
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
+
+        $member = TeamMember::where('user_id', $user->id)->where('id', $id)->first();
+        if (!$member) {
+            return response()->json(['success' => false, 'error' => 'Undangan tidak ditemukan'], 404);
+        }
+
+        if (empty($member->token)) {
+            $member->token = Str::random(60);
+        }
+        $member->invited_at = now();
+        $member->save();
+
+        try {
+            Mail::to($member->email)->send(new TeamInvitationEmail($member, $user));
+        } catch (\Throwable $e) {
+            Log::error('Resend TeamInvitationEmail failed: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Undangan berhasil dikirim ulang.',
+        ]);
+    }
+
+    public function sendResetPassword($id)
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
+
+        $member = TeamMember::where('user_id', $user->id)->where('id', $id)->first();
+        if (!$member) {
+            return response()->json(['success' => false, 'error' => 'Data Admin CS tidak ditemukan'], 404);
+        }
+
+        $member->token = Str::random(60);
+        $member->reset_token = $member->token;
+        $member->reset_sent_at = now();
+        $member->save();
+
+        try {
+            Mail::to($member->email)->send(new TeamResetPasswordEmail($member, $user));
+        } catch (\Throwable $e) {
+            Log::error('TeamResetPasswordEmail failed: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Email reset password berhasil dikirim.',
         ]);
     }
 
@@ -175,6 +263,12 @@ class TeamController extends Controller
         $email = $member->email;
         $member->delete();
 
+        // Also if user account was created for this admin CS, can remove or unbind
+        $adminUser = User::where('email', $email)->where('owner_id', $user->id)->first();
+        if ($adminUser) {
+            $adminUser->delete();
+        }
+
         if (class_exists(SystemActivity::class)) {
             SystemActivity::create([
                 'user_id' => $user->id,
@@ -185,57 +279,101 @@ class TeamController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Anggota tim / undangan berhasil dihapus',
+            'message' => 'Undangan berhasil dihapus.',
         ]);
     }
 
-    public function resendInvite($id)
+    public function showAcceptInvite($token)
     {
-        $user = $this->getUser();
-        if (!$user) {
-            return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        $member = TeamMember::where('token', $token)->first();
+
+        if (!$member || empty($token)) {
+            return view('team_accept_invite', [
+                'token' => $token,
+                'member' => null,
+                'error' => 'Tautan undangan ini sudah kedaluwarsa atau sudah pernah digunakan untuk mengaktifkan akun. Silakan login atau hubungi Owner untuk mendapatkan undangan baru.'
+            ]);
         }
 
-        $member = TeamMember::where('user_id', $user->id)->where('id', $id)->first();
-        if (!$member) {
-            return response()->json(['success' => false, 'error' => 'Undangan tidak ditemukan'], 404);
-        }
-
-        $member->invited_at = now();
-        $member->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => "Undangan berhasil dikirim ulang ke {$member->email}",
-        ]);
-    }
-
-    public function toggleStatus($id)
-    {
-        $user = $this->getUser();
-        if (!$user) {
-            return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
-        }
-
-        $member = TeamMember::where('user_id', $user->id)->where('id', $id)->first();
-        if (!$member) {
-            return response()->json(['success' => false, 'error' => 'Data tidak ditemukan'], 404);
-        }
-
-        if ($member->status === 'pending') {
-            $member->status = 'active';
-            $member->joined_at = now();
-            $msg = "Status {$member->name} diubah menjadi Aktif";
-        } else {
-            $member->status = 'pending';
-            $msg = "Status {$member->name} diubah menjadi Menunggu Konfirmasi";
-        }
-        $member->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => $msg,
+        return view('team_accept_invite', [
+            'token' => $token,
             'member' => $member,
+            'error' => null,
         ]);
+    }
+
+    public function processAcceptInvite(Request $request, $token)
+    {
+        $member = TeamMember::where('token', $token)->first();
+
+        if (!$member || empty($token)) {
+            return redirect()->back()->with('error', 'Tautan undangan ini sudah tidak berlaku.');
+        }
+
+        $request->validate([
+            'password' => 'required|min:8|confirmed',
+            'name' => 'required|string|max:255',
+        ], [
+            'password.min' => 'Password minimal harus 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'name.required' => 'Nama Admin wajib diisi.',
+        ]);
+
+        $owner = User::find($member->user_id);
+        if (!$owner) {
+            $owner = User::first();
+        }
+
+        $adminName = trim($request->input('name', $member->name));
+
+        // Create or update user account
+        $user = User::where('email', $member->email)->first();
+        if (!$user) {
+            $user = User::create([
+                'name' => $adminName,
+                'email' => $member->email,
+                'password' => Hash::make($request->input('password')),
+                'role' => 'admin_cs',
+                'owner_id' => $owner ? $owner->id : null,
+                'business_name' => $owner ? $owner->business_name : 'Workspace',
+                'email_verified_at' => now(),
+            ]);
+        } else {
+            $user->name = $adminName;
+            $user->password = Hash::make($request->input('password'));
+            $user->role = 'admin_cs';
+            $user->owner_id = $owner ? $owner->id : null;
+            $user->business_name = $owner ? $owner->business_name : $user->business_name;
+            $user->email_verified_at = $user->email_verified_at ?: now();
+            $user->save();
+        }
+
+        // Mark member as active and invalidate token so link is one-time use only
+        $member->name = $adminName;
+        $member->status = 'active';
+        $member->joined_at = now();
+        $member->token = null;
+        $member->reset_token = null;
+        $member->save();
+
+        // Send Welcome Email
+        try {
+            Mail::to($user->email)->send(new TeamAccountActivatedEmail($member, $user));
+        } catch (\Throwable $e) {
+            Log::error('TeamAccountActivatedEmail failed: ' . $e->getMessage());
+        }
+
+        if (class_exists(SystemActivity::class) && $owner) {
+            SystemActivity::create([
+                'user_id' => $owner->id,
+                'type' => 'team_activated',
+                'description' => "Admin CS {$user->name} ({$user->email}) telah mengaktifkan akun dan bergabung ke workspace",
+            ]);
+        }
+
+        // Login user directly into workspace
+        Auth::login($user);
+
+        return redirect('/dashboard');
     }
 }

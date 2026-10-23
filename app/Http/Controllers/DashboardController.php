@@ -13,6 +13,7 @@ class DashboardController extends Controller
     {
         $user = auth()->user() ?? \App\Models\User::first();
         if (!$user) return response()->json(['error' => 'Not found'], 404);
+        $user = $user->getEffectiveOwner();
 
         $today = Carbon::today();
         

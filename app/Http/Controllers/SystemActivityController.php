@@ -7,9 +7,15 @@ use App\Models\SystemActivity;
 
 class SystemActivityController extends Controller
 {
+    protected function getUser()
+    {
+        $user = auth()->user() ?? \App\Models\User::first();
+        return $user ? $user->getEffectiveOwner() : null;
+    }
+
     public function getActivities()
     {
-        $user = auth()->user();
+        $user = $this->getUser();
         if (!$user) return response()->json([]);
 
         try {
@@ -30,12 +36,13 @@ class SystemActivityController extends Controller
 
     public function addActivity(Request $request)
     {
-        $user = auth()->user();
+        $user = $this->getUser();
         if (!$user) return response()->json(['success' => false], 401);
 
+        $currentUser = auth()->user() ?: $user;
         $actor = $request->input('actor');
         if ($actor !== 'Sistem') {
-            $actor = $user->business_name ?: 'Owner';
+            $actor = $currentUser->name ?: ($user->business_name ?: 'Owner');
         }
 
         try {

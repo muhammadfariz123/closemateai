@@ -32,9 +32,14 @@ Route::get('/inv/{id}', [\App\Http\Controllers\InvoiceController::class, 'showPu
 Route::get('/i/{id}', [\App\Http\Controllers\InvoiceController::class, 'showPublic']);
 Route::match(['get', 'post'], '/api/public/wa/{secret}', [WebhookController::class, 'handle']);
 Route::get('/progress/{uuid}', [App\Http\Controllers\ProgressController::class, 'showPublic']);
+Route::get('/invite/accept/{token}', [\App\Http\Controllers\TeamController::class, 'showAcceptInvite']);
+Route::post('/invite/accept/{token}', [\App\Http\Controllers\TeamController::class, 'processAcceptInvite']);
+Route::get('/reset-password/{token}', [\App\Http\Controllers\TeamController::class, 'showAcceptInvite']);
+Route::post('/reset-password/{token}', [\App\Http\Controllers\TeamController::class, 'processAcceptInvite']);
 
 // Protected Routes
 Route::middleware('auth')->group(function () {
+    // 9 Permitted Features for Admin CS & Owner
     Route::get('/dashboard', function () { return view('dashboard'); });
     Route::get('/api/dashboard/stats', [DashboardController::class, 'stats']);
 
@@ -46,23 +51,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/activities', [SystemActivityController::class, 'addActivity']);
 
     Route::get('/chat', function () { return view('chat'); });
-    Route::get('/knowledge', [KnowledgeFileController::class, 'index']);
-    Route::post('/knowledge/upload', [KnowledgeFileController::class, 'upload']);
-    Route::post('/knowledge/update-text', [KnowledgeFileController::class, 'updateText']);
-    Route::post('/knowledge/delete', [KnowledgeFileController::class, 'destroy']);
-    Route::post('/knowledge/re-extract', [KnowledgeFileController::class, 'reExtract']);
-    Route::post('/knowledge/save-ai-limits', [KnowledgeFileController::class, 'saveAiLimits']);
-    Route::post('/knowledge/save-links', [KnowledgeFileController::class, 'saveLinks']);
-    Route::post('/knowledge/save-calendar', [KnowledgeFileController::class, 'saveCalendar']);
-    Route::get('/knowledge/faqs', [KnowledgeFileController::class, 'getFaqs']);
-    Route::post('/knowledge/faqs', [KnowledgeFileController::class, 'storeFaq']);
-    Route::post('/knowledge/faqs/{id}/update', [KnowledgeFileController::class, 'updateFaq']);
-    Route::delete('/knowledge/faqs/{id}', [KnowledgeFileController::class, 'destroyFaq']);
-    Route::post('/knowledge/faqs/{id}/delete', [KnowledgeFileController::class, 'destroyFaq']);
-    Route::post('/knowledge/save-terms', [KnowledgeFileController::class, 'saveTerms']);
-    Route::post('/knowledge/save-ai-prompt', [KnowledgeFileController::class, 'saveAiPrompt']);
-    Route::post('/api/simulator/chat', [KnowledgeFileController::class, 'simulateChat']);
-
     Route::get('/api/chats', [ChatController::class, 'getChats']);
     Route::get('/api/chats/{id}', [ChatController::class, 'getMessages']);
     Route::post('/api/chats/{id}/send', [ChatController::class, 'sendMessage']);
@@ -107,24 +95,47 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/quotations', [QuotationController::class, 'addQuotation']);
     Route::delete('/api/quotations/{id}', [QuotationController::class, 'deleteQuotation']);
 
-    Route::get('/finance', function () { return view('finance'); });
     Route::get('/production', function () { return view('production'); });
-    Route::get('/team', [\App\Http\Controllers\TeamController::class, 'index']);
-    Route::get('/teams', [\App\Http\Controllers\TeamController::class, 'index']);
-    Route::get('/team-management', [\App\Http\Controllers\TeamController::class, 'index']);
-    Route::get('/api/team/members', [\App\Http\Controllers\TeamController::class, 'getMembers']);
-    Route::post('/api/team/invite', [\App\Http\Controllers\TeamController::class, 'invite']);
-    Route::delete('/api/team/members/{id}', [\App\Http\Controllers\TeamController::class, 'deleteMember']);
-    Route::post('/api/team/members/{id}/resend', [\App\Http\Controllers\TeamController::class, 'resendInvite']);
-    Route::post('/api/team/members/{id}/toggle-status', [\App\Http\Controllers\TeamController::class, 'toggleStatus']);
     Route::get('/activity', function () { return view('activity'); });
 
-    Route::get('/settings', [SettingsController::class, 'index']);
-    Route::post('/settings/token', [SettingsController::class, 'saveToken']);
-    Route::get('/settings/device', [SettingsController::class, 'getDevice']);
-    Route::post('/settings/disconnect', [SettingsController::class, 'disconnect']);
-    Route::post('/settings/notifications', [SettingsController::class, 'saveNotifications']);
-    Route::post('/settings/business-profile', [SettingsController::class, 'saveBusinessProfile']);
+    // Restricted Owner-Only Features (Knowledge Base, Finance, Team Management, Settings)
+    Route::middleware('owner_only')->group(function () {
+        Route::get('/knowledge', [KnowledgeFileController::class, 'index']);
+        Route::post('/knowledge/upload', [KnowledgeFileController::class, 'upload']);
+        Route::post('/knowledge/update-text', [KnowledgeFileController::class, 'updateText']);
+        Route::post('/knowledge/delete', [KnowledgeFileController::class, 'destroy']);
+        Route::post('/knowledge/re-extract', [KnowledgeFileController::class, 'reExtract']);
+        Route::post('/knowledge/save-ai-limits', [KnowledgeFileController::class, 'saveAiLimits']);
+        Route::post('/knowledge/save-links', [KnowledgeFileController::class, 'saveLinks']);
+        Route::post('/knowledge/save-calendar', [KnowledgeFileController::class, 'saveCalendar']);
+        Route::get('/knowledge/faqs', [KnowledgeFileController::class, 'getFaqs']);
+        Route::post('/knowledge/faqs', [KnowledgeFileController::class, 'storeFaq']);
+        Route::post('/knowledge/faqs/{id}/update', [KnowledgeFileController::class, 'updateFaq']);
+        Route::delete('/knowledge/faqs/{id}', [KnowledgeFileController::class, 'destroyFaq']);
+        Route::post('/knowledge/faqs/{id}/delete', [KnowledgeFileController::class, 'destroyFaq']);
+        Route::post('/knowledge/save-terms', [KnowledgeFileController::class, 'saveTerms']);
+        Route::post('/knowledge/save-ai-prompt', [KnowledgeFileController::class, 'saveAiPrompt']);
+        Route::post('/api/simulator/chat', [KnowledgeFileController::class, 'simulateChat']);
+
+        Route::get('/finance', function () { return view('finance'); });
+
+        Route::get('/team', [\App\Http\Controllers\TeamController::class, 'index']);
+        Route::get('/teams', [\App\Http\Controllers\TeamController::class, 'index']);
+        Route::get('/team-management', [\App\Http\Controllers\TeamController::class, 'index']);
+        Route::get('/api/team/members', [\App\Http\Controllers\TeamController::class, 'getMembers']);
+        Route::post('/api/team/invite', [\App\Http\Controllers\TeamController::class, 'invite']);
+        Route::delete('/api/team/members/{id}', [\App\Http\Controllers\TeamController::class, 'deleteMember']);
+        Route::post('/api/team/members/{id}/resend', [\App\Http\Controllers\TeamController::class, 'resendInvite']);
+        Route::post('/api/team/members/{id}/reset-password', [\App\Http\Controllers\TeamController::class, 'sendResetPassword']);
+        Route::post('/api/team/members/{id}/toggle-status', [\App\Http\Controllers\TeamController::class, 'toggleStatus']);
+
+        Route::get('/settings', [SettingsController::class, 'index']);
+        Route::post('/settings/token', [SettingsController::class, 'saveToken']);
+        Route::get('/settings/device', [SettingsController::class, 'getDevice']);
+        Route::post('/settings/disconnect', [SettingsController::class, 'disconnect']);
+        Route::post('/settings/notifications', [SettingsController::class, 'saveNotifications']);
+        Route::post('/settings/business-profile', [SettingsController::class, 'saveBusinessProfile']);
+    });
 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 });
