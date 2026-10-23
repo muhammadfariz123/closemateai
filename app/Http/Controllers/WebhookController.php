@@ -165,31 +165,14 @@ class WebhookController extends Controller
         $currentReplyCount = (int)$chat->ai_reply_count;
 
         if ($aiLimitEnabled && $currentReplyCount >= $aiMaxReplies) {
-            // Sudah melewati batas — kirim form booking langsung sebagai penutup
             $businessName = $user->business_name ?: ($user->name ?: 'Kami');
 
-            // Pesan pengantar sebelum form booking
-            $personality = $user->ai_personality_type ?: 'casual';
-            if ($personality === 'jaksel') {
-                $introMsg = "Btw Kak, sebelum aku handover ke tim admin, aku mau share form booking dulu ya Kak! Tinggal diisi dan kirim balik ke sini aja 😊✨";
-            } elseif ($personality === 'friendly') {
-                $introMsg = "Sebelum Kakak ngobrol lebih lanjut dengan tim kami, yuk sekalian isi form booking-nya dulu ya Kak! Tinggal copy-paste, isi, dan kirim balik ke chat ini 🙏💖";
-            } else {
-                $introMsg = "Siap Kak! Sebelum aku sambungkan ke tim, boleh aku kirimkan form booking-nya dulu ya biar tanggal Kakak langsung bisa kami proses 😊";
-            }
+            // Pesan penutup pengalihan natural ke tim admin
+            $handoverMsg = "Baik Kak, pertanyaan & detail obrolan kita sudah aku catat yaa ✨ Sebentar ya Kak, chat ini langsung aku sambungkan ke tim admin kami untuk bantu info lebih lengkap & proses selanjutnya. Mohon tunggu sebentar ya Kakak 🙏😊";
 
-            // Kirim intro
-            Message::create(['chat_id' => $chat->id, 'sender' => 'ai', 'message' => $introMsg]);
+            Message::create(['chat_id' => $chat->id, 'sender' => 'ai', 'message' => $handoverMsg]);
             if ($user->fonnte_token) {
-                $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, $introMsg);
-                sleep(2);
-            }
-
-            // Kirim form booking (hardcoded format, bukan dari AI)
-            $formMsg = $this->getBookingFormText($businessName, $user);
-            Message::create(['chat_id' => $chat->id, 'sender' => 'ai', 'message' => $formMsg]);
-            if ($user->fonnte_token) {
-                $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, $formMsg);
+                $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, $handoverMsg);
             }
 
             // Set human takeover
@@ -200,11 +183,11 @@ class WebhookController extends Controller
             if ($user->notify_human_takeover) {
                 $targetNumber = $user->notification_number ?: ($user->owner_whatsapp ?: ($user->business_wa_number ?: $user->wa_number));
                 if ($targetNumber && $user->fonnte_token) {
-                    $this->sendFonnteMessage($user->fonnte_token, $targetNumber, "📋 *FORM BOOKING DIKIRIM + HANDOVER*\nAI sudah mencapai batas balasan ({$aiMaxReplies}x) dan form booking sudah dikirim ke klien.\n\nNama: {$chat->client_name}\nNomor: {$chat->client_wa_number}\nSilakan standby di Live Chat Inbox.");
+                    $this->sendFonnteMessage($user->fonnte_token, $targetNumber, "📋 *HANDOVER KE ADMIN*\nAI sudah mencapai batas balasan ({$aiMaxReplies}x) dan percakapan dialihkan ke tim admin.\n\nNama: {$chat->client_name}\nNomor: {$chat->client_wa_number}\nSilakan standby di Live Chat Inbox.");
                 }
             }
 
-            return response()->json(['status' => true, 'message' => 'AI limit reached. Booking form sent to client.']);
+            return response()->json(['status' => true, 'message' => 'AI limit reached. Chat handed over to admin.']);
         }
 
         // 7. Panggil AI
@@ -288,41 +271,35 @@ class WebhookController extends Controller
             // 7b. CEK APAKAH INI BALASAN TERAKHIR AI (tepat di batas limit)
             // ============================================================
             if ($aiLimitEnabled && $chat->ai_reply_count >= $aiMaxReplies) {
-                // Jika pada giliran ini form booking BELUM dikirim, kirimkan sekarang sebagai penutup
+                // Jika pada giliran ini form booking BELUM dikirim, kirimkan form booking terlebih dahulu
                 if (!$formSentThisTurn) {
                     sleep(2);
-
-                    // Pesan transisi natural sebelum form
-                    $personality = $user->ai_personality_type ?: 'casual';
-                    if ($personality === 'jaksel') {
-                        $transitionMsg = "Oh ya Kak, supaya proses booking-nya lebih smooth, aku kirimkan form booking-nya sekarang ya! Tinggal isi dan kirim balik ke sini aja 📋✨";
-                    } elseif ($personality === 'friendly') {
-                        $transitionMsg = "Yuk Kak, aku kirimkan form booking-nya sekarang ya! Mohon diisi dengan lengkap dan kirim kembali ke chat ini supaya tanggal Kakak bisa segera kami amankan 💖";
-                    } else {
-                        $transitionMsg = "Oh iya Kak, sekalian aku kirimkan form booking-nya ya! Tinggal diisi dan kirim balik ke chat ini, nanti sistem kami langsung proses otomatis 😊";
-                    }
-
-                    Message::create(['chat_id' => $chat->id, 'sender' => 'ai', 'message' => $transitionMsg]);
-                    if ($user->fonnte_token) {
-                        $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, $transitionMsg);
-                        sleep(2);
-                    }
-
                     $formMsg = $this->getBookingFormText($businessName, $user);
                     Message::create(['chat_id' => $chat->id, 'sender' => 'ai', 'message' => $formMsg]);
                     if ($user->fonnte_token) {
                         $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, $formMsg);
+                        sleep(2);
                     }
+                } else {
+                    sleep(2);
                 }
 
-                // Set human takeover setelah form dikirim / limit tercapai
+                // Pesan penutup natural pengalihan ke tim admin
+                $handoverMsg = "Baik Kak, pertanyaan & detail obrolan kita sudah aku catat yaa ✨ Sebentar ya Kak, chat ini langsung aku sambungkan ke tim admin kami untuk bantu info lebih lengkap & proses selanjutnya. Mohon tunggu sebentar ya Kakak 🙏😊";
+
+                Message::create(['chat_id' => $chat->id, 'sender' => 'ai', 'message' => $handoverMsg]);
+                if ($user->fonnte_token) {
+                    $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, $handoverMsg);
+                }
+
+                // Set human takeover setelah limit tercapai
                 $chat->is_human_takeover = true;
                 $chat->save();
 
                 if ($user->notify_human_takeover) {
                     $targetNumber = $user->notification_number ?: ($user->owner_whatsapp ?: ($user->business_wa_number ?: $user->wa_number));
                     if ($targetNumber && $user->fonnte_token) {
-                        $this->sendFonnteMessage($user->fonnte_token, $targetNumber, "📋 *FORM BOOKING DIKIRIM + HANDOVER*\nAI sudah selesai ({$aiMaxReplies}x balasan) dan form booking sudah dikirim ke klien.\n\nNama: {$chat->client_name}\nNomor: {$chat->client_wa_number}\nSilakan standby di Live Chat Inbox.");
+                        $this->sendFonnteMessage($user->fonnte_token, $targetNumber, "📋 *HANDOVER KE ADMIN*\nAI sudah selesai ({$aiMaxReplies}x balasan) dan chat sudah dialihkan ke admin.\n\nNama: {$chat->client_name}\nNomor: {$chat->client_wa_number}\nSilakan standby di Live Chat Inbox.");
                     }
                 }
             }
