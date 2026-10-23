@@ -52,6 +52,7 @@ COPY . .
 RUN composer dump-autoload --optimize
 
 # Default Mail Environment Configuration
+ENV BREVO_SENDER_EMAIL=yesokegass@gmail.com
 ENV MAIL_MAILER=failover
 ENV MAIL_SCHEME=smtps
 ENV MAIL_HOST=smtp.gmail.com

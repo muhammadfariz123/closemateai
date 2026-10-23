@@ -24,6 +24,7 @@ return [
 
     'brevo' => [
         'key' => env('BREVO_API_KEY'),
+        'sender' => env('BREVO_SENDER_EMAIL', 'yesokegass@gmail.com'),
     ],
 
     'ses' => [

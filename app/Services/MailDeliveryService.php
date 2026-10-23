@@ -17,7 +17,7 @@ class MailDeliveryService
     public static function send($toEmail, $toName, $subject, $htmlContent): array
     {
         $brevoApiKey = env('BREVO_API_KEY') ?: config('services.brevo.key');
-        $fromEmail = env('MAIL_FROM_ADDRESS', 'notifsistem19@gmail.com');
+        $fromEmail = env('BREVO_SENDER_EMAIL') ?: config('services.brevo.sender', 'yesokegass@gmail.com');
         $fromName = env('MAIL_FROM_NAME', 'CloseMateAI');
 
         // 1. Try Brevo REST API if API Key is available
