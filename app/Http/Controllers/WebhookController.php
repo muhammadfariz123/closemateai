@@ -212,11 +212,22 @@ class WebhookController extends Controller
         $responseText = $aiReply ?? '';
         
         if ($aiReply) {
+            // ============================================================
+            // 7a. DETEKSI: apakah AI ingin mengirim form booking?
+            // Jika ya, strip form dari reply AI dan inject form hardcoded
+            // ============================================================
+            $aiWantsForm = $this->aiWantsToSendBookingForm($aiReply);
+            if ($aiWantsForm) {
+                // Bersihkan bagian form dari reply AI (sisakan kalimat pengantarnya saja)
+                $aiReply = $this->stripBookingFormFromReply($aiReply);
+                $responseText = $aiReply;
+            }
+
             // Cek Multiple Bubble
-            $bubbles = [$aiReply];
-            if ($user->ai_multi_bubble_enabled) {
+            $bubbles = [trim($aiReply)];
+            if ($user->ai_multi_bubble_enabled && !empty(trim($aiReply))) {
                 // Pisahkan pesan berdasarkan double newline
-                $bubbles = explode("\n\n", $aiReply);
+                $bubbles = explode("\n\n", trim($aiReply));
                 // Batasi jumlah bubble
                 $maxBubbles = $user->ai_max_bubbles ?? 3;
                 if (count($bubbles) > $maxBubbles) {
@@ -243,6 +254,17 @@ class WebhookController extends Controller
                 // Jeda sedikit antar bubble agar terlihat natural
                 if (count($bubbles) > 1) {
                     sleep(2); 
+                }
+            }
+
+            // Jika AI ingin kirim form → inject form hardcoded sekarang
+            if ($aiWantsForm) {
+                $businessName = $user->business_name ?: ($user->name ?: 'Kami');
+                sleep(2);
+                $formMsg = $this->getBookingFormText($businessName, $user);
+                Message::create(['chat_id' => $chat->id, 'sender' => 'ai', 'message' => $formMsg]);
+                if ($user->fonnte_token) {
+                    $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, $formMsg);
                 }
             }
 
@@ -534,6 +556,63 @@ class WebhookController extends Controller
     /**
      * Buat pesan konfirmasi booking untuk customer
      */
+    /**
+     * Deteksi apakah reply AI mengandung sinyal ingin mengirim form booking.
+     * Cek berdasarkan marker kunci yang biasanya ada di template form.
+     */
+    private function aiWantsToSendBookingForm(string $aiReply): bool
+    {
+        $lower = mb_strtolower($aiReply);
+        $markers = [
+            'paket yang dipilih :',
+            'nama mempelai laki',
+            'nama mempelai perempuan',
+            'form booking',
+            'jam akad :',
+            'tanggal acara :',
+            'total dp dibayarkan',
+            'pilihan sortir foto',
+        ];
+        $found = 0;
+        foreach ($markers as $m) {
+            if (str_contains($lower, $m)) $found++;
+        }
+        // Jika ada 2+ marker → AI bermaksud kirim form
+        return $found >= 2;
+    }
+
+    /**
+     * Bersihkan bagian template form dari reply AI.
+     * Sisakan hanya kalimat pembuka/pengantar sebelum form.
+     */
+    private function stripBookingFormFromReply(string $aiReply): string
+    {
+        // Cari posisi pertama kemunculan marker form
+        $markers = [
+            '📋', 'form booking', 'paket yang dipilih', 'nama mempelai',
+            'tanggal acara :', 'jam akad :', 'total dp',
+        ];
+
+        $cutPos = mb_strlen($aiReply); // default: tidak dipotong
+        $lower  = mb_strtolower($aiReply);
+
+        foreach ($markers as $marker) {
+            $pos = mb_strpos($lower, mb_strtolower($marker));
+            if ($pos !== false && $pos < $cutPos) {
+                $cutPos = $pos;
+            }
+        }
+
+        $intro = trim(mb_substr($aiReply, 0, $cutPos));
+
+        // Jika intronya kosong atau sangat pendek, beri kalimat pengantar default
+        if (mb_strlen($intro) < 10) {
+            $intro = "Siap Kak! Berikut aku kirimkan form booking-nya ya 😊✨";
+        }
+
+        return $intro;
+    }
+
     /**
      * Generate teks form booking WA dengan format literal/hardcoded
      * agar tampilan di WA persis sesuai format yang diinginkan (per baris, rapi)
