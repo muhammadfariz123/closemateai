@@ -148,6 +148,26 @@ Route::get('/api/debug/logs', function() {
     $lastLines = array_slice($lines, -500);
     return response("<pre>" . implode("", $lastLines) . "</pre>");
 });
+Route::get('/api/debug/port-check', function() {
+    $results = [];
+    $targets = [
+        ['smtp.gmail.com', 465],
+        ['smtp.gmail.com', 587],
+        ['smtp.gmail.com', 25],
+        ['api.resend.com', 443],
+    ];
+    foreach ($targets as [$host, $port]) {
+        $start = microtime(true);
+        $fp = @fsockopen($host, $port, $errno, $errstr, 2);
+        if ($fp) {
+            fclose($fp);
+            $results["{$host}:{$port}"] = 'OPEN (' . round((microtime(true) - $start)*1000) . 'ms)';
+        } else {
+            $results["{$host}:{$port}"] = "BLOCKED/TIMEOUT ($errno: $errstr)";
+        }
+    }
+    return response()->json($results);
+});
 Route::get('/api/debug/mail-test', function() {
     try {
         $start = microtime(true);
