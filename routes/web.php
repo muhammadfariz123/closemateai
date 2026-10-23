@@ -180,17 +180,14 @@ Route::get('/api/debug/mail-test', function() {
         }
 
         $testResult = 'not tested';
-        $error = null;
         if (request()->has('send')) {
-            try {
-                \Illuminate\Support\Facades\Mail::raw('Test from Render: ' . date('Y-m-d H:i:s'), function($m) {
-                    $m->to(request()->input('send', 'warungkombas@gmail.com'))->subject('Test Render SMTP');
-                });
-                $testResult = 'success';
-            } catch (\Throwable $e) {
-                $testResult = 'error';
-                $error = $e->getMessage();
-            }
+            $targetEmail = request()->input('send', 'warungkombas@gmail.com');
+            $testResult = \App\Services\MailDeliveryService::send(
+                $targetEmail,
+                'Tester',
+                'Test Delivery CloseMateAI: ' . date('Y-m-d H:i:s'),
+                '<h3>Pengiriman Email Berhasil!</h3><p>Ini adalah email konfirmasi dari CloseMateAI.</p>'
+            );
         }
 
         return response()->json([
@@ -199,13 +196,12 @@ Route::get('/api/debug/mail-test', function() {
             'mailer' => $mailer,
             'smtp' => $smtp,
             'test_result' => $testResult,
-            'test_error' => $error,
+            'env_BREVO_API_KEY_set' => !empty(env('BREVO_API_KEY')),
+            'env_RESEND_API_KEY_set' => !empty(env('RESEND_API_KEY')),
             'env_MAIL_MAILER' => env('MAIL_MAILER'),
             'env_MAIL_HOST' => env('MAIL_HOST'),
             'env_MAIL_PORT' => env('MAIL_PORT'),
-            'env_MAIL_SCHEME' => env('MAIL_SCHEME'),
             'env_MAIL_USERNAME' => env('MAIL_USERNAME'),
-            'env_MAIL_PASSWORD_set' => !empty(env('MAIL_PASSWORD')),
         ]);
     } catch (\Throwable $e) {
         return response()->json(['fatal' => $e->getMessage()]);

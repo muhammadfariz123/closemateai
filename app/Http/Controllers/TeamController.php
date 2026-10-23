@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use App\Services\MailDeliveryService;
 
 class TeamController extends Controller
 {
@@ -169,7 +170,13 @@ class TeamController extends Controller
 
         // Send invitation email
         try {
-            Mail::to($email)->send(new TeamInvitationEmail($member, $user));
+            $mailable = new TeamInvitationEmail($member, $user);
+            MailDeliveryService::send(
+                $email,
+                $name,
+                $mailable->envelope()->subject,
+                $mailable->render()
+            );
         } catch (\Throwable $e) {
             Log::error('TeamInvitationEmail failed: ' . $e->getMessage());
         }
@@ -208,7 +215,13 @@ class TeamController extends Controller
         $member->save();
 
         try {
-            Mail::to($member->email)->send(new TeamInvitationEmail($member, $user));
+            $mailable = new TeamInvitationEmail($member, $user);
+            MailDeliveryService::send(
+                $member->email,
+                $member->name,
+                $mailable->envelope()->subject,
+                $mailable->render()
+            );
         } catch (\Throwable $e) {
             Log::error('Resend TeamInvitationEmail failed: ' . $e->getMessage());
         }
@@ -237,7 +250,13 @@ class TeamController extends Controller
         $member->save();
 
         try {
-            Mail::to($member->email)->send(new TeamResetPasswordEmail($member, $user));
+            $mailable = new TeamResetPasswordEmail($member, $user);
+            MailDeliveryService::send(
+                $member->email,
+                $member->name,
+                $mailable->envelope()->subject,
+                $mailable->render()
+            );
         } catch (\Throwable $e) {
             Log::error('TeamResetPasswordEmail failed: ' . $e->getMessage());
         }
@@ -358,7 +377,13 @@ class TeamController extends Controller
 
         // Send Welcome Email
         try {
-            Mail::to($user->email)->send(new TeamAccountActivatedEmail($member, $user));
+            $mailable = new TeamAccountActivatedEmail($member, $user);
+            MailDeliveryService::send(
+                $user->email,
+                $user->name,
+                $mailable->envelope()->subject,
+                $mailable->render()
+            );
         } catch (\Throwable $e) {
             Log::error('TeamAccountActivatedEmail failed: ' . $e->getMessage());
         }

@@ -46,7 +46,17 @@ class AuthController extends Controller
         ]);
 
         // Send email
-        Mail::to($user->email)->send(new VerifyVendorEmail($user));
+        try {
+            $mailable = new VerifyVendorEmail($user);
+            \App\Services\MailDeliveryService::send(
+                $user->email,
+                $user->name,
+                $mailable->envelope()->subject,
+                $mailable->render()
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('VerifyVendorEmail failed: ' . $e->getMessage());
+        }
 
         return response()->json(['success' => true, 'message' => 'Registration successful']);
     }
