@@ -153,7 +153,9 @@ Route::get('/api/debug/port-check', function() {
     $targets = [
         ['smtp.gmail.com', 465],
         ['smtp.gmail.com', 587],
-        ['smtp.gmail.com', 25],
+        ['smtp.sendgrid.net', 2525],
+        ['smtp.mailgun.org', 2525],
+        ['smtp-relay.brevo.com', 2525],
         ['api.resend.com', 443],
     ];
     foreach ($targets as [$host, $port]) {
