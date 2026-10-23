@@ -212,22 +212,18 @@ class WebhookController extends Controller
         $responseText = $aiReply ?? '';
         
         if ($aiReply) {
-            // ============================================================
-            // 7a. DETEKSI: apakah AI ingin mengirim form booking?
-            // Jika ya, strip form dari reply AI dan inject form hardcoded
-            // ============================================================
-            $aiWantsForm = $this->aiWantsToSendBookingForm($aiReply);
-            if ($aiWantsForm) {
-                // Bersihkan bagian form dari reply AI (sisakan kalimat pengantarnya saja)
-                $aiReply = $this->stripBookingFormFromReply($aiReply);
-                $responseText = $aiReply;
-            }
+            $businessName = $user->business_name ?: ($user->name ?: 'Kami');
 
-            // Cek Multiple Bubble
-            $bubbles = [trim($aiReply)];
-            if ($user->ai_multi_bubble_enabled && !empty(trim($aiReply))) {
+            // Deteksi apakah AI ingin mengirim form booking sesuai kondisi percakapan klien
+            $formDetection = \App\Services\AiBrainService::extractBookingFormIntent($aiReply);
+            $aiDecidedToSendForm = $formDetection['should_send_form'];
+            $aiTextToSend = $formDetection['clean_reply'];
+
+            // Cek Multiple Bubble HANYA untuk pesan percakapan ramah AI (agar form booking tidak terpotong)
+            $bubbles = [$aiTextToSend];
+            if ($user->ai_multi_bubble_enabled) {
                 // Pisahkan pesan berdasarkan double newline
-                $bubbles = explode("\n\n", trim($aiReply));
+                $bubbles = explode("\n\n", $aiTextToSend);
                 // Batasi jumlah bubble
                 $maxBubbles = $user->ai_max_bubbles ?? 3;
                 if (count($bubbles) > $maxBubbles) {
@@ -257,15 +253,21 @@ class WebhookController extends Controller
                 }
             }
 
-            // Jika AI ingin kirim form → inject form hardcoded sekarang
-            if ($aiWantsForm) {
-                $businessName = $user->business_name ?: ($user->name ?: 'Kami');
+            // Jika AI memutuskan kirim form booking (karena kondisi klien mantap booking/minta form):
+            // Kirim form booking resmi secara UTUH per-baris sebagai bubble tersendiri!
+            $formSentThisTurn = false;
+            if ($aiDecidedToSendForm) {
                 sleep(2);
                 $formMsg = $this->getBookingFormText($businessName, $user);
-                Message::create(['chat_id' => $chat->id, 'sender' => 'ai', 'message' => $formMsg]);
+                Message::create([
+                    'chat_id' => $chat->id,
+                    'sender' => 'ai',
+                    'message' => $formMsg
+                ]);
                 if ($user->fonnte_token) {
                     $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, $formMsg);
                 }
+                $formSentThisTurn = true;
             }
 
             // Increment reply count
@@ -284,42 +286,43 @@ class WebhookController extends Controller
 
             // ============================================================
             // 7b. CEK APAKAH INI BALASAN TERAKHIR AI (tepat di batas limit)
-            // Jika ya, langsung kirim form booking setelah balasan AI
             // ============================================================
             if ($aiLimitEnabled && $chat->ai_reply_count >= $aiMaxReplies) {
-                $businessName = $user->business_name ?: ($user->name ?: 'Kami');
-                sleep(2);
-
-                // Pesan transisi natural sebelum form
-                $personality = $user->ai_personality_type ?: 'casual';
-                if ($personality === 'jaksel') {
-                    $transitionMsg = "Oh ya Kak, supaya proses booking-nya lebih smooth, aku kirimkan form booking-nya sekarang ya! Tinggal isi dan kirim balik ke sini aja 📋✨";
-                } elseif ($personality === 'friendly') {
-                    $transitionMsg = "Yuk Kak, aku kirimkan form booking-nya sekarang ya! Mohon diisi dengan lengkap dan kirim kembali ke chat ini supaya tanggal Kakak bisa segera kami amankan 💖";
-                } else {
-                    $transitionMsg = "Oh iya Kak, sekalian aku kirimkan form booking-nya ya! Tinggal diisi dan kirim balik ke chat ini, nanti sistem kami langsung proses otomatis 😊";
-                }
-
-                Message::create(['chat_id' => $chat->id, 'sender' => 'ai', 'message' => $transitionMsg]);
-                if ($user->fonnte_token) {
-                    $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, $transitionMsg);
+                // Jika pada giliran ini form booking BELUM dikirim, kirimkan sekarang sebagai penutup
+                if (!$formSentThisTurn) {
                     sleep(2);
+
+                    // Pesan transisi natural sebelum form
+                    $personality = $user->ai_personality_type ?: 'casual';
+                    if ($personality === 'jaksel') {
+                        $transitionMsg = "Oh ya Kak, supaya proses booking-nya lebih smooth, aku kirimkan form booking-nya sekarang ya! Tinggal isi dan kirim balik ke sini aja 📋✨";
+                    } elseif ($personality === 'friendly') {
+                        $transitionMsg = "Yuk Kak, aku kirimkan form booking-nya sekarang ya! Mohon diisi dengan lengkap dan kirim kembali ke chat ini supaya tanggal Kakak bisa segera kami amankan 💖";
+                    } else {
+                        $transitionMsg = "Oh iya Kak, sekalian aku kirimkan form booking-nya ya! Tinggal diisi dan kirim balik ke chat ini, nanti sistem kami langsung proses otomatis 😊";
+                    }
+
+                    Message::create(['chat_id' => $chat->id, 'sender' => 'ai', 'message' => $transitionMsg]);
+                    if ($user->fonnte_token) {
+                        $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, $transitionMsg);
+                        sleep(2);
+                    }
+
+                    $formMsg = $this->getBookingFormText($businessName, $user);
+                    Message::create(['chat_id' => $chat->id, 'sender' => 'ai', 'message' => $formMsg]);
+                    if ($user->fonnte_token) {
+                        $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, $formMsg);
+                    }
                 }
 
-                $formMsg = $this->getBookingFormText($businessName, $user);
-                Message::create(['chat_id' => $chat->id, 'sender' => 'ai', 'message' => $formMsg]);
-                if ($user->fonnte_token) {
-                    $this->sendFonnteMessage($user->fonnte_token, $chat->client_wa_number, $formMsg);
-                }
-
-                // Set human takeover setelah form dikirim
+                // Set human takeover setelah form dikirim / limit tercapai
                 $chat->is_human_takeover = true;
                 $chat->save();
 
                 if ($user->notify_human_takeover) {
                     $targetNumber = $user->notification_number ?: ($user->owner_whatsapp ?: ($user->business_wa_number ?: $user->wa_number));
                     if ($targetNumber && $user->fonnte_token) {
-                        $this->sendFonnteMessage($user->fonnte_token, $targetNumber, "📋 *FORM BOOKING DIKIRIM + HANDOVER*\nAI sudah selesai ({$aiMaxReplies}x balasan) dan form booking sudah otomatis dikirim ke klien.\n\nNama: {$chat->client_name}\nNomor: {$chat->client_wa_number}\nSilakan standby di Live Chat Inbox.");
+                        $this->sendFonnteMessage($user->fonnte_token, $targetNumber, "📋 *FORM BOOKING DIKIRIM + HANDOVER*\nAI sudah selesai ({$aiMaxReplies}x balasan) dan form booking sudah dikirim ke klien.\n\nNama: {$chat->client_name}\nNomor: {$chat->client_wa_number}\nSilakan standby di Live Chat Inbox.");
                     }
                 }
             }
@@ -557,115 +560,12 @@ class WebhookController extends Controller
      * Buat pesan konfirmasi booking untuk customer
      */
     /**
-     * Deteksi apakah reply AI mengandung sinyal ingin mengirim form booking.
-     * Cek berdasarkan marker kunci yang biasanya ada di template form.
-     */
-    private function aiWantsToSendBookingForm(string $aiReply): bool
-    {
-        $lower = mb_strtolower($aiReply);
-        $markers = [
-            'paket yang dipilih :',
-            'nama mempelai laki',
-            'nama mempelai perempuan',
-            'form booking',
-            'jam akad :',
-            'tanggal acara :',
-            'total dp dibayarkan',
-            'pilihan sortir foto',
-        ];
-        $found = 0;
-        foreach ($markers as $m) {
-            if (str_contains($lower, $m)) $found++;
-        }
-        // Jika ada 2+ marker → AI bermaksud kirim form
-        return $found >= 2;
-    }
-
-    /**
-     * Bersihkan bagian template form dari reply AI.
-     * Sisakan hanya kalimat pembuka/pengantar sebelum form.
-     */
-    private function stripBookingFormFromReply(string $aiReply): string
-    {
-        // Cari posisi pertama kemunculan marker form
-        $markers = [
-            '📋', 'form booking', 'paket yang dipilih', 'nama mempelai',
-            'tanggal acara :', 'jam akad :', 'total dp',
-        ];
-
-        $cutPos = mb_strlen($aiReply); // default: tidak dipotong
-        $lower  = mb_strtolower($aiReply);
-
-        foreach ($markers as $marker) {
-            $pos = mb_strpos($lower, mb_strtolower($marker));
-            if ($pos !== false && $pos < $cutPos) {
-                $cutPos = $pos;
-            }
-        }
-
-        $intro = trim(mb_substr($aiReply, 0, $cutPos));
-
-        // Jika intronya kosong atau sangat pendek, beri kalimat pengantar default
-        if (mb_strlen($intro) < 10) {
-            $intro = "Siap Kak! Berikut aku kirimkan form booking-nya ya 😊✨";
-        }
-
-        return $intro;
-    }
-
-    /**
      * Generate teks form booking WA dengan format literal/hardcoded
      * agar tampilan di WA persis sesuai format yang diinginkan (per baris, rapi)
      */
     private function getBookingFormText(string $businessName, $user): string
     {
-        // Ambil info rekening dari settings user jika ada, fallback ke default
-        $bankLines = "BNI: 0431063867 (a.n. Umi Salamah)\nBRI: 003201028500532 (a.n. Umi Salamah)";
-        if (!empty($user->bank_name) && !empty($user->bank_account_number)) {
-            $bankLines = "{$user->bank_name}: {$user->bank_account_number} (a.n. {$user->bank_account_name})";
-        }
-
-        $form  = "📋 *Form Booking {$businessName}*\n";
-        $form .= "_(Mohon diisi dengan lengkap ya Kak, kosongkan jika tidak diperlukan 😊)_\n";
-        $form .= "\n";
-        $form .= "Paket yang Dipilih :\n";
-        $form .= "Nama Mempelai Laki-laki :\n";
-        $form .= "Nama Mempelai Perempuan :\n";
-        $form .= "Nama Orang Tua :\n";
-        $form .= "Tanggal Acara :\n";
-        $form .= "Jam Akad :\n";
-        $form .= "Jam Resepsi :\n";
-        $form .= "Alamat Lengkap Acara :\n";
-        $form .= "Link Maps Lokasi :\n";
-        $form .= "Kontak WhatsApp :\n";
-        $form .= "Email :\n";
-        $form .= "Instagram :\n";
-        $form .= "Vendor MUA :\n";
-        $form .= "Vendor Henna :\n";
-        $form .= "Vendor Busana :\n";
-        $form .= "Vendor Hiburan :\n";
-        $form .= "Vendor MC :\n";
-        $form .= "Vendor Dekorasi :\n";
-        $form .= "Vendor WO :\n";
-        $form .= "Request Khusus :\n";
-        $form .= "Pilihan Sortir Foto : _(Sortir Sendiri / Diserahkan Tim {$businessName})_\n";
-        $form .= "\n";
-        $form .= "DP 20% :\n";
-        $form .= "Biaya Transport :\n";
-        $form .= "Total DP Dibayarkan :\n";
-        $form .= "\n";
-        $form .= "Transfer ke Rekening:\n";
-        $form .= "{$bankLines}\n";
-        $form .= "\n";
-        $form .= "📌 *Catatan Penting:*\n";
-        $form .= "\n";
-        $form .= "• *Sortir Foto:* Jika request sortir sendiri, estimasi konfirmasi maksimal 3 hari setelah acara. Jika melebihi batas waktu tersebut, maka akan otomatis disortir oleh tim produksi {$businessName}.\n";
-        $form .= "\n";
-        $form .= "• *Booking Jadwal:* Setelah form ini diisi, mohon kirimkan bukti transfer DP ya Kak, supaya tanggalnya bisa langsung kami amankan. 📅💌\n";
-        $form .= "\n";
-        $form .= "✨ Terima kasih";
-
-        return $form;
+        return \App\Services\AiBrainService::getBookingFormTemplate($businessName, $user);
     }
 
     private function buildBookingConfirmation(array $parsed, Booking $booking): string

@@ -637,9 +637,18 @@ class KnowledgeFileController extends Controller
                         if ($response->successful()) {
                             $responseData = $response->json();
                             if (isset($responseData['choices'][0]['message']['content'])) {
+                                $rawReply = trim((string)$responseData['choices'][0]['message']['content']);
+                                $businessName = $user->business_name ?: ($user->name ?: 'Kami');
+                                $detection = AiBrainService::extractBookingFormIntent($rawReply);
+                                if ($detection['should_send_form']) {
+                                    $finalReply = trim($detection['clean_reply']) . "\n\n" . AiBrainService::getBookingFormTemplate($businessName, $user);
+                                } else {
+                                    $finalReply = $rawReply;
+                                }
+
                                 return response()->json([
                                     'success' => true,
-                                    'reply' => trim((string)$responseData['choices'][0]['message']['content'])
+                                    'reply' => $finalReply
                                 ]);
                             }
                         }
@@ -684,10 +693,18 @@ class KnowledgeFileController extends Controller
                     if ($response->successful()) {
                         $responseData = $response->json();
                         if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
-                            $reply = $responseData['candidates'][0]['content']['parts'][0]['text'];
+                            $rawReply = trim((string)$responseData['candidates'][0]['content']['parts'][0]['text']);
+                            $businessName = $user->business_name ?: ($user->name ?: 'Kami');
+                            $detection = AiBrainService::extractBookingFormIntent($rawReply);
+                            if ($detection['should_send_form']) {
+                                $finalReply = trim($detection['clean_reply']) . "\n\n" . AiBrainService::getBookingFormTemplate($businessName, $user);
+                            } else {
+                                $finalReply = $rawReply;
+                            }
+
                             return response()->json([
                                 'success' => true,
-                                'reply' => trim((string)$reply)
+                                'reply' => $finalReply
                             ]);
                         }
                     } else {

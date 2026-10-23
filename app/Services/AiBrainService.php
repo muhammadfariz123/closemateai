@@ -393,73 +393,19 @@ PROMPT;
         }
 
         // 7. WA Booking Form Instructions (always injected)
-        $bankInfo = "BNI: 0431063867 (a.n. Umi Salamah)\nBRI: 003201028500532 (a.n. Umi Salamah)";
-        $bookingFormTemplate = <<<FORM
-📋 Form Booking {$businessName}
-(Mohon diisi dengan lengkap ya Kak, kosongkan jika tidak diperlukan 😊)
-
-Paket yang Dipilih :
-Nama Mempelai Laki-laki :
-Nama Mempelai Perempuan :
-Nama Orang Tua :
-Tanggal Acara :
-Jam Akad :
-Jam Resepsi :
-Alamat Lengkap Acara :
-Link Maps Lokasi :
-Kontak WhatsApp :
-Email :
-Instagram :
-Vendor MUA :
-Vendor Henna :
-Vendor Busana :
-Vendor Hiburan :
-Vendor MC :
-Vendor Dekorasi :
-Vendor WO :
-Request Khusus :
-Pilihan Sortir Foto : (Sortir Sendiri / Diserahkan Tim {$businessName})
-
-DP 20% :
-Biaya Transport :
-Total DP Dibayarkan :
-
-Transfer ke Rekening:
-{$bankInfo}
-
-📌 Catatan Penting:
-
-    Sortir Foto: Jika request sortir sendiri, estimasi konfirmasi maksimal 3 hari setelah acara. Jika melebihi batas waktu tersebut, maka akan otomatis disortir oleh tim produksi {$businessName}.
-
-    Booking Jadwal: Setelah form ini diisi, mohon kirimkan bukti transfer DP ya Kak, supaya tanggalnya bisa langsung kami amankan. 📅💌
-
-✨ Terima kasih
-FORM;
-
-        $bookingFormSection = "\n\n=== INSTRUKSI PENGIRIMAN FORM BOOKING VIA WA ===\n"
-            . "Kamu HARUS mengirimkan form booking berikut kepada klien KETIKA:\n"
-            . "1. Klien sudah mantap/setuju dengan paket dan harga, dan ingin melanjutkan ke booking\n"
-            . "2. Klien secara eksplisit mengatakan ingin booking, memesan, atau mengunci tanggal\n"
-            . "3. Klien bertanya bagaimana cara booking atau apa langkah selanjutnya setelah deal\n"
-            . "4. Klien menyatakan siap membayar DP\n\n"
-            . "ATURAN KRITIS PENGIRIMAN FORM:\n"
-            . "- WAJIB mengirim teks form berikut secara VERBATIM (apa adanya), JANGAN dirangkum atau diubah menjadi kalimat!\n"
-            . "- Kirim PERSIS baris demi baris seperti template di bawah ini, JANGAN gabungkan atau ringkas!\n"
-            . "- Tambahkan kalimat pengantar SEBELUM form, contoh: \"Siap Kak! Berikut form booking-nya ya 😊\"\n"
-            . "- Setelah form, ingatkan klien untuk mengisi dan kirim balik ke chat ini\n\n"
-            . "FIELD WAJIB yang harus diisi klien:\n"
-            . "• Paket yang Dipilih\n"
-            . "• Nama Mempelai Laki-laki\n"
-            . "• Nama Mempelai Perempuan\n"
-            . "• Nama Orang Tua\n"
-            . "• Tanggal Acara\n"
-            . "• Email\n"
-            . "• Instagram\n"
-            . "• Total DP Dibayarkan\n\n"
-            . "TEMPLATE FORM BOOKING (salin PERSIS seperti ini, tidak boleh diubah formatnya):\n"
-            . "---\n"
-            . $bookingFormTemplate . "\n"
-            . "---\n";
+        $bookingFormSection = "\n\n=== INSTRUKSI PENGIRIMAN FORM BOOKING VIA WA (SANGAT PENTING) ===\n"
+            . "Kamu BISA & HARUS memicu pengiriman form booking kepada klien secara dinamis berdasarkan kondisi/balasan klien, TANPA harus menunggu batas giliran chat!\n"
+            . "Picu pengiriman form booking KETIKA:\n"
+            . "1. Klien sudah mantap / setuju dengan paket atau harga yang ditawarkan.\n"
+            . "2. Klien secara eksplisit mengatakan ingin booking, pesan, amankan tanggal, atau deal.\n"
+            . "3. Klien bertanya bagaimana cara booking, langkah selanjutnya, atau meminta form pendaftaran.\n"
+            . "4. Klien menanyakan nomor rekening untuk transfer DP atau menyatakan siap membayar DP.\n\n"
+            . "CARA KAMU MENGIRIMKAN FORM BOOKING:\n"
+            . "- Tulis balasan ramah, hangat, dan antusias sesuai persona kamu (misal berterima kasih & memberikan panduan singkat).\n"
+            . "- Di akhir balasanmu, CANTUMKAN TAG KHUSUS: [KIRIM_FORM_BOOKING]\n"
+            . "- JANGAN menulis ulang baris-baris form atau merangkum field form menjadi kalimat panjang berjejer! Sistem kami akan secara otomatis melampirkan form booking resmi berstruktur rapi persis ke WhatsApp klien.\n"
+            . "Contoh balasan kamu:\n"
+            . "\"Alhamdulillah siap Kak! Senang sekali kami bisa menjadi bagian dari hari bahagia Kakak. 😊💖 Untuk penguncian jadwal dan pendataan, silakan lengkapi form booking berikut ya Kak:\n[KIRIM_FORM_BOOKING]\"\n\n";
 
         // Assemble Final System Prompt
         $systemPrompt = "KAMU ADALAH ASISTEN BOT WA CERDAS & HUMANIS DARI '{$businessName}'.\n\n"
@@ -476,9 +422,103 @@ FORM;
             . "=== INSTRUKSI AKHIR ===\n"
             . "1. Jawablah pesan dari Kak {$clientName} dengan gaya yang telah ditentukan di atas.\n"
             . "2. Tetap konsisten dengan persona dan JANGAN PERNAH melanggar batasan guardrails yang telah ditetapkan.\n"
-            . "3. Jika klien sudah deal/setuju booking, SEGERA kirimkan form booking WA sesuai template di atas.\n";
+            . "3. Jika klien sudah siap atau meminta booking, SEGERA cantumkan tag [KIRIM_FORM_BOOKING] di akhir pesanmu.\n";
 
         return $systemPrompt;
+    }
+
+    /**
+     * Template Form Booking WA resmi yang berstruktur rapi per baris
+     */
+    public static function getBookingFormTemplate(string $businessName, $user = null): string
+    {
+        $bankLines = "BNI: 0431063867 (a.n. Umi Salamah)\nBRI: 003201028500532 (a.n. Umi Salamah)";
+        if ($user && !empty($user->bank_name) && !empty($user->bank_account_number)) {
+            $bankLines = "{$user->bank_name}: {$user->bank_account_number} (a.n. {$user->bank_account_name})";
+        }
+
+        $form  = "📋 *Form Booking {$businessName}*\n";
+        $form .= "_(Mohon diisi dengan lengkap ya Kak, kosongkan jika tidak diperlukan 😊)_\n";
+        $form .= "\n";
+        $form .= "Paket yang Dipilih :\n";
+        $form .= "Nama Mempelai Laki-laki :\n";
+        $form .= "Nama Mempelai Perempuan :\n";
+        $form .= "Nama Orang Tua :\n";
+        $form .= "Tanggal Acara :\n";
+        $form .= "Jam Akad :\n";
+        $form .= "Jam Resepsi :\n";
+        $form .= "Alamat Lengkap Acara :\n";
+        $form .= "Link Maps Lokasi :\n";
+        $form .= "Kontak WhatsApp :\n";
+        $form .= "Email :\n";
+        $form .= "Instagram :\n";
+        $form .= "Vendor MUA :\n";
+        $form .= "Vendor Henna :\n";
+        $form .= "Vendor Busana :\n";
+        $form .= "Vendor Hiburan :\n";
+        $form .= "Vendor MC :\n";
+        $form .= "Vendor Dekorasi :\n";
+        $form .= "Vendor WO :\n";
+        $form .= "Request Khusus :\n";
+        $form .= "Pilihan Sortir Foto : _(Sortir Sendiri / Diserahkan Tim {$businessName})_\n";
+        $form .= "\n";
+        $form .= "DP 20% :\n";
+        $form .= "Biaya Transport :\n";
+        $form .= "Total DP Dibayarkan :\n";
+        $form .= "\n";
+        $form .= "Transfer ke Rekening:\n";
+        $form .= "{$bankLines}\n";
+        $form .= "\n";
+        $form .= "📌 *Catatan Penting:*\n";
+        $form .= "\n";
+        $form .= "• *Sortir Foto:* Jika request sortir sendiri, estimasi konfirmasi maksimal 3 hari setelah acara. Jika melebihi batas waktu tersebut, maka akan otomatis disortir oleh tim produksi {$businessName}.\n";
+        $form .= "\n";
+        $form .= "• *Booking Jadwal:* Setelah form ini diisi, mohon kirimkan bukti transfer DP ya Kak, supaya tanggalnya bisa langsung kami amankan. 📅💌\n";
+        $form .= "\n";
+        $form .= "✨ Terima kasih";
+
+        return $form;
+    }
+
+    /**
+     * Deteksi apakah AI ingin mengirim form booking (via tag [KIRIM_FORM_BOOKING] atau teks form buatan LLM)
+     * dan pisahkan teks intro ramah AI agar terbebas dari draft form yang berantakan.
+     */
+    public static function extractBookingFormIntent(string $aiReply): array
+    {
+        $hasTag = str_contains($aiReply, '[KIRIM_FORM_BOOKING]');
+        $lower = mb_strtolower($aiReply);
+
+        $hasFormText = (str_contains($lower, 'form booking') && str_contains($lower, 'paket yang dipilih'))
+            || (str_contains($lower, 'paket yang dipilih') && str_contains($lower, 'nama mempelai'));
+
+        if (!$hasTag && !$hasFormText) {
+            return [
+                'should_send_form' => false,
+                'clean_reply' => $aiReply
+            ];
+        }
+
+        // Bersihkan tag
+        $clean = str_ireplace('[KIRIM_FORM_BOOKING]', '', $aiReply);
+
+        // Jika AI sempat menulis draft form booking sendiri, bersihkan agar tidak dobel / berantakan
+        if (preg_match('/(\n\s*(?:📋|--+|\*?Form Booking\b[^\n]*\n|Paket yang Dipilih\s*:).*)/is', $clean, $matches, PREG_OFFSET_CAPTURE)) {
+            $pos = $matches[1][1];
+            $clean = mb_substr($clean, 0, $pos);
+        } elseif (preg_match('/^\s*(?:📋|--+|\*?Form Booking|Paket yang Dipilih\s*:)/i', $clean)) {
+            $clean = "Siap Kak! Berikut form booking-nya ya, mohon diisi dan dikirim kembali ke chat ini. 😊✨";
+        }
+
+        $clean = trim($clean);
+        if ($clean === '') {
+            $clean = "Siap Kak! Silakan lengkapi form booking berikut ya, nanti sistem kami langsung proses otomatis. 😊✨";
+        }
+
+        return [
+            'should_send_form' => true,
+            'clean_reply' => $clean
+        ];
     }
 }
 
