@@ -35,6 +35,7 @@ class TeamController extends Controller
             return redirect('/dashboard')->with('error', 'Akses dibatasi untuk Admin CS.');
         }
 
+        $totalSeats = 99;
         $activeMembers = TeamMember::where('user_id', $user->id)->where('status', '!=', 'pending')->orderBy('created_at', 'desc')->get();
         $pendingMembers = TeamMember::where('user_id', $user->id)->where('status', 'pending')->orderBy('created_at', 'desc')->get();
 
