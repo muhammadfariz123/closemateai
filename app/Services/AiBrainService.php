@@ -392,6 +392,76 @@ PROMPT;
                 . "Gunakan aturan resmi di atas jika klien menanyakan tentang sistem pembayaran, DP, pembatalan, pelunasan, atau hak atas file mentah.\n";
         }
 
+        // 7. WA Booking Form Instructions (always injected)
+        $bankInfo = "BNI: 0431063867 (a.n. Umi Salamah)\nBRI: 003201028500532 (a.n. Umi Salamah)";
+        $bookingFormTemplate = <<<FORM
+📋 Form Booking {$businessName}
+(Mohon diisi dengan lengkap ya Kak, kosongkan jika tidak diperlukan 😊)
+
+Paket yang Dipilih :
+Nama Mempelai Laki-laki :
+Nama Mempelai Perempuan :
+Nama Orang Tua :
+Tanggal Acara :
+Jam Akad :
+Jam Resepsi :
+Alamat Lengkap Acara :
+Link Maps Lokasi :
+Kontak WhatsApp :
+Email :
+Instagram :
+Vendor MUA :
+Vendor Henna :
+Vendor Busana :
+Vendor Hiburan :
+Vendor MC :
+Vendor Dekorasi :
+Vendor WO :
+Request Khusus :
+Pilihan Sortir Foto : (Sortir Sendiri / Diserahkan Tim {$businessName})
+
+DP 20% :
+Biaya Transport :
+Total DP Dibayarkan :
+
+Transfer ke Rekening:
+{$bankInfo}
+
+📌 Catatan Penting:
+
+    Sortir Foto: Jika request sortir sendiri, estimasi konfirmasi maksimal 3 hari setelah acara. Jika melebihi batas waktu tersebut, maka akan otomatis disortir oleh tim produksi {$businessName}.
+
+    Booking Jadwal: Setelah form ini diisi, mohon kirimkan bukti transfer DP ya Kak, supaya tanggalnya bisa langsung kami amankan. 📅💌
+
+✨ Terima kasih
+FORM;
+
+        $bookingFormSection = "\n\n=== INSTRUKSI PENGIRIMAN FORM BOOKING VIA WA ===\n"
+            . "Kamu HARUS mengirimkan form booking berikut kepada klien KETIKA:\n"
+            . "1. Klien sudah mantap/setuju dengan paket dan harga, dan ingin melanjutkan ke booking\n"
+            . "2. Klien secara eksplisit mengatakan ingin booking, memesan, atau mengunci tanggal\n"
+            . "3. Klien bertanya bagaimana cara booking atau apa langkah selanjutnya setelah deal\n"
+            . "4. Klien menyatakan siap membayar DP\n\n"
+            . "CARA MENGIRIM FORM BOOKING:\n"
+            . "- Kirim form booking berikut ini SECARA LANGSUNG (copy-paste ke balasan WA), jangan ubah format\n"
+            . "- Sebelum form, tambahkan kalimat pengantar yang hangat, contoh:\n"
+            . "  \"Siap Kak! Berikut aku kirimkan form booking-nya ya, mohon diisi dengan lengkap kemudian kirim balik ke chat ini 😊✨\"\n"
+            . "- Setelah form, ingatkan klien bahwa setelah mengisi dan mengirim form, langkah selanjutnya adalah kirim bukti transfer DP\n"
+            . "- Sistem kami akan otomatis mendeteksi dan menyimpan data dari form yang dikirim klien ke database booking\n\n"
+            . "FIELD WAJIB yang harus diisi klien (jika kosong, sistem akan minta klien mengisi ulang):\n"
+            . "• Paket yang Dipilih\n"
+            . "• Nama Mempelai Laki-laki\n"
+            . "• Nama Mempelai Perempuan\n"
+            . "• Nama Orang Tua\n"
+            . "• Tanggal Acara\n"
+            . "• Email\n"
+            . "• Instagram\n"
+            . "• Total DP Dibayarkan\n\n"
+            . "TEMPLATE FORM BOOKING (kirim persis seperti ini):\n"
+            . "---\n"
+            . $bookingFormTemplate . "\n"
+            . "---\n";
+
         // Assemble Final System Prompt
         $systemPrompt = "KAMU ADALAH ASISTEN BOT WA CERDAS & HUMANIS DARI '{$businessName}'.\n\n"
             . "=== PANDUAN GAYA BICARA & PERSONA (OTAK AI) ===\n"
@@ -402,11 +472,14 @@ PROMPT;
             . $priceListRule
             . $calendarSection
             . $faqsSection
-            . $termsSection . "\n"
+            . $termsSection
+            . $bookingFormSection . "\n"
             . "=== INSTRUKSI AKHIR ===\n"
             . "1. Jawablah pesan dari Kak {$clientName} dengan gaya yang telah ditentukan di atas.\n"
-            . "2. Tetap konsisten dengan persona dan JANGAN PERNAH melanggar batasan guardrails yang telah ditetapkan.\n";
+            . "2. Tetap konsisten dengan persona dan JANGAN PERNAH melanggar batasan guardrails yang telah ditetapkan.\n"
+            . "3. Jika klien sudah deal/setuju booking, SEGERA kirimkan form booking WA sesuai template di atas.\n";
 
         return $systemPrompt;
     }
 }
+

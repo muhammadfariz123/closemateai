@@ -71,12 +71,22 @@ class BookingController extends Controller
             'paid_amount', 'discount', 'addons', 'operational_costs', 'total_income', 
             'total_operational_cost', 'net_profit', 'payment_date', 'payment_status', 
             'production_status', 'result_link', 'team_members', 'notes', 'production_deadline',
-            'production_tracks'
+            'production_tracks',
+            // WA Booking Form Fields
+            'groom_name', 'bride_name', 'parents_name',
+            'akad_time', 'reception_time',
+            'event_address', 'maps_link',
+            'client_email', 'client_instagram',
+            'vendor_mua', 'vendor_henna', 'vendor_busana', 'vendor_hiburan',
+            'vendor_mc', 'vendor_dekorasi', 'vendor_wo',
+            'sort_foto', 'dp_amount', 'transport_cost', 'total_dp',
+            'source', 'chat_id',
         ];
 
         $numericFields = [
             'package_price', 'package_qty', 'paid_amount', 'discount', 
-            'total_income', 'total_operational_cost', 'net_profit'
+            'total_income', 'total_operational_cost', 'net_profit',
+            'dp_amount', 'transport_cost', 'total_dp',
         ];
         
         foreach ($fields as $field) {

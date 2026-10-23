@@ -22,6 +22,11 @@ class Booking extends Model
         'total_income' => 'float',
         'total_operational_cost' => 'float',
         'net_profit' => 'float',
+        // WA Booking Form Fields
+        'dp_amount' => 'float',
+        'transport_cost' => 'float',
+        'total_dp' => 'float',
+        'wa_form_filled_at' => 'datetime',
     ];
 
     protected function serializeDate(\DateTimeInterface $date): string
