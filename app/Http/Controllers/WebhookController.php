@@ -393,9 +393,9 @@ class WebhookController extends Controller
             'vendor_wo'       => ['vendor wo', 'wo'],
             'special_request' => ['request khusus', 'request'],
             'sort_foto'       => ['pilihan sortir foto', 'sortir foto'],
-            'dp_amount'       => ['dp 20%', 'dp'],
-            'transport_cost'  => ['biaya transport', 'transport'],
             'total_dp'        => ['total dp dibayarkan', 'total dp'],
+            'dp_amount'       => ['dp 20%', 'dp', 'uang muka'],
+            'transport_cost'  => ['biaya transport', 'transport'],
         ];
 
         // Bagi teks per baris
@@ -412,9 +412,10 @@ class WebhookController extends Controller
             $rawValue = trim($m[2]);
             $labelLower = mb_strtolower($rawLabel);
 
-            // Bersihkan emoji & bullet dari label
+            // Bersihkan kata wajib/required, emoji & tanda baca dari label agar selalu match dengan varian
+            $labelLower = preg_replace('/\b(wajib|required)\b/u', '', $labelLower);
             $labelLower = preg_replace('/[^\p{L}\p{N}\s\-]/u', '', $labelLower);
-            $labelLower = trim($labelLower);
+            $labelLower = trim(preg_replace('/\s+/', ' ', $labelLower));
 
             foreach ($fieldMap as $key => $variants) {
                 foreach ($variants as $variant) {
@@ -438,19 +439,23 @@ class WebhookController extends Controller
     private function checkRequiredFields(array $parsed): array
     {
         $required = [
-            'package'        => 'Paket yang Dipilih',
-            'groom_name'     => 'Nama Mempelai Laki-laki',
-            'bride_name'     => 'Nama Mempelai Perempuan',
-            'parents_name'   => 'Nama Orang Tua',
-            'event_date_raw' => 'Tanggal Acara',
-            'client_email'   => 'Email',
-            'client_instagram'=> 'Instagram',
-            'total_dp'       => 'Total DP Dibayarkan',
+            'package'        => 'Paket yang Dipilih *(Wajib)*',
+            'groom_name'     => 'Nama Mempelai Laki-laki *(Wajib)*',
+            'bride_name'     => 'Nama Mempelai Perempuan *(Wajib)*',
+            'parents_name'   => 'Nama Orang Tua *(Wajib)*',
+            'event_date_raw' => 'Tanggal Acara *(Wajib)*',
+            'client_email'   => 'Email *(Wajib)*',
+            'client_instagram'=> 'Instagram *(Wajib)*',
+            'total_dp'       => 'Total DP Dibayarkan *(Wajib)*',
         ];
 
         $missing = [];
         foreach ($required as $key => $label) {
-            if (empty($parsed[$key])) {
+            if ($key === 'total_dp') {
+                if (empty($parsed['total_dp']) && empty($parsed['dp_amount'])) {
+                    $missing[] = $label;
+                }
+            } elseif (empty($parsed[$key])) {
                 $missing[] = $label;
             }
         }
