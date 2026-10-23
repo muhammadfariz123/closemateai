@@ -558,9 +558,14 @@
                 
             </div>
             
-            <div class="modal-footer">
-                <button class="btn btn-outline" id="btn-cancel-modal">Batal</button>
-                <button class="btn btn-primary" onclick="saveQuotation()"><i class="fa-solid fa-floppy-disk"></i> Simpan Penawaran</button>
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <button type="button" class="btn btn-outline" onclick="previewCurrentForm()"><i class="fa-solid fa-eye"></i> Preview & PDF</button>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" class="btn btn-outline" id="btn-cancel-modal">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="saveQuotation()"><i class="fa-solid fa-floppy-disk"></i> Simpan Penawaran</button>
+                </div>
             </div>
         </div>
     </div>
@@ -681,7 +686,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
-        const VENDOR_NAME = "{{ auth()->check() ? auth()->user()->name : 'Vendor' }}";
+        const VENDOR_NAME = "{{ auth()->check() ? (auth()->user()->business_name ?: auth()->user()->name) : 'Penapict' }}";
         // Sidebar Collapse
         document.getElementById('btn-collapse').addEventListener('click', function() {
             document.body.classList.toggle('sidebar-collapsed');
@@ -706,6 +711,15 @@
                 closeModal();
             }
         });
+
+        const previewModal = document.getElementById('preview-modal');
+        if (previewModal) {
+            previewModal.addEventListener('click', (e) => {
+                if (e.target === previewModal) {
+                    if (typeof closePreviewModal === 'function') closePreviewModal();
+                }
+            });
+        }
     </script>
     <script src="/js/activity-logger.js"></script>
     <script src="/js/quotation.js?v={{ time() }}"></script>
@@ -824,8 +838,11 @@
             try {
                 notify('Menyiapkan PDF...');
                 const canvas = await renderDocCanvas();
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+                let jsPDFClass = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jsPDF || null);
+                if (!jsPDFClass) {
+                    throw new Error('Pustaka jsPDF belum termuat.');
+                }
+                const pdf = new jsPDFClass({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
 
                 const pageW = pdf.internal.pageSize.getWidth();   // 210
                 const pageH = pdf.internal.pageSize.getHeight();  // 297
@@ -841,9 +858,10 @@
 
                 pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, 0, w, h, undefined, 'FAST');
                 pdf.save(getFileBase() + '.pdf');
+                notify('PDF berhasil diunduh!');
             } catch (err) {
                 console.error(err);
-                notify('Gagal membuat PDF');
+                notify('Gagal membuat PDF: ' + (err.message || 'Error'));
             } finally {
                 exporting = false;
             }

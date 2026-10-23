@@ -152,12 +152,16 @@
 </head>
 <body>
     
-    <div class="document-page theme-minimal" id="doc">
+    @php
+        $vUser = \App\Models\User::find($quotation->user_id);
+        $vTitle = $vUser ? ($vUser->business_name ?: $vUser->name) : 'Penapict';
+    @endphp
+    <div class="document-page {{ request('t') == 'elegance' ? 'theme-wedding' : (request('t') == 'navy' ? 'theme-navy' : 'theme-minimal') }}" id="doc">
         <div style="position: absolute; top: 0; left: 0; right: 0; height: 8px; background: var(--doc-primary);"></div>
         
         <div class="doc-header">
             <div class="doc-vendor">
-                <h1>Penapict</h1>
+                <h1>{{ $vTitle }}</h1>
                 <div class="doc-status">{{ $quotation->status }}</div>
             </div>
             <div class="doc-meta">
@@ -201,7 +205,7 @@
                     $items = $quotation->items ?? [];
                     $sections = [];
                     foreach($items as $item) {
-                        $sec = $item['section'] ?? 'LAIN-LAIN';
+                        $sec = (!empty(trim($item['section'] ?? ''))) ? trim($item['section']) : 'PAKET UTAMA';
                         if(!isset($sections[$sec])) $sections[$sec] = [];
                         $sections[$sec][] = $item;
                     }
@@ -248,10 +252,10 @@
             @foreach($quotation->termins ?? [] as $t)
                 @php
                     $val = ($t['type'] ?? '') === 'Persentase (%)' ? ($quotation->grandTotal * (($t['value'] ?? 0) / 100)) : ($t['value'] ?? 0);
-                    $suffix = ($t['type'] ?? '') === 'Persentase (%)' ? " ({$t['value']}%)" : '';
+                    $suffix = (($t['type'] ?? '') === 'Persentase (%)' && !str_contains($t['name'] ?? '', '%')) ? " ({$t['value']}%)" : '';
                 @endphp
                 <div class="doc-termin-card">
-                    <h5>TAHAP</h5>
+                    <h5>TAHAP {{ $loop->iteration }}</h5>
                     <p>{{ $t['name'] ?? '' }}{{ $suffix }}</p>
                     <div class="termin-val">Rp {{ number_format($val, 0, ',', '.') }}</div>
                 </div>
@@ -267,7 +271,7 @@
             <div class="doc-sig-box">
                 <p>Hormat kami,</p>
                 <div class="sig-line"></div>
-                <div class="sig-name">Penapict</div>
+                <div class="sig-name">{{ $vTitle }}</div>
             </div>
             <div class="doc-sig-box">
                 <p>Disetujui oleh,</p>

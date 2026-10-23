@@ -187,22 +187,22 @@ function openQuotationModal(id = null) {
     
     if (id) {
         // Load existing
-        let quotes = globalQuotations;
-        let q = quotes.find(x => x.id === id);
+        let quotes = globalQuotations || [];
+        let q = quotes.find(x => String(x.id) === String(id) || x.id == id);
         if(q) {
-            document.getElementById('q_no').value = q.q_no;
-            document.getElementById('q_status').value = q.status;
-            document.getElementById('q_client').value = q.client;
-            document.getElementById('q_phone').value = q.phone;
+            document.getElementById('q_no').value = q.q_no || '';
+            document.getElementById('q_status').value = q.status || 'Draft';
+            document.getElementById('q_client').value = q.client || '';
+            document.getElementById('q_phone').value = q.phone || '';
             document.getElementById('q_event_date').value = q.event_date ? q.event_date.substring(0, 10) : '';
-            document.getElementById('q_venue').value = q.venue;
+            document.getElementById('q_venue').value = q.venue || '';
             document.getElementById('q_valid_until').value = q.valid_until ? q.valid_until.substring(0, 10) : '';
             document.getElementById('q_discount').value = q.discount ? q.discount.toLocaleString('id-ID') : '';
-            document.getElementById('q_tnc').value = q.tnc;
-            document.getElementById('q_internal_notes').value = q.internal_notes;
+            document.getElementById('q_tnc').value = q.tnc || '';
+            document.getElementById('q_internal_notes').value = q.internal_notes || '';
             
-            qItems = q.items || [];
-            qTermins = q.termins || [];
+            qItems = Array.isArray(q.items) ? JSON.parse(JSON.stringify(q.items)) : [];
+            qTermins = Array.isArray(q.termins) ? JSON.parse(JSON.stringify(q.termins)) : [];
         }
     } else {
         // New
@@ -242,14 +242,37 @@ async function loadQuotations() {
     try {
         let res = await fetch('/api/quotations');
         let rawData = await res.json();
-        const parseQuotes = (data) => data.map(q => {
+        const parseQuotes = (data) => (Array.isArray(data) ? data : []).map(q => {
             q.discount = parseFloat(q.discount) || 0;
             q.grandTotal = parseFloat(q.grandTotal) || 0;
-            if (q.items) {
-                q.items = q.items.map(i => ({...i, harga: parseFloat(i.harga) || 0, qty: parseFloat(i.qty) || 0}));
+            if (typeof q.items === 'string') {
+                try { q.items = JSON.parse(q.items); } catch(e) { q.items = []; }
             }
-            if (q.termins) {
-                q.termins = q.termins.map(t => ({...t, value: parseFloat(t.value) || 0}));
+            if (typeof q.termins === 'string') {
+                try { q.termins = JSON.parse(q.termins); } catch(e) { q.termins = []; }
+            }
+            if (Array.isArray(q.items)) {
+                q.items = q.items.map(i => ({
+                    ...i,
+                    harga: parseFloat(i.harga) || 0,
+                    qty: parseFloat(i.qty) || 0,
+                    desc: i.desc || '',
+                    name: i.name || '',
+                    section: i.section || '',
+                    satuan: i.satuan || 'Paket'
+                }));
+            } else {
+                q.items = [];
+            }
+            if (Array.isArray(q.termins)) {
+                q.termins = q.termins.map(t => ({
+                    ...t,
+                    name: t.name || '',
+                    type: t.type || 'Persentase (%)',
+                    value: parseFloat(t.value) || 0
+                }));
+            } else {
+                q.termins = [];
             }
             return q;
         });
@@ -481,87 +504,227 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Helper: Indonesian Date Formatter
+function formatIndonesianDate(dateStr) {
+    if (!dateStr) return '-';
+    try {
+        const str = String(dateStr).trim();
+        const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        if (match) {
+            const year = match[1];
+            const month = months[parseInt(match[2], 10) - 1] || match[2];
+            const day = parseInt(match[3], 10);
+            return `${day} ${month} ${year}`;
+        }
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) {
+            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+        return str;
+    } catch (e) {
+        return String(dateStr);
+    }
+}
+
 // PREVIEW MODAL LOGIC
 let currentPreviewId = null;
 
-function openPreviewModal(id) {
-    let quotes = globalQuotations;
-    let q = quotes.find(x => x.id === id);
-    if(!q) return;
+function populatePreviewDocument(q) {
+    if (!q) return;
+
+    // Vendor info
+    let vName = (typeof VENDOR_NAME !== 'undefined' && VENDOR_NAME) ? VENDOR_NAME : 'Penapict';
+    const elVendor = document.getElementById('doc_vendor_name');
+    if (elVendor) elVendor.innerText = vName;
     
-    currentPreviewId = id;
-    
-    // Vendor logic
-    let vName = typeof VENDOR_NAME !== 'undefined' ? VENDOR_NAME : 'Vendor';
-    document.getElementById('doc_vendor_name').innerText = vName;
-    document.getElementById('doc_status').innerText = q.status;
-    document.getElementById('doc_no').innerText = 'No. ' + q.q_no;
-    
-    let validDate = q.valid_until ? new Date(q.valid_until).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-';
-    let createDate = q.created_at ? new Date(q.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-';
-    document.getElementById('doc_dates').innerText = 'Terbit: ' + createDate + ' · Berlaku s/d ' + validDate;
-    
-    document.getElementById('doc_client_name').innerText = q.client || '-';
-    document.getElementById('doc_client_phone').innerText = q.phone || '-';
-    document.getElementById('doc_event_date').innerText = q.event_date ? new Date(q.event_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-';
-    document.getElementById('doc_venue').innerText = q.venue || '-';
-    
-    // Items
+    const elSigVendor = document.getElementById('doc_sig_vendor');
+    if (elSigVendor) elSigVendor.innerText = vName;
+
+    // Client & quotation metadata
+    const clientName = q.client || '-';
+    const elClient = document.getElementById('doc_client_name');
+    if (elClient) elClient.innerText = clientName;
+
+    const elSigClient = document.getElementById('doc_sig_client');
+    if (elSigClient) elSigClient.innerText = clientName;
+
+    const elStatus = document.getElementById('doc_status');
+    if (elStatus) elStatus.innerText = q.status || 'Draft';
+
+    const elNo = document.getElementById('doc_no');
+    if (elNo) elNo.innerText = 'No. ' + (q.q_no || 'QT-0000');
+
+    let validDate = formatIndonesianDate(q.valid_until);
+    let createDate = formatIndonesianDate(q.created_at || new Date());
+    const elDates = document.getElementById('doc_dates');
+    if (elDates) elDates.innerText = 'Terbit: ' + createDate + ' · Berlaku s/d ' + validDate;
+
+    const elPhone = document.getElementById('doc_client_phone');
+    if (elPhone) elPhone.innerText = q.phone || '-';
+
+    const elEventDate = document.getElementById('doc_event_date');
+    if (elEventDate) elEventDate.innerText = formatIndonesianDate(q.event_date);
+
+    const elVenue = document.getElementById('doc_venue');
+    if (elVenue) elVenue.innerText = q.venue || '-';
+
+    // Render items grouped by section
     let itemsHtml = '';
     let sections = {};
-    (q.items || []).forEach(item => {
-        let sec = item.section || 'LAIN-LAIN';
-        if(!sections[sec]) sections[sec] = [];
+    const rawItems = Array.isArray(q.items) ? q.items : [];
+
+    rawItems.forEach(item => {
+        let sec = (item.section && String(item.section).trim()) ? String(item.section).trim() : 'PAKET UTAMA';
+        if (!sections[sec]) sections[sec] = [];
         sections[sec].push(item);
     });
-    
-    for(let sec in sections) {
+
+    // Fallback if no items
+    if (Object.keys(sections).length === 0) {
+        sections['PAKET UTAMA'] = [{
+            name: 'Layanan / Produk',
+            desc: '',
+            qty: 1,
+            satuan: 'Paket',
+            harga: 0
+        }];
+    }
+
+    for (let sec in sections) {
         itemsHtml += `<tr><td colspan="4" class="doc-section-title">${sec}</td></tr>`;
         sections[sec].forEach(item => {
-            let subtotal = item.qty * item.harga;
+            let qty = parseFloat(item.qty) || 1;
+            let harga = parseFloat(item.harga) || 0;
+            let subtotal = qty * harga;
+            let descText = (item.desc !== null && item.desc !== undefined) ? String(item.desc).trim() : '';
+            let descHtml = descText 
+                ? `<div style="font-size: 11px; color: #666; margin-top: 4px; line-height: 1.4;">${descText.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')}</div>` 
+                : '';
+
             itemsHtml += `
                 <tr>
                     <td>
-                        <div style="font-weight: 600;">${item.name}</div>
-                        <div style="font-size: 11px; color: #666; margin-top: 4px;">${item.desc.replace(/\\n/g, '<br>')}</div>
+                        <div style="font-weight: 600;">${item.name || 'Layanan / Produk'}</div>
+                        ${descHtml}
                     </td>
-                    <td style="text-align: center;">${item.qty} ${item.satuan}</td>
-                    <td style="text-align: right;">Rp ${item.harga.toLocaleString('id-ID')}</td>
-                    <td style="text-align: right; font-weight: 600;">Rp ${subtotal.toLocaleString('id-ID')}</td>
+                    <td style="text-align: center;">${qty} ${item.satuan || 'Paket'}</td>
+                    <td style="text-align: right;">Rp ${Math.round(harga).toLocaleString('id-ID')}</td>
+                    <td style="text-align: right; font-weight: 600;">Rp ${Math.round(subtotal).toLocaleString('id-ID')}</td>
                 </tr>
             `;
         });
     }
-    document.getElementById('doc_items_tbody').innerHTML = itemsHtml;
-    
+
+    const elItemsTbody = document.getElementById('doc_items_tbody');
+    if (elItemsTbody) elItemsTbody.innerHTML = itemsHtml;
+
     // Totals
-    let subtotal = 0;
-    (q.items || []).forEach(item => subtotal += (item.qty * item.harga));
-    document.getElementById('doc_subtotal').innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
-    document.getElementById('doc_discount').innerText = '- Rp ' + (q.discount || 0).toLocaleString('id-ID');
-    document.getElementById('doc_grand_total').innerText = 'Rp ' + q.grandTotal.toLocaleString('id-ID');
-    
+    let calcSubtotal = 0;
+    rawItems.forEach(item => {
+        let iQty = parseFloat(item.qty) || 0;
+        let iHarga = parseFloat(item.harga) || 0;
+        calcSubtotal += (iQty * iHarga);
+    });
+
+    let discount = parseFloat(q.discount) || 0;
+    let grandTotal = parseFloat(q.grandTotal);
+    if (isNaN(grandTotal) || grandTotal === null || grandTotal === undefined) {
+        grandTotal = Math.max(0, calcSubtotal - discount);
+    }
+
+    const elSub = document.getElementById('doc_subtotal');
+    if (elSub) elSub.innerText = 'Rp ' + Math.round(calcSubtotal).toLocaleString('id-ID');
+
+    const elDisc = document.getElementById('doc_discount');
+    if (elDisc) elDisc.innerText = '- Rp ' + Math.round(discount).toLocaleString('id-ID');
+
+    const elGrand = document.getElementById('doc_grand_total');
+    if (elGrand) elGrand.innerText = 'Rp ' + Math.round(grandTotal).toLocaleString('id-ID');
+
     // Termins
     let terminsHtml = '';
-    (q.termins || []).forEach(t => {
-        let val = t.type === 'Persentase (%)' ? (q.grandTotal * (t.value / 100)) : t.value;
-        let suffix = t.type === 'Persentase (%)' ? ` (${t.value}%)` : '';
+    const rawTermins = Array.isArray(q.termins) ? q.termins : [];
+
+    rawTermins.forEach((t, idx) => {
+        let tVal = parseFloat(t.value) || 0;
+        let isPercent = t.type === 'Persentase (%)';
+        let nominal = isPercent ? (grandTotal * (tVal / 100)) : tVal;
+        let suffix = (isPercent && !String(t.name || '').includes('%')) ? ` (${tVal}%)` : '';
+
         terminsHtml += `
             <div class="doc-termin-card">
-                <h5>TAHAP</h5>
-                <p>${t.name}${suffix}</p>
-                <div class="termin-val">Rp ${val.toLocaleString('id-ID')}</div>
+                <h5>TAHAP ${idx + 1}</h5>
+                <p>${t.name || ('Tahap ' + (idx + 1))}${suffix}</p>
+                <div class="termin-val">Rp ${Math.round(nominal).toLocaleString('id-ID')}</div>
             </div>
         `;
     });
-    document.getElementById('doc_termins_grid').innerHTML = terminsHtml;
-    
-    document.getElementById('doc_tnc_text').innerText = q.tnc || '-';
-    document.getElementById('doc_sig_vendor').innerText = vName; // Matching user account profile name!
-    document.getElementById('doc_sig_client').innerText = q.client || '-';
-    
+
+    const elTermins = document.getElementById('doc_termins_grid');
+    if (elTermins) elTermins.innerHTML = terminsHtml;
+
+    // T&C
+    const elTnc = document.getElementById('doc_tnc_text');
+    if (elTnc) elTnc.innerText = q.tnc || '-';
+}
+
+function openPreviewModal(id) {
+    let quotes = globalQuotations || [];
+    let q = quotes.find(x => String(x.id) === String(id) || x.id == id);
+    if (!q) {
+        console.warn("Quotation not found with id:", id);
+        return;
+    }
+
+    currentPreviewId = id;
+    populatePreviewDocument(q);
+
     const pModal = document.getElementById('preview-modal');
-    if(pModal) {
+    if (pModal) {
+        pModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function previewCurrentForm() {
+    let subtotal = parseRupiahStr(document.getElementById('q_sum_subtotal')?.innerText?.replace('Rp ', '') || '0');
+    let discount = parseRupiahStr(document.getElementById('q_discount')?.value || '0');
+    let grandTotal = subtotal - discount;
+
+    let currentItems = (qItems && qItems.length > 0) ? JSON.parse(JSON.stringify(qItems)) : [];
+    let currentTermins = (qTermins && qTermins.length > 0) ? JSON.parse(JSON.stringify(qTermins)) : [];
+
+    let formQuotation = {
+        id: editingQuotationId || 'temp',
+        q_no: document.getElementById('q_no')?.value || 'QT-DRAFT',
+        status: document.getElementById('q_status')?.value || 'Draft',
+        client: document.getElementById('q_client')?.value || 'Nama Klien',
+        phone: document.getElementById('q_phone')?.value || '',
+        event_date: document.getElementById('q_event_date')?.value || '',
+        venue: document.getElementById('q_venue')?.value || '',
+        valid_until: document.getElementById('q_valid_until')?.value || '',
+        discount: discount,
+        grandTotal: grandTotal,
+        tnc: document.getElementById('q_tnc')?.value || '',
+        internal_notes: document.getElementById('q_internal_notes')?.value || '',
+        items: currentItems.length > 0 ? currentItems : [{
+            section: 'PAKET UTAMA',
+            name: 'Layanan / Produk',
+            desc: '',
+            qty: 1,
+            satuan: 'Paket',
+            harga: 0
+        }],
+        termins: currentTermins,
+        created_at: new Date().toISOString()
+    };
+
+    currentPreviewId = formQuotation.id;
+    populatePreviewDocument(formQuotation);
+
+    const pModal = document.getElementById('preview-modal');
+    if (pModal) {
         pModal.classList.add('show');
         document.body.style.overflow = 'hidden';
     }
@@ -569,7 +732,7 @@ function openPreviewModal(id) {
 
 function closePreviewModal() {
     const pModal = document.getElementById('preview-modal');
-    if(pModal) {
+    if (pModal) {
         pModal.classList.remove('show');
         document.body.style.overflow = '';
     }
@@ -577,42 +740,54 @@ function closePreviewModal() {
 
 function setDocTheme(themeClass, el) {
     const doc = document.getElementById('preview-document');
+    if (!doc) return;
     doc.className = 'document-page ' + themeClass;
-    
+
     document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-    if(el) el.classList.add('active');
+    if (el) {
+        el.classList.add('active');
+    } else {
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            if (btn.getAttribute('onclick')?.includes(themeClass)) {
+                btn.classList.add('active');
+            }
+        });
+    }
 }
 
 function downloadDocPNG() {
+    if (typeof window.downloadDocPNG === 'function' && window.downloadDocPNG !== downloadDocPNG) {
+        return window.downloadDocPNG();
+    }
     const doc = document.getElementById('preview-document');
-    if(!doc) return;
-    
-    // Temporarily adjust styles for capture
+    if (!doc || typeof html2canvas === 'undefined') {
+        alert('Pustaka gambar belum siap.');
+        return;
+    }
+
     const origWidth = doc.style.width;
     const origMaxWidth = doc.style.maxWidth;
     const origHeight = doc.style.height;
     const origZoom = doc.style.zoom;
-    
-    // Force exact A4 sizes
+
     doc.style.width = '794px';
     doc.style.maxWidth = 'none';
     doc.style.height = '1123px';
     doc.style.zoom = '1';
-    
-    window.showToast('Menyiapkan gambar...', 'fa-spinner fa-spin');
-    
+
+    if (window.showToast) window.showToast('Menyiapkan gambar...', 'fa-spinner fa-spin');
+
     html2canvas(doc, { scale: 2, useCORS: true }).then(canvas => {
-        // Restore
         doc.style.width = origWidth;
         doc.style.maxWidth = origMaxWidth;
         doc.style.height = origHeight;
         doc.style.zoom = origZoom;
-        
+
         let link = document.createElement('a');
         link.download = 'Quotation-' + Date.now() + '.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
-        window.showToast('Gambar berhasil diunduh!');
+        if (window.showToast) window.showToast('Gambar berhasil diunduh!');
     }).catch(err => {
         doc.style.width = origWidth;
         doc.style.maxWidth = origMaxWidth;
@@ -624,40 +799,39 @@ function downloadDocPNG() {
 }
 
 function downloadDocPDF() {
+    if (typeof window.downloadDocPDF === 'function' && window.downloadDocPDF !== downloadDocPDF) {
+        return window.downloadDocPDF();
+    }
     const doc = document.getElementById('preview-document');
-    if(!doc || !window.jspdf) return;
-    
-    // Temporarily adjust styles for capture
+    let jsPDFClass = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jsPDF || null);
+    if (!doc || !jsPDFClass || typeof html2canvas === 'undefined') {
+        alert('Pustaka PDF belum siap.');
+        return;
+    }
+
     const origWidth = doc.style.width;
     const origMaxWidth = doc.style.maxWidth;
     const origHeight = doc.style.height;
     const origZoom = doc.style.zoom;
-    
-    // Force exact A4 sizes
+
     doc.style.width = '794px';
     doc.style.maxWidth = 'none';
     doc.style.height = '1123px';
     doc.style.zoom = '1';
 
-    window.showToast('Menyiapkan PDF...', 'fa-spinner fa-spin');
-    
+    if (window.showToast) window.showToast('Menyiapkan PDF...', 'fa-spinner fa-spin');
+
     html2canvas(doc, { scale: 2, useCORS: true }).then(canvas => {
-        // Restore
         doc.style.width = origWidth;
         doc.style.maxWidth = origMaxWidth;
         doc.style.height = origHeight;
         doc.style.zoom = origZoom;
-        
+
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
-        
-        // Exact 1-page A4 dimensions (210mm x 297mm)
-        const pdfWidth = 210;
-        const pdfHeight = 297;
-        
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+        const pdf = new jsPDFClass('p', 'mm', 'a4');
+        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
         pdf.save('Quotation-' + Date.now() + '.pdf');
-        window.showToast('PDF berhasil diunduh!');
+        if (window.showToast) window.showToast('PDF berhasil diunduh!');
     }).catch(err => {
         doc.style.width = origWidth;
         doc.style.maxWidth = origMaxWidth;
@@ -669,14 +843,13 @@ function downloadDocPDF() {
 }
 
 window.convertToBooking = async function(id) {
-    if(!confirm('Convert penawaran ini ke Booking?')) return;
-    
-    const q = globalQuotations.find(x => x.id === id);
+    if (!confirm('Convert penawaran ini ke Booking?')) return;
+
+    const q = (globalQuotations || []).find(x => String(x.id) === String(id) || x.id == id);
     if (!q) return;
-    
+
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
-    // 1. Update quotation status to 'Disetujui'
+
     const qPayload = { ...q, status: 'Disetujui' };
     try {
         await fetch('/api/quotations', {
@@ -687,15 +860,14 @@ window.convertToBooking = async function(id) {
             },
             body: JSON.stringify(qPayload)
         });
-        
-        // 2. Prepare Booking Payload
+
         let packageName = 'Penawaran ' + q.q_no;
         let packagePrice = parseFloat(q.grandTotal) || 0;
         let packageQty = 1;
-        
+
         let venueStr = q.venue || '';
         let notesText = `Dibuat dari penawaran ${q.q_no} \u00B7 Lokasi: ${venueStr}`;
-        
+
         const bookingPayload = {
             client_name: q.client || '',
             client_wa_number: q.phone || '',
@@ -720,9 +892,8 @@ window.convertToBooking = async function(id) {
             team_members: [],
             notes: notesText
         };
-        
-        // 3. Post to Bookings
-        const resBooking = await fetch('/api/bookings', {
+
+        await fetch('/api/bookings', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -730,19 +901,38 @@ window.convertToBooking = async function(id) {
             },
             body: JSON.stringify(bookingPayload)
         });
-        
+
         if (window.showToast) {
             window.showToast('Penawaran diubah menjadi booking');
         } else {
             alert('Penawaran diubah menjadi booking');
         }
-        
-        // Reload quotations
+
         loadQuotations();
-        
     } catch (e) {
         console.error(e);
         alert('Gagal mengconvert ke booking.');
     }
-}
+};
+
+// Global Exposure for HTML Event Handlers
+window.openPreviewModal = openPreviewModal;
+window.previewCurrentForm = previewCurrentForm;
+window.closePreviewModal = closePreviewModal;
+window.setDocTheme = setDocTheme;
+window.downloadDocPNG = downloadDocPNG;
+window.downloadDocPDF = downloadDocPDF;
+window.openQuotationModal = openQuotationModal;
+window.addQuotationItem = addQuotationItem;
+window.removeQuotationItem = removeQuotationItem;
+window.updateQItem = updateQItem;
+window.addTerminItem = addTerminItem;
+window.removeTerminItem = removeTerminItem;
+window.updateQTermin = updateQTermin;
+window.calculateQuotationTotals = calculateQuotationTotals;
+window.saveQuotation = saveQuotation;
+window.copyQuotationLink = copyQuotationLink;
+window.deleteQuotation = deleteQuotation;
+window.setFilter = setFilter;
+window.formatRupiahInput = formatRupiahInput;
 
