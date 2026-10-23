@@ -15,6 +15,13 @@ class Booking extends Model
         'event_date' => 'date:Y-m-d',
         'payment_date' => 'date:Y-m-d',
         'production_tracks' => 'array',
+        'package_price' => 'float',
+        'package_qty' => 'integer',
+        'paid_amount' => 'float',
+        'discount' => 'float',
+        'total_income' => 'float',
+        'total_operational_cost' => 'float',
+        'net_profit' => 'float',
     ];
 
     protected function serializeDate(\DateTimeInterface $date): string

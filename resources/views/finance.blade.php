@@ -396,7 +396,7 @@
             </div>
             
             <div class="chart-placeholder">
-                <div class="y-axis">
+                <div class="y-axis" id="chart_y_axis">
                     <div>0jt -</div>
                     <div>0jt -</div>
                     <div>0jt -</div>
@@ -618,13 +618,36 @@
             }, 3000);
         }
 
+        function cleanNumber(val) {
+            if (val === null || val === undefined || val === '') return 0;
+            if (typeof val === 'number') {
+                return isNaN(val) ? 0 : val;
+            }
+            let s = String(val).trim();
+            if (s === '' || s.toLowerCase() === 'nan' || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined') return 0;
+            
+            // Standard float/int string from database, e.g. "1500000" or "1500000.00" or "-50000"
+            if (/^-?\d+(\.\d+)?$/.test(s)) {
+                const num = parseFloat(s);
+                return isNaN(num) ? 0 : num;
+            }
+            
+            // Formatted string with currency, dots, commas, e.g. "Rp 1.500.000,00" or "1.500.000"
+            s = s.replace(/[^0-9,-]/g, '');
+            if (s.includes(',')) {
+                s = s.split(',')[0];
+            }
+            const parsed = parseInt(s, 10);
+            return isNaN(parsed) ? 0 : parsed;
+        }
+
         function formatRupiah(number) {
-            return new Intl.NumberFormat('id-ID').format(number);
+            const num = cleanNumber(number);
+            return new Intl.NumberFormat('id-ID').format(num);
         }
 
         function parseRupiah(str) {
-            if (!str) return 0;
-            return parseInt(str.replace(/[^0-9]/g, ''), 10) || 0;
+            return cleanNumber(str);
         }
 
         function formatRupiahInput(input) {
@@ -637,11 +660,13 @@
         }
 
         function openExpenseModal() {
-            const bookings = globalBookingsFinance;
+            const bookings = (Array.isArray(globalBookingsFinance) && globalBookingsFinance.length > 0)
+                ? globalBookingsFinance
+                : (JSON.parse(localStorage.getItem('b_events')) || []);
             const select = document.getElementById('exp_acara');
             let html = `<option value="">— Pengeluaran umum —</option>`;
             bookings.forEach(b => {
-                html += `<option value="${b.id}">${b.client_name} · ${b.event_date || '-'}</option>`;
+                html += `<option value="${b.id}">${b.client_name || 'Klien'} · ${b.event_date || '-'}</option>`;
             });
             select.innerHTML = html;
             
@@ -670,23 +695,29 @@
             const nominal = parseRupiah(document.getElementById('exp_nominal').value);
             const catatan = document.getElementById('exp_catatan').value;
             
-            if (!judul || !nominal) {
+            if (!judul || !nominal || isNaN(nominal)) {
                 alert("Judul dan nominal wajib diisi!");
                 return;
             }
             
-            let expenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+            let expenses = [];
+            try {
+                expenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+                if (!Array.isArray(expenses)) expenses = [];
+            } catch(e) {
+                expenses = [];
+            }
             
             if (id) {
                 const index = expenses.findIndex(e => e.id === id);
                 if (index > -1) {
-                    expenses[index] = { ...expenses[index], acaraId, kategori, tanggal, judul, nominal, catatan };
+                    expenses[index] = { ...expenses[index], acaraId, kategori, tanggal, judul, nominal: cleanNumber(nominal), catatan };
                     showToast('Pengeluaran diperbarui');
                 }
             } else {
                 const exp = {
                     id: 'exp_' + Date.now(),
-                    acaraId, kategori, tanggal, judul, nominal, catatan
+                    acaraId, kategori, tanggal, judul, nominal: cleanNumber(nominal), catatan
                 };
                 expenses.push(exp);
                 showToast('Pengeluaran dicatat');
@@ -695,7 +726,7 @@
             localStorage.setItem('f_expenses', JSON.stringify(expenses));
             
             if(window.logSysActivity && !id) {
-                window.logSysActivity('Handler', 'Penapict', 'Mencatat pengeluaran', judul + ' (Rp ' + nominal.toLocaleString('id-ID') + ')', 'fa-money-bill-wave', 'grey');
+                window.logSysActivity('Handler', 'Penapict', 'Mencatat pengeluaran', judul + ' (Rp ' + formatRupiah(nominal) + ')', 'fa-money-bill-wave', 'grey');
             }
             
             closeExpenseModal();
@@ -703,16 +734,25 @@
         }
 
         function calculateFinance() {
-            let allBookings = globalBookingsFinance;
-            let allExpenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+            let allBookings = Array.isArray(globalBookingsFinance) ? globalBookingsFinance : [];
+            let allExpenses = [];
+            try {
+                allExpenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+                if (!Array.isArray(allExpenses)) allExpenses = [];
+            } catch(e) {
+                allExpenses = [];
+            }
             
             // Filter by date
             const filterStart = currentFilterStart ? new Date(currentFilterStart) : null;
+            if (filterStart) filterStart.setHours(0, 0, 0, 0);
             const filterEnd = currentFilterEnd ? new Date(currentFilterEnd) : null;
+            if (filterEnd) filterEnd.setHours(23, 59, 59, 999);
             
             const bookings = allBookings.filter(b => {
                 if(!b.event_date) return true;
-                const d = new Date(b.event_date);
+                const d = new Date(b.event_date.substring(0, 10) + 'T00:00:00');
+                if(isNaN(d.getTime())) return true;
                 if(filterStart && d < filterStart) return false;
                 if(filterEnd && d > filterEnd) return false;
                 return true;
@@ -720,7 +760,8 @@
             
             const expenses = allExpenses.filter(e => {
                 if(!e.tanggal) return true;
-                const d = new Date(e.tanggal);
+                const d = new Date(e.tanggal.substring(0, 10) + 'T00:00:00');
+                if(isNaN(d.getTime())) return true;
                 if(filterStart && d < filterStart) return false;
                 if(filterEnd && d > filterEnd) return false;
                 return true;
@@ -732,13 +773,20 @@
             let pengeluaranOperasional = 0;
             
             bookings.forEach(b => {
-                totalOmset += (b.total_income || 0);
-                uangMasuk += (b.paid_amount || 0);
-                pengeluaranOperasional += (b.total_operational_cost || 0);
+                const bIncome = cleanNumber(b.total_income) || (cleanNumber(b.package_price) * (cleanNumber(b.package_qty) || 1));
+                const bPaid = cleanNumber(b.paid_amount);
+                let bOpCost = cleanNumber(b.total_operational_cost);
+                if (bOpCost === 0 && Array.isArray(b.operational_costs) && b.operational_costs.length > 0) {
+                    bOpCost = b.operational_costs.reduce((sum, item) => sum + (cleanNumber(item.price) * (cleanNumber(item.qty) || 1)), 0);
+                }
+                
+                totalOmset += bIncome;
+                uangMasuk += bPaid;
+                pengeluaranOperasional += bOpCost;
             });
             
             expenses.forEach(e => {
-                pengeluaranManual += (e.nominal || 0);
+                pengeluaranManual += cleanNumber(e.nominal);
             });
             
             const sisaPiutang = totalOmset - uangMasuk;
@@ -751,7 +799,7 @@
             document.getElementById('val_pengeluaran').innerText = 'Rp ' + formatRupiah(totalPengeluaran);
             
             const profitEl = document.getElementById('val_profit');
-            profitEl.innerText = 'Rp ' + formatRupiah(profitBersih);
+            profitEl.innerText = (profitBersih < 0 ? '- Rp ' : 'Rp ') + formatRupiah(Math.abs(profitBersih));
             if (profitBersih < 0) {
                 profitEl.style.color = 'var(--danger)';
                 profitEl.parentElement.classList.remove('green');
@@ -774,14 +822,14 @@
                 [...filteredExpenses].reverse().forEach(e => {
                     let acaraName = '-';
                     if (e.acaraId) {
-                        const b = allBookings.find(x => x.id === e.acaraId);
-                        if (b) acaraName = `<span style="background: rgba(107,92,216,0.1); color: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;">${b.client_name}</span>`;
+                        const b = allBookings.find(x => x.id == e.acaraId);
+                        if (b) acaraName = `<span style="background: rgba(107,92,216,0.1); color: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;">${b.client_name || 'Klien'}</span>`;
                     }
                     expHtml += `
                     <tr>
                         <td>${e.tanggal || '-'}</td>
-                        <td style="font-weight: 500;">${e.judul}</td>
-                        <td><span style="color: var(--text-muted); font-size: 12px;">${e.kategori}</span></td>
+                        <td style="font-weight: 500;">${e.judul || '-'}</td>
+                        <td><span style="color: var(--text-muted); font-size: 12px;">${e.kategori || '-'}</span></td>
                         <td>${acaraName}</td>
                         <td style="color: var(--danger); font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
                             - Rp ${formatRupiah(e.nominal)}
@@ -802,13 +850,21 @@
             if (bookings.length > 0) {
                 let profHtml = '';
                 bookings.forEach(b => {
-                    const linkedExpenses = expenses.filter(e => e.acaraId === b.id).reduce((sum, e) => sum + (e.nominal || 0), 0);
-                    const bookingCost = (b.total_operational_cost || 0) + linkedExpenses;
-                    const bookingIncome = b.total_income || 0;
+                    const linkedExpenses = expenses.filter(e => e.acaraId == b.id).reduce((sum, e) => sum + cleanNumber(e.nominal), 0);
+                    let bOpCost = cleanNumber(b.total_operational_cost);
+                    if (bOpCost === 0 && Array.isArray(b.operational_costs) && b.operational_costs.length > 0) {
+                        bOpCost = b.operational_costs.reduce((sum, item) => sum + (cleanNumber(item.price) * (cleanNumber(item.qty) || 1)), 0);
+                    }
+                    const bookingCost = bOpCost + linkedExpenses;
+                    const bookingIncome = cleanNumber(b.total_income) || (cleanNumber(b.package_price) * (cleanNumber(b.package_qty) || 1));
                     const bookingProfit = bookingIncome - bookingCost;
                     
                     let profitColor = 'var(--success)';
-                    if (bookingProfit < 0) profitColor = 'var(--danger)';
+                    let displayProfit = 'Rp ' + formatRupiah(bookingProfit);
+                    if (bookingProfit < 0) {
+                        profitColor = 'var(--danger)';
+                        displayProfit = '- Rp ' + formatRupiah(Math.abs(bookingProfit));
+                    }
                     
                     profHtml += `
                     <tr>
@@ -817,7 +873,7 @@
                         <td>${b.package_name || '-'}</td>
                         <td>Rp ${formatRupiah(bookingIncome)}</td>
                         <td style="color: var(--danger);">Rp ${formatRupiah(bookingCost)}</td>
-                        <td style="color: ${profitColor}; font-weight: 600;">Rp ${formatRupiah(bookingProfit)}</td>
+                        <td style="color: ${profitColor}; font-weight: 600;">${displayProfit}</td>
                     </tr>
                     `;
                 });
@@ -829,53 +885,87 @@
             // Update Tooltip
             document.getElementById('tooltip_masuk').innerText = 'Rp ' + formatRupiah(uangMasuk);
             document.getElementById('tooltip_keluar').innerText = 'Rp ' + formatRupiah(totalPengeluaran);
-            document.getElementById('tooltip_profit').innerText = (profitBersih < 0 ? '-' : '') + 'Rp ' + formatRupiah(Math.abs(profitBersih));
+            document.getElementById('tooltip_profit').innerText = (profitBersih < 0 ? '- Rp ' : 'Rp ') + formatRupiah(Math.abs(profitBersih));
             
-            const today = new Date();
+            const periodDate = currentFilterStart || new Date();
             const formatter = new Intl.DateTimeFormat('id-ID', { month: 'short', year: '2-digit' });
-            const shortPeriod = formatter.format(today);
-            document.getElementById('tooltip_title').innerText = shortPeriod;
-            document.querySelector('.x-axis').innerText = shortPeriod;
+            const shortPeriod = formatter.format(periodDate);
+            const tooltipTitleEl = document.getElementById('tooltip_title');
+            if (tooltipTitleEl) tooltipTitleEl.innerText = shortPeriod;
+            const xAxisEl = document.querySelector('.x-axis');
+            if (xAxisEl) xAxisEl.innerText = shortPeriod;
             
             // Basic chart update mockup
             const chartProfit = uangMasuk - totalPengeluaran; // Cash flow profit
             let max = Math.max(uangMasuk, totalPengeluaran, Math.abs(chartProfit));
-            if (max === 0) max = 1;
+            if (max <= 0 || isNaN(max)) max = 1000000;
             max = max * 1.2; // Add 20% padding at top so bars aren't touching the very edge
             
-            let masukPct = Math.min((uangMasuk / max) * 100, 100);
-            let keluarPct = Math.min((totalPengeluaran / max) * 100, 100);
-            let profitPct = Math.min((Math.abs(chartProfit) / max) * 100, 100);
+            let masukPct = Math.max(0, Math.min((uangMasuk / max) * 100, 100));
+            let keluarPct = Math.max(0, Math.min((totalPengeluaran / max) * 100, 100));
+            let profitPct = Math.max(0, Math.min((Math.abs(chartProfit) / max) * 100, 100));
             
-            document.getElementById('chart_line_masuk').style.bottom = `${masukPct}%`;
-            document.getElementById('chart_bar_keluar').style.height = `${keluarPct}%`;
+            const lineMasuk = document.getElementById('chart_line_masuk');
+            if (lineMasuk) lineMasuk.style.bottom = `${masukPct}%`;
+            
+            const barKeluar = document.getElementById('chart_bar_keluar');
+            if (barKeluar) barKeluar.style.height = `${keluarPct}%`;
             
             const dotProfit = document.getElementById('chart_dot_profit');
             const lineProfit = document.getElementById('chart_line_profit');
             
-            if (chartProfit < 0) {
-                dotProfit.style.bottom = `0%`;
-                lineProfit.style.bottom = `0%`;
-                dotProfit.style.borderColor = `var(--danger)`;
-                lineProfit.style.borderTopColor = `var(--danger)`;
-            } else {
-                dotProfit.style.bottom = `${profitPct}%`;
-                lineProfit.style.bottom = `${profitPct}%`;
-                dotProfit.style.borderColor = `#3b82f6`;
-                lineProfit.style.borderTopColor = `#3b82f6`;
+            if (dotProfit && lineProfit) {
+                if (chartProfit < 0) {
+                    dotProfit.style.bottom = `0%`;
+                    lineProfit.style.bottom = `0%`;
+                    dotProfit.style.borderColor = `var(--danger)`;
+                    lineProfit.style.borderTopColor = `var(--danger)`;
+                } else {
+                    dotProfit.style.bottom = `${profitPct}%`;
+                    lineProfit.style.bottom = `${profitPct}%`;
+                    dotProfit.style.borderColor = `#3b82f6`;
+                    lineProfit.style.borderTopColor = `#3b82f6`;
+                }
+            }
+
+            // Update Y-Axis labels dynamically
+            const yAxisEl = document.getElementById('chart_y_axis');
+            if (yAxisEl) {
+                function formatAxisLabel(val) {
+                    if (val >= 1000000) {
+                        return (val / 1000000).toFixed(val % 1000000 === 0 ? 0 : 1) + 'jt -';
+                    } else if (val >= 1000) {
+                        return Math.round(val / 1000) + 'rb -';
+                    } else {
+                        return Math.round(val) + ' -';
+                    }
+                }
+                yAxisEl.innerHTML = `
+                    <div>${formatAxisLabel(max)}</div>
+                    <div>${formatAxisLabel(max * 0.75)}</div>
+                    <div>${formatAxisLabel(max * 0.5)}</div>
+                    <div>${formatAxisLabel(max * 0.25)}</div>
+                    <div>0 -</div>
+                `;
             }
         }
 
         function editExpense(id) {
-            const expenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+            let expenses = [];
+            try {
+                expenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+                if (!Array.isArray(expenses)) expenses = [];
+            } catch(e) { expenses = []; }
             const e = expenses.find(x => x.id === id);
             if (!e) return;
             
-            const bookings = JSON.parse(localStorage.getItem('b_events')) || [];
+            const bookings = (Array.isArray(globalBookingsFinance) && globalBookingsFinance.length > 0)
+                ? globalBookingsFinance 
+                : (JSON.parse(localStorage.getItem('b_events')) || []);
             const select = document.getElementById('exp_acara');
             let html = `<option value="">— Pengeluaran umum —</option>`;
             bookings.forEach(b => {
-                html += `<option value="${b.id}">${b.client_name} · ${b.event_date || '-'}</option>`;
+                html += `<option value="${b.id}">${b.client_name || 'Klien'} · ${b.event_date || '-'}</option>`;
             });
             select.innerHTML = html;
             
@@ -893,7 +983,11 @@
         
         function deleteExpense(id) {
             if(confirm("Apakah Anda yakin ingin menghapus pengeluaran ini?")) {
-                let expenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+                let expenses = [];
+                try {
+                    expenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+                    if (!Array.isArray(expenses)) expenses = [];
+                } catch(e) { expenses = []; }
                 expenses = expenses.filter(e => e.id !== id);
                 localStorage.setItem('f_expenses', JSON.stringify(expenses));
                 showToast("Pengeluaran dihapus");
@@ -953,16 +1047,26 @@
         }
 
         function exportLaporanCSV() {
-            // Get all current variables from calculateFinance logic
-            let allBookings = JSON.parse(localStorage.getItem('b_events')) || [];
-            let allExpenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+            let allBookings = (Array.isArray(globalBookingsFinance) && globalBookingsFinance.length > 0)
+                ? globalBookingsFinance
+                : (JSON.parse(localStorage.getItem('b_events')) || []);
+            let allExpenses = [];
+            try {
+                allExpenses = JSON.parse(localStorage.getItem('f_expenses')) || [];
+                if (!Array.isArray(allExpenses)) allExpenses = [];
+            } catch(e) {
+                allExpenses = [];
+            }
             
             const filterStart = currentFilterStart ? new Date(currentFilterStart) : null;
+            if (filterStart) filterStart.setHours(0, 0, 0, 0);
             const filterEnd = currentFilterEnd ? new Date(currentFilterEnd) : null;
+            if (filterEnd) filterEnd.setHours(23, 59, 59, 999);
             
             const bookings = allBookings.filter(b => {
                 if(!b.event_date) return true;
-                const d = new Date(b.event_date);
+                const d = new Date(b.event_date.substring(0, 10) + 'T00:00:00');
+                if(isNaN(d.getTime())) return true;
                 if(filterStart && d < filterStart) return false;
                 if(filterEnd && d > filterEnd) return false;
                 return true;
@@ -970,7 +1074,8 @@
             
             const expenses = allExpenses.filter(e => {
                 if(!e.tanggal) return true;
-                const d = new Date(e.tanggal);
+                const d = new Date(e.tanggal.substring(0, 10) + 'T00:00:00');
+                if(isNaN(d.getTime())) return true;
                 if(filterStart && d < filterStart) return false;
                 if(filterEnd && d > filterEnd) return false;
                 return true;
@@ -982,11 +1087,18 @@
             let pengeluaranManual = 0;
             
             bookings.forEach(b => {
-                totalOmset += (b.total_income || 0);
-                uangMasuk += (b.paid_amount || 0);
-                pengeluaranOperasional += (b.total_operational_cost || 0);
+                const bIncome = cleanNumber(b.total_income) || (cleanNumber(b.package_price) * (cleanNumber(b.package_qty) || 1));
+                const bPaid = cleanNumber(b.paid_amount);
+                let bOpCost = cleanNumber(b.total_operational_cost);
+                if (bOpCost === 0 && Array.isArray(b.operational_costs) && b.operational_costs.length > 0) {
+                    bOpCost = b.operational_costs.reduce((sum, item) => sum + (cleanNumber(item.price) * (cleanNumber(item.qty) || 1)), 0);
+                }
+                
+                totalOmset += bIncome;
+                uangMasuk += bPaid;
+                pengeluaranOperasional += bOpCost;
             });
-            expenses.forEach(e => pengeluaranManual += (e.nominal || 0));
+            expenses.forEach(e => pengeluaranManual += cleanNumber(e.nominal));
             
             const sisaPiutang = totalOmset - uangMasuk;
             const totalPengeluaran = pengeluaranOperasional + pengeluaranManual;
@@ -1012,20 +1124,24 @@
             expenses.forEach(e => {
                 let acaraName = '';
                 if(e.acaraId) {
-                    const b = allBookings.find(x => x.id === e.acaraId);
+                    const b = allBookings.find(x => x.id == e.acaraId);
                     if(b) acaraName = b.client_name;
                 }
                 const cat = e.catatan ? e.catatan.replace(/,/g, ' ') : '';
-                csv += `${e.tanggal || ''},${e.kategori},${e.judul},${acaraName},${e.nominal},${cat}\n`;
+                csv += `${e.tanggal || ''},${e.kategori || ''},${e.judul || ''},${acaraName},${cleanNumber(e.nominal)},${cat}\n`;
             });
             csv += "\n";
             
             csv += "PROFITABILITAS PER ACARA\n";
             csv += "Klien,Tanggal Acara,Paket,Harga Paket,Total Biaya,Profit Margin\n";
             bookings.forEach(b => {
-                const linkedExpenses = expenses.filter(e => e.acaraId === b.id).reduce((sum, e) => sum + (e.nominal || 0), 0);
-                const bookingCost = (b.total_operational_cost || 0) + linkedExpenses;
-                const bookingIncome = b.total_income || 0;
+                const linkedExpenses = expenses.filter(e => e.acaraId == b.id).reduce((sum, e) => sum + cleanNumber(e.nominal), 0);
+                let bOpCost = cleanNumber(b.total_operational_cost);
+                if (bOpCost === 0 && Array.isArray(b.operational_costs) && b.operational_costs.length > 0) {
+                    bOpCost = b.operational_costs.reduce((sum, item) => sum + (cleanNumber(item.price) * (cleanNumber(item.qty) || 1)), 0);
+                }
+                const bookingCost = bOpCost + linkedExpenses;
+                const bookingIncome = cleanNumber(b.total_income) || (cleanNumber(b.package_price) * (cleanNumber(b.package_qty) || 1));
                 const bookingProfit = bookingIncome - bookingCost;
                 csv += `${b.client_name || ''},${b.event_date || ''},${b.package_name || ''},${bookingIncome},${bookingCost},${bookingProfit}\n`;
             });

@@ -867,7 +867,8 @@
         }
 
         function formatRupiah(num) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+            const val = (num === null || num === undefined || isNaN(num)) ? 0 : Number(num);
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
         }
 
         function calculateBooking() {

@@ -22,10 +22,19 @@ class BookingController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
             
-        // Fallback for old bookings without UUID
+        // Fallback for old bookings without UUID or missing total_income
         foreach ($bookings as $b) {
+            $changed = false;
             if (empty($b->uuid)) {
                 $b->uuid = (string) \Illuminate\Support\Str::uuid();
+                $changed = true;
+            }
+            if ((empty($b->total_income) || $b->total_income == 0) && !empty($b->package_price) && $b->package_price > 0) {
+                $b->total_income = (float) $b->package_price;
+                $b->net_profit = (float) ($b->package_price - ($b->total_operational_cost ?? 0));
+                $changed = true;
+            }
+            if ($changed) {
                 $b->save();
             }
         }
@@ -55,10 +64,26 @@ class BookingController extends Controller
             'production_status', 'result_link', 'team_members', 'notes', 'production_deadline',
             'production_tracks'
         ];
+
+        $numericFields = [
+            'package_price', 'package_qty', 'paid_amount', 'discount', 
+            'total_income', 'total_operational_cost', 'net_profit'
+        ];
         
         foreach ($fields as $field) {
             if ($request->has($field)) {
-                $booking->{$field} = $request->input($field);
+                $val = $request->input($field);
+                if (in_array($field, $numericFields) && $val !== null) {
+                    if (is_numeric($val)) {
+                        $val = (float) $val;
+                    } elseif (is_string($val)) {
+                        $cleaned = preg_replace('/[^0-9.-]/', '', $val);
+                        $val = is_numeric($cleaned) ? (float) $cleaned : 0;
+                    } else {
+                        $val = 0;
+                    }
+                }
+                $booking->{$field} = $val;
             }
         }
         
