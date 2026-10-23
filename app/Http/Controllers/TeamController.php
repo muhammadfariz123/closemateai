@@ -35,16 +35,15 @@ class TeamController extends Controller
             return redirect('/dashboard')->with('error', 'Akses dibatasi untuk Admin CS.');
         }
 
-        $totalSeats = 99;
+        $activeMembers = TeamMember::where('user_id', $user->id)->where('status', '!=', 'pending')->orderBy('created_at', 'desc')->get();
+        $pendingMembers = TeamMember::where('user_id', $user->id)->where('status', 'pending')->orderBy('created_at', 'desc')->get();
+
         $activeAdminCount = TeamMember::where('user_id', $user->id)->where('status', 'active')->count();
-        $pendingCount = TeamMember::where('user_id', $user->id)->where('status', 'pending')->count();
+        $pendingCount = $pendingMembers->count();
         
         $seatsUsed = 1 + $activeAdminCount;
         $seatsRemaining = max(0, $totalSeats - $seatsUsed);
-        $activeCount = 1 + $activeAdminCount;
-
-        $activeMembers = TeamMember::where('user_id', $user->id)->where('status', 'active')->orderBy('created_at', 'desc')->get();
-        $pendingMembers = TeamMember::where('user_id', $user->id)->where('status', 'pending')->orderBy('created_at', 'desc')->get();
+        $activeCount = 1 + $activeMembers->count();
 
         $ownerName = $user->business_name ?: ($user->name ?: 'Penapict');
         $ownerEmail = $user->email ?: 'hotautomag@gmail.com';
@@ -71,15 +70,15 @@ class TeamController extends Controller
         }
 
         $totalSeats = 99;
+        $activeMembers = TeamMember::where('user_id', $user->id)->where('status', '!=', 'pending')->orderBy('created_at', 'desc')->get();
+        $pendingMembers = TeamMember::where('user_id', $user->id)->where('status', 'pending')->orderBy('created_at', 'desc')->get();
+
         $activeAdminCount = TeamMember::where('user_id', $user->id)->where('status', 'active')->count();
-        $pendingCount = TeamMember::where('user_id', $user->id)->where('status', 'pending')->count();
+        $pendingCount = $pendingMembers->count();
         
         $seatsUsed = 1 + $activeAdminCount;
         $seatsRemaining = max(0, $totalSeats - $seatsUsed);
-        $activeCount = 1 + $activeAdminCount;
-
-        $activeMembers = TeamMember::where('user_id', $user->id)->where('status', 'active')->orderBy('created_at', 'desc')->get();
-        $pendingMembers = TeamMember::where('user_id', $user->id)->where('status', 'pending')->orderBy('created_at', 'desc')->get();
+        $activeCount = 1 + $activeMembers->count();
 
         $ownerName = $user->business_name ?: ($user->name ?: 'Penapict');
         $ownerEmail = $user->email ?: 'hotautomag@gmail.com';
@@ -267,6 +266,52 @@ class TeamController extends Controller
         ]);
     }
 
+    public function toggleStatus($id)
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
+
+        $member = TeamMember::where('user_id', $user->id)->where('id', $id)->first();
+        if (!$member) {
+            return response()->json(['success' => false, 'error' => 'Data anggota tidak ditemukan'], 404);
+        }
+
+        $newStatus = ($member->status === 'active') ? 'inactive' : 'active';
+        $member->status = $newStatus;
+        $member->save();
+
+        if (class_exists(SystemActivity::class)) {
+            SystemActivity::create([
+                'user_id' => $user->id,
+                'type' => 'team_status_changed',
+                'description' => ($newStatus === 'active' ? "Mengaktifkan kembali" : "Menonaktifkan") . " Admin CS {$member->email}",
+            ]);
+        }
+
+        $totalSeats = 99;
+        $activeAdminCount = TeamMember::where('user_id', $user->id)->where('status', 'active')->count();
+        $seatsUsed = 1 + $activeAdminCount;
+        $seatsRemaining = max(0, $totalSeats - $seatsUsed);
+        $activeCount = 1 + TeamMember::where('user_id', $user->id)->where('status', '!=', 'pending')->count();
+        $pendingCount = TeamMember::where('user_id', $user->id)->where('status', 'pending')->count();
+
+        return response()->json([
+            'success' => true,
+            'status' => $newStatus,
+            'is_active' => $newStatus === 'active',
+            'stats' => [
+                'total_seats' => $totalSeats,
+                'seats_used' => $seatsUsed,
+                'seats_remaining' => $seatsRemaining,
+                'active_count' => $activeCount,
+                'pending_count' => $pendingCount,
+            ],
+            'message' => $newStatus === 'active' ? 'Admin CS berhasil diaktifkan kembali.' : 'Admin CS berhasil dinonaktifkan.',
+        ]);
+    }
+
     public function deleteMember($id)
     {
         $user = $this->getUser();
@@ -280,6 +325,7 @@ class TeamController extends Controller
         }
 
         $email = $member->email;
+        $wasPending = ($member->status === 'pending');
         $member->delete();
 
         // Also if user account was created for this admin CS, can remove or unbind
@@ -296,9 +342,23 @@ class TeamController extends Controller
             ]);
         }
 
+        $totalSeats = 99;
+        $activeAdminCount = TeamMember::where('user_id', $user->id)->where('status', 'active')->count();
+        $seatsUsed = 1 + $activeAdminCount;
+        $seatsRemaining = max(0, $totalSeats - $seatsUsed);
+        $activeCount = 1 + TeamMember::where('user_id', $user->id)->where('status', '!=', 'pending')->count();
+        $pendingCount = TeamMember::where('user_id', $user->id)->where('status', 'pending')->count();
+
         return response()->json([
             'success' => true,
-            'message' => 'Undangan berhasil dihapus.',
+            'message' => $wasPending ? 'Undangan berhasil dihapus.' : 'Admin CS berhasil dihapus.',
+            'stats' => [
+                'total_seats' => $totalSeats,
+                'seats_used' => $seatsUsed,
+                'seats_remaining' => $seatsRemaining,
+                'active_count' => $activeCount,
+                'pending_count' => $pendingCount,
+            ],
         ]);
     }
 

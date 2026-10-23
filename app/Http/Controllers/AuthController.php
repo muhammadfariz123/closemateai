@@ -19,6 +19,17 @@ class AuthController extends Controller
         ]);
 
         if (auth()->attempt($credentials)) {
+            $user = auth()->user();
+            if ($user && $user->role === 'admin_cs' && $user->owner_id) {
+                $member = \App\Models\TeamMember::where('email', $user->email)->where('user_id', $user->owner_id)->first();
+                if ($member && $member->status === 'inactive') {
+                    auth()->logout();
+                    return back()->withErrors([
+                        'email' => 'Akun Admin CS Anda saat ini sedang dinonaktifkan oleh Owner.',
+                    ])->withInput($request->only('email'));
+                }
+            }
+
             $request->session()->regenerate();
             return redirect('/dashboard');
         }

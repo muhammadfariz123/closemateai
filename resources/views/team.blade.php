@@ -173,9 +173,9 @@
             background: white;
             border: 1px solid #e2e8f0;
             border-radius: 16px;
-            overflow: hidden;
             margin-bottom: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            position: relative;
         }
         .member-row {
             display: flex;
@@ -184,9 +184,16 @@
             padding: 18px 24px;
             border-bottom: 1px solid #f1f1f4;
             transition: background 0.15s;
+            position: relative;
+        }
+        .member-row:first-child {
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
         }
         .member-row:last-child {
             border-bottom: none;
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
         }
         .member-info {
             display: flex;
@@ -200,22 +207,26 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
-            color: white;
+            font-size: 14px;
+            font-weight: 700;
             flex-shrink: 0;
         }
         .avatar-owner {
             background: #6c5ce7;
+            color: white;
         }
-        .avatar-admin {
-            background: #3b82f6;
+        .avatar-admin-cs {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
         }
         .avatar-pending {
-            background: #f59e0b;
+            background: #fef3c7;
+            color: #d97706;
         }
         .member-text h3 {
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 700;
             color: #181c32;
             margin-bottom: 2px;
         }
@@ -231,11 +242,109 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .role-badge.badge-owner {
+            background: #faf5ff;
+            border-color: #e9d5ff;
+            color: #7c3aed;
+            font-weight: 600;
+        }
+        .role-badge.badge-admin-active {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #16a34a;
+            font-weight: 600;
+        }
+        .role-badge.badge-admin-inactive {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            color: #64748b;
+            font-weight: 600;
         }
         .role-badge.badge-pending {
-            background: #fffbeb;
-            border-color: #fde68a;
-            color: #d97706;
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            color: #475569;
+        }
+
+        /* Action Menu Dropdown */
+        .member-action-menu {
+            position: relative;
+        }
+        .btn-dots-action {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #64748b;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.15s;
+        }
+        .btn-dots-action:hover, .btn-dots-action.active {
+            background: #f1f5f9;
+            color: #181c32;
+        }
+        .dropdown-popup {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 4px);
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            width: 215px;
+            z-index: 100;
+            padding: 6px 0;
+            text-align: left;
+        }
+        .dropdown-popup.show {
+            display: block;
+            animation: fadeInDown 0.15s ease-out;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .dropdown-item-action {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1e293b;
+            cursor: pointer;
+            transition: background 0.15s;
+            user-select: none;
+        }
+        .dropdown-item-action:hover {
+            background: #f8fafc;
+        }
+        .dropdown-item-action i {
+            font-size: 14px;
+            width: 18px;
+            text-align: center;
+        }
+        .dropdown-item-action.item-danger {
+            color: #ef4444;
+            border-top: 1px solid #f1f5f9;
+            margin-top: 2px;
+            padding-top: 10px;
+        }
+        .dropdown-item-action.item-danger:hover {
+            background: #fef2f2;
+        }
+        .dropdown-item-action.item-danger i {
+            color: #ef4444;
         }
 
         .empty-state {
@@ -450,7 +559,7 @@
                         </div>
                     </div>
                     <div>
-                        <span class="role-badge">Owner</span>
+                        <span class="role-badge badge-owner">Owner</span>
                     </div>
                 </div>
 
@@ -458,21 +567,48 @@
                 <div id="activeAdminListContainer">
                     @if(count($activeMembers) > 0)
                         @foreach($activeMembers as $m)
+                        @php
+                            $words = preg_split('/\s+/', trim($m->name ?: 'Admin'));
+                            if (count($words) >= 2) {
+                                $initials = strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
+                            } else {
+                                $initials = strtoupper(substr($m->name ?: 'AD', 0, 2));
+                            }
+                            $isActive = ($m->status === 'active');
+                        @endphp
                         <div class="member-row" id="member-row-{{ $m->id }}">
                             <div class="member-info">
-                                <div class="member-avatar avatar-admin">
-                                    <i class="fa-solid fa-user"></i>
+                                <div class="member-avatar avatar-admin-cs">
+                                    {{ $initials }}
                                 </div>
                                 <div class="member-text">
                                     <h3>{{ $m->name }}</h3>
                                     <p>{{ $m->email }} @if($m->phone) &bull; {{ $m->phone }} @endif</p>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span class="role-badge">Admin CS</span>
-                                <button type="button" onclick="deleteTeamMember({{ $m->id }})" title="Hapus Admin CS" style="background: none; border: none; cursor: pointer; color: #a1a5b7; padding: 6px; font-size: 14px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#a1a5b7'">
-                                    <i class="fa-regular fa-trash-can"></i>
-                                </button>
+                            <div style="display: flex; align-items: center; gap: 12px; position: relative;">
+                                <span class="role-badge {{ $isActive ? 'badge-admin-active' : 'badge-admin-inactive' }}" id="badge-status-{{ $m->id }}">
+                                    {{ $isActive ? 'Admin CS Aktif' : 'Admin CS Nonaktif' }}
+                                </span>
+                                <div class="member-action-menu">
+                                    <button type="button" class="btn-dots-action" onclick="toggleMemberDropdown(event, {{ $m->id }})" title="Menu aksi">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+                                    <div class="dropdown-popup" id="memberDropdown-{{ $m->id }}">
+                                        <div class="dropdown-item-action" onclick="toggleMemberStatus({{ $m->id }})">
+                                            <i class="fa-solid fa-power-off" id="icon-toggle-{{ $m->id }}" style="color: {{ $isActive ? '#10b981' : '#64748b' }};"></i>
+                                            <span id="text-toggle-{{ $m->id }}">{{ $isActive ? 'Nonaktifkan Anggota' : 'Aktifkan Anggota' }}</span>
+                                        </div>
+                                        <div class="dropdown-item-action" onclick="sendResetPasswordFromMenu({{ $m->id }})">
+                                            <i class="fa-solid fa-key" style="color: #64748b;"></i>
+                                            <span>Kirim Reset Password</span>
+                                        </div>
+                                        <div class="dropdown-item-action item-danger" onclick="deleteTeamMemberFromMenu({{ $m->id }}, '{{ addslashes($m->name ?: 'Admin CS') }}')">
+                                            <i class="fa-regular fa-trash-can"></i>
+                                            <span>Hapus Anggota</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         @endforeach
@@ -779,8 +915,39 @@
             });
         }
 
-        // Activate team member (toggle status)
-        function activateTeamMember(id) {
+        // Toggle Member Action Dropdown (Three Dots Menu)
+        function toggleMemberDropdown(event, id) {
+            event.stopPropagation();
+            const dropdown = document.getElementById(`memberDropdown-${id}`);
+            const btn = event.currentTarget;
+            if (!dropdown) return;
+
+            const isOpen = dropdown.classList.contains('show');
+
+            // Close all open dropdowns first
+            document.querySelectorAll('.dropdown-popup.show').forEach(el => el.classList.remove('show'));
+            document.querySelectorAll('.btn-dots-action.active').forEach(el => el.classList.remove('active'));
+
+            if (!isOpen) {
+                dropdown.classList.add('show');
+                if (btn) btn.classList.add('active');
+            }
+        }
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.member-action-menu')) {
+                document.querySelectorAll('.dropdown-popup.show').forEach(el => el.classList.remove('show'));
+                document.querySelectorAll('.btn-dots-action.active').forEach(el => el.classList.remove('active'));
+            }
+        });
+
+        // Toggle Member Active / Inactive Status
+        function toggleMemberStatus(id) {
+            const dropdown = document.getElementById(`memberDropdown-${id}`);
+            if (dropdown) dropdown.classList.remove('show');
+            document.querySelectorAll('.btn-dots-action.active').forEach(el => el.classList.remove('active'));
+
             fetch(`/api/team/members/${id}/toggle-status`, {
                 method: 'POST',
                 headers: {
@@ -792,10 +959,118 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    showTeamToast(data.message || "Status berhasil diperbarui");
-                    refreshTeamData();
+                    showTeamToast(data.message);
+                    
+                    const badge = document.getElementById(`badge-status-${id}`);
+                    const textToggle = document.getElementById(`text-toggle-${id}`);
+                    const iconToggle = document.getElementById(`icon-toggle-${id}`);
+
+                    if (data.is_active) {
+                        if (badge) {
+                            badge.className = 'role-badge badge-admin-active';
+                            badge.innerText = 'Admin CS Aktif';
+                        }
+                        if (textToggle) textToggle.innerText = 'Nonaktifkan Anggota';
+                        if (iconToggle) iconToggle.style.color = '#10b981';
+                    } else {
+                        if (badge) {
+                            badge.className = 'role-badge badge-admin-inactive';
+                            badge.innerText = 'Admin CS Nonaktif';
+                        }
+                        if (textToggle) textToggle.innerText = 'Aktifkan Anggota';
+                        if (iconToggle) iconToggle.style.color = '#64748b';
+                    }
+
+                    if (data.stats) {
+                        updateTeamStats(data.stats);
+                    } else {
+                        refreshTeamData();
+                    }
                 } else {
-                    alert(data.error || "Gagal memperbarui status");
+                    alert(data.error || "Gagal memperbarui status anggota");
+                }
+            })
+            .catch(() => {
+                alert("Terjadi kesalahan sistem");
+            });
+        }
+
+        // Send Reset Password from 3-dots Dropdown Menu
+        function sendResetPasswordFromMenu(id) {
+            const dropdown = document.getElementById(`memberDropdown-${id}`);
+            if (dropdown) dropdown.classList.remove('show');
+            document.querySelectorAll('.btn-dots-action.active').forEach(el => el.classList.remove('active'));
+
+            sendResetPassword(id, null);
+        }
+
+        // Delete Member from 3-dots Dropdown Menu
+        function deleteTeamMemberFromMenu(id, name) {
+            const dropdown = document.getElementById(`memberDropdown-${id}`);
+            if (dropdown) dropdown.classList.remove('show');
+            document.querySelectorAll('.btn-dots-action.active').forEach(el => el.classList.remove('active'));
+
+            if (!confirm(`Apakah Anda yakin ingin menghapus Admin CS ${name || ''}? Akun mereka tidak akan bisa mengakses workspace ini lagi.`)) {
+                return;
+            }
+
+            deleteTeamMember(id);
+        }
+
+        // Helper to update team capacity numbers and progress bar
+        function updateTeamStats(stats) {
+            if (!stats) return;
+            const headline = document.getElementById('capacityHeadline');
+            if (headline) headline.innerText = `${stats.seats_used}/${stats.total_seats} User Seats`;
+
+            const remaining = document.getElementById('capacityRemainingText');
+            if (remaining) remaining.innerText = `${stats.seats_remaining} seat tersisa.`;
+
+            const fill = document.getElementById('capacityProgressFill');
+            if (fill) {
+                const percent = Math.max(1.01, (stats.seats_used / stats.total_seats) * 100);
+                fill.style.width = `${percent}%`;
+            }
+
+            const countActive = document.getElementById('countActive');
+            if (countActive) countActive.innerText = stats.active_count;
+
+            const countPending = document.getElementById('countPending');
+            if (countPending) countPending.innerText = stats.pending_count;
+        }
+
+        // Delete team member (active or pending)
+        function deleteTeamMember(id) {
+            fetch(`/api/team/members/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showTeamToast(data.message || "Anggota berhasil dihapus.");
+                    const row = document.getElementById(`member-row-${id}`) || document.getElementById(`pending-row-${id}`);
+                    if (row) {
+                        row.style.transition = 'all 0.3s ease';
+                        row.style.opacity = '0';
+                        row.style.transform = 'translateX(20px)';
+                        setTimeout(() => {
+                            row.remove();
+                            if (data.stats) {
+                                updateTeamStats(data.stats);
+                            } else {
+                                refreshTeamData();
+                            }
+                        }, 300);
+                    } else {
+                        refreshTeamData();
+                    }
+                } else {
+                    alert(data.error || "Gagal menghapus anggota");
                 }
             })
             .catch(() => {
@@ -810,36 +1085,59 @@
             .then(data => {
                 if (data.success) {
                     const stats = data.stats;
-                    // Update stats
-                    document.getElementById('capacityHeadline').innerText = `${stats.seats_used}/${stats.total_seats} User Seats`;
-                    document.getElementById('capacityRemainingText').innerText = `${stats.seats_remaining} seat tersisa.`;
-                    const percent = Math.max(1.01, (stats.seats_used / stats.total_seats) * 100);
-                    document.getElementById('capacityProgressFill').style.width = `${percent}%`;
+                    updateTeamStats(stats);
 
-                    document.getElementById('countActive').innerText = stats.active_count;
-                    document.getElementById('countPending').innerText = stats.pending_count;
-
-                    // Update Active Admin CS list
+                    // Update Active Admin CS list matching screenshot
                     const activeContainer = document.getElementById('activeAdminListContainer');
                     if (data.active_members && data.active_members.length > 0) {
                         let html = '';
                         data.active_members.forEach(m => {
+                            const name = m.name || 'Admin CS';
+                            const words = name.trim().split(/\s+/);
+                            let initials = 'AD';
+                            if (words.length >= 2) {
+                                initials = (words[0].substring(0, 1) + words[1].substring(0, 1)).toUpperCase();
+                            } else if (name.length >= 2) {
+                                initials = name.substring(0, 2).toUpperCase();
+                            } else if (name.length === 1) {
+                                initials = name.toUpperCase();
+                            }
+                            const isActive = (m.status === 'active');
+
                             html += `
                             <div class="member-row" id="member-row-${m.id}">
                                 <div class="member-info">
-                                    <div class="member-avatar avatar-admin">
-                                        <i class="fa-solid fa-user"></i>
+                                    <div class="member-avatar avatar-admin-cs">
+                                        ${initials}
                                     </div>
                                     <div class="member-text">
-                                        <h3>${escapeHtml(m.name || 'Admin CS')}</h3>
+                                        <h3>${escapeHtml(name)}</h3>
                                         <p>${escapeHtml(m.email)} ${m.phone ? `&bull; ${escapeHtml(m.phone)}` : ''}</p>
                                     </div>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span class="role-badge">Admin CS</span>
-                                    <button type="button" onclick="deleteTeamMember(${m.id})" title="Hapus Admin CS" style="background: none; border: none; cursor: pointer; color: #a1a5b7; padding: 6px; font-size: 14px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#a1a5b7'">
-                                        <i class="fa-regular fa-trash-can"></i>
-                                    </button>
+                                <div style="display: flex; align-items: center; gap: 12px; position: relative;">
+                                    <span class="role-badge ${isActive ? 'badge-admin-active' : 'badge-admin-inactive'}" id="badge-status-${m.id}">
+                                        ${isActive ? 'Admin CS Aktif' : 'Admin CS Nonaktif'}
+                                    </span>
+                                    <div class="member-action-menu">
+                                        <button type="button" class="btn-dots-action" onclick="toggleMemberDropdown(event, ${m.id})" title="Menu aksi">
+                                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                                        </button>
+                                        <div class="dropdown-popup" id="memberDropdown-${m.id}">
+                                            <div class="dropdown-item-action" onclick="toggleMemberStatus(${m.id})">
+                                                <i class="fa-solid fa-power-off" id="icon-toggle-${m.id}" style="color: ${isActive ? '#10b981' : '#64748b'};"></i>
+                                                <span id="text-toggle-${m.id}">${isActive ? 'Nonaktifkan Anggota' : 'Aktifkan Anggota'}</span>
+                                            </div>
+                                            <div class="dropdown-item-action" onclick="sendResetPasswordFromMenu(${m.id})">
+                                                <i class="fa-solid fa-key" style="color: #64748b;"></i>
+                                                <span>Kirim Reset Password</span>
+                                            </div>
+                                            <div class="dropdown-item-action item-danger" onclick="deleteTeamMemberFromMenu(${m.id}, '${escapeHtml(name)}')">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                                <span>Hapus Anggota</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>`;
                         });
