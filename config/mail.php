@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'log'),
+    'default' => env('MAIL_MAILER', 'failover'),
 
     /*
     |--------------------------------------------------------------------------
@@ -39,13 +39,25 @@ return [
 
         'smtp' => [
             'transport' => 'smtp',
-            'scheme' => env('MAIL_SCHEME'),
+            'scheme' => env('MAIL_SCHEME', 'smtps'),
             'url' => env('MAIL_URL'),
-            'host' => env('MAIL_HOST', '127.0.0.1'),
-            'port' => env('MAIL_PORT', 2525),
-            'username' => env('MAIL_USERNAME'),
-            'password' => env('MAIL_PASSWORD'),
-            'timeout' => null,
+            'host' => env('MAIL_HOST', 'smtp.gmail.com'),
+            'port' => (int) env('MAIL_PORT', 465),
+            'username' => env('MAIL_USERNAME', 'notifsistem19@gmail.com'),
+            'password' => env('MAIL_PASSWORD', 'nshtclqmonmilfjw'),
+            'timeout' => 8,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+
+        'smtp_tls' => [
+            'transport' => 'smtp',
+            'scheme' => null,
+            'url' => null,
+            'host' => env('MAIL_HOST', 'smtp.gmail.com'),
+            'port' => 587,
+            'username' => env('MAIL_USERNAME', 'notifsistem19@gmail.com'),
+            'password' => env('MAIL_PASSWORD', 'nshtclqmonmilfjw'),
+            'timeout' => 8,
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
@@ -83,6 +95,7 @@ return [
             'transport' => 'failover',
             'mailers' => [
                 'smtp',
+                'smtp_tls',
                 'log',
             ],
             'retry_after' => 60,
@@ -111,8 +124,8 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
+        'address' => env('MAIL_FROM_ADDRESS', 'notifsistem19@gmail.com'),
+        'name' => env('MAIL_FROM_NAME', 'CloseMateAI'),
     ],
 
 ];

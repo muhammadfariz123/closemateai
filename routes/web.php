@@ -148,6 +148,47 @@ Route::get('/api/debug/logs', function() {
     $lastLines = array_slice($lines, -500);
     return response("<pre>" . implode("", $lastLines) . "</pre>");
 });
+Route::get('/api/debug/mail-test', function() {
+    try {
+        $start = microtime(true);
+        $mailer = config('mail.default');
+        $smtp = config('mail.mailers.smtp');
+        if (isset($smtp['password'])) {
+            $smtp['password'] = !empty($smtp['password']) ? substr($smtp['password'], 0, 3) . '****' : null;
+        }
+
+        $testResult = 'not tested';
+        $error = null;
+        if (request()->has('send')) {
+            try {
+                \Illuminate\Support\Facades\Mail::raw('Test from Render: ' . date('Y-m-d H:i:s'), function($m) {
+                    $m->to(request()->input('send', 'warungkombas@gmail.com'))->subject('Test Render SMTP');
+                });
+                $testResult = 'success';
+            } catch (\Throwable $e) {
+                $testResult = 'error';
+                $error = $e->getMessage();
+            }
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'duration' => round(microtime(true) - $start, 2) . 's',
+            'mailer' => $mailer,
+            'smtp' => $smtp,
+            'test_result' => $testResult,
+            'test_error' => $error,
+            'env_MAIL_MAILER' => env('MAIL_MAILER'),
+            'env_MAIL_HOST' => env('MAIL_HOST'),
+            'env_MAIL_PORT' => env('MAIL_PORT'),
+            'env_MAIL_SCHEME' => env('MAIL_SCHEME'),
+            'env_MAIL_USERNAME' => env('MAIL_USERNAME'),
+            'env_MAIL_PASSWORD_set' => !empty(env('MAIL_PASSWORD')),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json(['fatal' => $e->getMessage()]);
+    }
+});
 Route::get('/api/debug/users', function() {
     $dbHost = env('DB_HOST');
     $dbDatabase = env('DB_DATABASE');

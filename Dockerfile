@@ -51,6 +51,16 @@ COPY . .
 # Generate optimized autoload files
 RUN composer dump-autoload --optimize
 
+# Default Mail Environment Configuration
+ENV MAIL_MAILER=failover
+ENV MAIL_SCHEME=smtps
+ENV MAIL_HOST=smtp.gmail.com
+ENV MAIL_PORT=465
+ENV MAIL_USERNAME=notifsistem19@gmail.com
+ENV MAIL_PASSWORD=nshtclqmonmilfjw
+ENV MAIL_FROM_ADDRESS=notifsistem19@gmail.com
+ENV MAIL_FROM_NAME=CloseMateAI
+
 # Set permissions
 RUN mkdir -p /app/database /var/www/html/database /var/www/html/storage /var/www/html/bootstrap/cache
 RUN touch /app/database/database.sqlite /var/www/html/database/database.sqlite || true

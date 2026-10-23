@@ -503,10 +503,10 @@
                                 <span style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
                                     <span>⏳</span> Menunggu Konfirmasi
                                 </span>
-                                <button type="button" onclick="resendInvite({{ $p->id }})" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='#6c5ce7'; this.style.color='#6c5ce7'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
+                                <button type="button" onclick="resendInvite({{ $p->id }}, this)" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='#6c5ce7'; this.style.color='#6c5ce7'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
                                     <i class="fa-regular fa-paper-plane" style="font-size: 12px;"></i> Kirim Ulang Email
                                 </button>
-                                <button type="button" onclick="sendResetPassword({{ $p->id }})" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='#6c5ce7'; this.style.color='#6c5ce7'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
+                                <button type="button" onclick="sendResetPassword({{ $p->id }}, this)" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='#6c5ce7'; this.style.color='#6c5ce7'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
                                     <i class="fa-solid fa-key" style="font-size: 12px;"></i> Kirim Reset Password
                                 </button>
                                 <button type="button" onclick="deleteTeamMember({{ $p->id }})" style="background: none; border: none; color: #ef4444; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 6px 8px;">
@@ -644,22 +644,31 @@
                 },
                 body: JSON.stringify({ name, email })
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(e => { throw e; }).catch(err => {
+                        if (err && (err.error || err.message)) throw err;
+                        throw { error: `HTTP ${res.status}: ${res.statusText}` };
+                    });
+                }
+                return res.json();
+            })
             .then(data => {
-                btn.disabled = false;
-                btn.innerText = "Kirim Undangan";
                 if (data.success) {
                     closeInviteModal();
-                    showTeamToast(data.message || "Undangan berhasil dikirim");
+                    showTeamToast(data.message || "Undangan terkirim. Admin CS akan menerima email aktivasi akun.");
                     refreshTeamData();
                 } else {
                     alert(data.error || "Gagal mengirim undangan");
                 }
             })
-            .catch(() => {
+            .catch(err => {
+                console.error("Invite error:", err);
+                alert(err?.error || err?.message || "Terjadi kesalahan sistem saat mengirim undangan.");
+            })
+            .finally(() => {
                 btn.disabled = false;
                 btn.innerText = "Kirim Undangan";
-                alert("Terjadi kesalahan sistem");
             });
         }
 
@@ -675,7 +684,10 @@
                     'X-CSRF-TOKEN': csrfToken
                 }
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) return res.json().then(e => { throw e; });
+                return res.json();
+            })
             .then(data => {
                 if (data.success) {
                     showTeamToast(data.message || "Berhasil dihapus");
@@ -684,8 +696,8 @@
                     alert(data.error || "Gagal menghapus");
                 }
             })
-            .catch(() => {
-                alert("Terjadi kesalahan sistem");
+            .catch(err => {
+                alert(err?.error || err?.message || "Terjadi kesalahan sistem");
             });
         }
 
@@ -706,24 +718,25 @@
                     'X-CSRF-TOKEN': csrfToken
                 }
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) return res.json().then(e => { throw e; });
+                return res.json();
+            })
             .then(data => {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = origHtml;
-                }
                 if (data.success) {
                     showTeamToast(data.message || "Undangan berhasil dikirim ulang.");
                 } else {
                     alert(data.error || "Gagal mengirim ulang undangan");
                 }
             })
-            .catch(() => {
+            .catch(err => {
+                alert(err?.error || err?.message || "Terjadi kesalahan sistem");
+            })
+            .finally(() => {
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = origHtml;
                 }
-                alert("Terjadi kesalahan sistem");
             });
         }
 
@@ -744,24 +757,25 @@
                     'X-CSRF-TOKEN': csrfToken
                 }
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) return res.json().then(e => { throw e; });
+                return res.json();
+            })
             .then(data => {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = origHtml;
-                }
                 if (data.success) {
                     showTeamToast(data.message || "Email reset password berhasil dikirim.");
                 } else {
                     alert(data.error || "Gagal mengirim email reset password");
                 }
             })
-            .catch(() => {
+            .catch(err => {
+                alert(err?.error || err?.message || "Terjadi kesalahan sistem");
+            })
+            .finally(() => {
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = origHtml;
                 }
-                alert("Terjadi kesalahan sistem");
             });
         }
 
