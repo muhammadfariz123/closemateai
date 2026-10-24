@@ -626,17 +626,40 @@
             let s = String(val).trim();
             if (s === '' || s.toLowerCase() === 'nan' || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined') return 0;
             
-            // Standard float/int string from database, e.g. "1500000" or "1500000.00" or "-50000"
-            if (/^-?\d+(\.\d+)?$/.test(s)) {
-                const num = parseFloat(s);
-                return isNaN(num) ? 0 : num;
-            }
-            
-            // Formatted string with currency, dots, commas, e.g. "Rp 1.500.000,00" or "1.500.000"
-            s = s.replace(/[^0-9,-]/g, '');
+            // Bersihkan prefix Rp dan spasi
+            s = s.replace(/^[Rr][Pp]\.?\s*/, '').trim();
+
+            // Jika ada koma desimal Indonesia, misal "1.500.000,00" atau "1000,50"
             if (s.includes(',')) {
                 s = s.split(',')[0];
+                s = s.replace(/\./g, '');
+                const num = parseInt(s, 10);
+                return isNaN(num) ? 0 : num;
             }
+
+            // Jika memiliki lebih dari 1 titik, misal "1.500.000" (pasti pemisah ribuan)
+            if ((s.match(/\./g) || []).length > 1) {
+                s = s.replace(/\./g, '');
+                const num = parseInt(s, 10);
+                return isNaN(num) ? 0 : num;
+            }
+
+            // Jika memiliki tepat 1 titik dan diikuti 3 digit (misal "1.000", "10.000", "500.000")
+            // Ini adalah pemisah ribuan Indonesia!
+            if (/\.\d{3}$/.test(s)) {
+                s = s.replace(/\./g, '');
+                const num = parseInt(s, 10);
+                return isNaN(num) ? 0 : num;
+            }
+
+            // Standard float/int string dari database, e.g. "1500000" atau "1500000.00" atau "250.50"
+            if (/^-?\d+(\.\d+)?$/.test(s)) {
+                const num = parseFloat(s);
+                return isNaN(num) ? 0 : Math.round(num);
+            }
+
+            // Fallback: hapus semua non-digit kecuali minus
+            s = s.replace(/[^0-9-]/g, '');
             const parsed = parseInt(s, 10);
             return isNaN(parsed) ? 0 : parsed;
         }
@@ -647,15 +670,24 @@
         }
 
         function parseRupiah(str) {
-            return cleanNumber(str);
+            if (str === null || str === undefined || str === '') return 0;
+            if (typeof str === 'number') return isNaN(str) ? 0 : str;
+            // Ambil hanya digit angka
+            const cleanDigits = String(str).replace(/[^0-9]/g, '');
+            return parseInt(cleanDigits, 10) || 0;
         }
 
         function formatRupiahInput(input) {
-            let val = parseRupiah(input.value);
-            if (val === 0) {
+            const raw = input.value.replace(/[^0-9]/g, '');
+            if (!raw) {
+                input.value = '';
+                return;
+            }
+            const num = parseInt(raw, 10);
+            if (isNaN(num) || num === 0) {
                 input.value = '';
             } else {
-                input.value = formatRupiah(val);
+                input.value = new Intl.NumberFormat('id-ID').format(num);
             }
         }
 
