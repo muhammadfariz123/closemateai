@@ -338,6 +338,132 @@ class InvoiceController extends Controller
         }
     }
 
+    // Revert marked paid status to previous status
+    public function revertPaid(Request $request, $id)
+    {
+        $this->ensureSchemaReady();
+        try {
+            $user = $this->getUser();
+            if (!$user) return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+
+            $invoice = Invoice::where('user_id', $user->id)->where('id', $id)->first();
+            if (!$invoice) {
+                $invoice = Invoice::where('user_id', $user->id)->where('invoice_number', $id)->first();
+            }
+            if (!$invoice) return response()->json(['error' => 'Not found'], 404);
+
+            $targetStatus = $request->input('target_status', 'auto');
+
+            $payments = $invoice->payments ?: [];
+            if (is_string($payments)) {
+                $payments = json_decode($payments, true) ?: [];
+            }
+
+            // Remove the pelunasan payment record (note: 'Pelunasan')
+            for ($i = count($payments) - 1; $i >= 0; $i--) {
+                $note = trim($payments[$i]['note'] ?? '');
+                if (stripos($note, 'Pelunasan') !== false) {
+                    array_splice($payments, $i, 1);
+                    break;
+                }
+            }
+
+            // If target status is specifically 'Belum Dibayar', clear all payments
+            if ($targetStatus === 'Belum Dibayar') {
+                $payments = [];
+                $totalPaid = 0;
+                $newStatus = 'Belum Dibayar';
+                $bookingStatus = 'Belum DP';
+            } else {
+                $totalPaid = 0;
+                foreach ($payments as $p) {
+                    $totalPaid += (float) $this->parseNumber($p['amount'] ?? 0);
+                }
+
+                // If no remaining payments in array, check dp1_amount and dp2_amount from invoice
+                if ($totalPaid <= 0 && (float) $invoice->dp1_amount > 0 && $targetStatus !== 'Belum Dibayar') {
+                    $totalPaid = (float) $invoice->dp1_amount + (float) $invoice->dp2_amount;
+                    if ($totalPaid > 0) {
+                        $payments = [
+                            [
+                                'id' => (string) Str::uuid(),
+                                'amount' => $totalPaid,
+                                'date' => $invoice->invoice_date ?: Carbon::now()->toDateString(),
+                                'note' => $invoice->termin_label ?: 'Uang Muka / DP 1',
+                            ]
+                        ];
+                    }
+                }
+
+                if ($targetStatus === 'Terbayar Sebagian') {
+                    $newStatus = 'Terbayar Sebagian';
+                    if ($totalPaid <= 0) {
+                        $totalPaid = (float) $invoice->dp1_amount > 0 ? (float) $invoice->dp1_amount : round((float) $invoice->grand_total * 0.3);
+                        $payments = [
+                            [
+                                'id' => (string) Str::uuid(),
+                                'amount' => $totalPaid,
+                                'date' => $invoice->invoice_date ?: Carbon::now()->toDateString(),
+                                'note' => 'Uang Muka / DP 1',
+                            ]
+                        ];
+                    }
+                    $bookingStatus = count($payments) >= 2 ? 'Termin ' . count($payments) : 'DP 1';
+                } else {
+                    // Auto
+                    if ($totalPaid > 0 && $totalPaid < (float) $invoice->grand_total) {
+                        $newStatus = 'Terbayar Sebagian';
+                        $bookingStatus = count($payments) >= 2 ? 'Termin ' . count($payments) : 'DP 1';
+                    } else if ($totalPaid <= 0) {
+                        $newStatus = 'Belum Dibayar';
+                        $bookingStatus = 'Belum DP';
+                    } else {
+                        // In case totalPaid equaled grandTotal before
+                        $totalPaid = (float) $invoice->dp1_amount > 0 ? (float) $invoice->dp1_amount : 0;
+                        $newStatus = $totalPaid > 0 ? 'Terbayar Sebagian' : 'Belum Dibayar';
+                        $bookingStatus = $totalPaid > 0 ? 'DP 1' : 'Belum DP';
+                    }
+                }
+            }
+
+            $grandTotal = (float) $invoice->grand_total;
+            $remaining = max(0, $grandTotal - $totalPaid);
+
+            $invoice->payments = array_values($payments);
+            $invoice->total_dp = $totalPaid;
+            $invoice->remaining_balance = $remaining;
+            $invoice->payment_status = $newStatus;
+            $invoice->save();
+
+            if (!empty($invoice->booking_id)) {
+                $booking = Booking::where('user_id', $user->id)->find($invoice->booking_id);
+                if ($booking) {
+                    $booking->paid_amount = $totalPaid;
+                    $booking->payment_status = $bookingStatus;
+                    $booking->save();
+                }
+            }
+
+            if (class_exists(SystemActivity::class)) {
+                SystemActivity::create([
+                    'user_id' => $user->id,
+                    'type' => 'invoice_status_reverted',
+                    'description' => "Status invoice {$invoice->invoice_number} dikembalikan menjadi {$newStatus}",
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Status invoice berhasil dikembalikan menjadi {$newStatus}",
+                'invoice' => $invoice,
+                'new_status' => $newStatus
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('revertPaid error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
     // Record payment
     public function recordPayment(Request $request, $id)
     {

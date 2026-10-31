@@ -1686,6 +1686,73 @@
         </div>
     </div>
 
+    <!-- Confirm Lunas Modal -->
+    <div id="confirmLunasModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100000; align-items: center; justify-content: center;">
+        <div style="background: white; width: 90%; max-width: 480px; border-radius: 16px; padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 38px; height: 38px; border-radius: 50%; background: #dcfce7; display: flex; align-items: center; justify-content: center; color: #16a34a; font-size: 16px;">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #181c32;">Konfirmasi Pelunasan</h3>
+                </div>
+                <i class="fa-solid fa-xmark" style="cursor: pointer; color: #a1a5b7; font-size: 16px; padding: 4px;" onclick="closeConfirmLunasModal()"></i>
+            </div>
+            <div style="margin-bottom: 18px;">
+                <p style="font-size: 15px; font-weight: 600; color: #1e293b; margin: 0 0 8px 0;">
+                    Apakah benar client sudah membayar lunas?
+                </p>
+                <p style="font-size: 13px; color: #64748b; margin: 0 0 14px 0; line-height: 1.5;">
+                    Sistem akan mencatat sisa tagihan sebagai pelunasan penuh dan memperbarui status invoice menjadi <span style="font-weight: 600; color: #16a34a;">Lunas</span>.
+                </p>
+                <div id="confirmLunasDetails" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; font-size: 13px;">
+                    <!-- Filled dynamically -->
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="closeConfirmLunasModal()" style="font-size: 13px; padding: 8px 18px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer; color: #475569;">Batal</button>
+                <button type="button" id="btnSubmitConfirmLunas" class="btn" onclick="eksekusiTandaiLunas()" style="font-size: 13px; padding: 8px 18px; border-radius: 8px; border: none; background: #16a34a; color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-check"></i> Ya, Sudah Lunas
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Batal Lunas / Edit Revert Status Modal -->
+    <div id="batalLunasModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100000; align-items: center; justify-content: center;">
+        <div style="background: white; width: 90%; max-width: 480px; border-radius: 16px; padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 38px; height: 38px; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; color: #dc2626; font-size: 16px;">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </div>
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #181c32;">Kembalikan Status Invoice</h3>
+                </div>
+                <i class="fa-solid fa-xmark" style="cursor: pointer; color: #a1a5b7; font-size: 16px; padding: 4px;" onclick="closeBatalLunasModal()"></i>
+            </div>
+            <div style="margin-bottom: 18px;">
+                <p style="font-size: 14px; color: #475569; margin: 0 0 12px 0; line-height: 1.5;">
+                    Jika ada kesalahan dan client ternyata belum lunas, Anda dapat mengembalikan status invoice ini ke status sebelumnya.
+                </p>
+                <div id="batalLunasDetails" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; font-size: 13px; margin-bottom: 14px;">
+                    <!-- Filled dynamically -->
+                </div>
+                <label style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 6px; display: block;">Kembalikan Status Menjadi:</label>
+                <select id="batalLunasTargetStatus" style="width: 100%; height: 38px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #1e293b; outline: none; background: white;">
+                    <option value="auto">Otomatis (Status Sebelum Dilunasi)</option>
+                    <option value="Terbayar Sebagian">Terbayar Sebagian (DP / Termin)</option>
+                    <option value="Belum Dibayar">Belum Dibayar (0% / Belum DP)</option>
+                </select>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="closeBatalLunasModal()" style="font-size: 13px; padding: 8px 18px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer; color: #475569;">Batal</button>
+                <button type="button" id="btnSubmitBatalLunas" class="btn" onclick="eksekusiBatalLunas()" style="font-size: 13px; padding: 8px 18px; border-radius: 8px; border: none; background: #e11d48; color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-rotate-left"></i> Ya, Batalkan Lunas
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Full JavaScript -->
     <script>
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
@@ -1858,6 +1925,7 @@
                 pill_partial: 'Terbayar Sebagian',
                 pill_paid: 'Lunas',
                 btn_tandai_lunas: 'Tandai Lunas',
+                btn_batal_lunas: 'Batal Lunas',
                 btn_buka: 'Buka',
                 label_total_nilai: 'Total nilai: Rp',
                 label_acara: 'Acara:',
@@ -1980,6 +2048,7 @@
                 pill_partial: 'Partially Paid',
                 pill_paid: 'Paid',
                 btn_tandai_lunas: 'Mark as Paid',
+                btn_batal_lunas: 'Revert Paid',
                 btn_buka: 'Open',
                 label_total_nilai: 'Total value: Rp',
                 label_acara: 'Event:',
@@ -3403,7 +3472,7 @@ Terima kasih banyak! 🤍`;
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        ${!isLunas ? `<button type="button" class="btn btn-tandai-lunas" onclick="tandaiLunas('${inv.id}')" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; font-weight: 500; font-size: 12px; padding: 6px 14px; border-radius: 8px; cursor: pointer;">${dict.btn_tandai_lunas}</button>` : ''}
+                        ${!isLunas ? `<button type="button" class="btn btn-tandai-lunas" onclick="openConfirmLunasModal('${inv.id}')" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; font-weight: 500; font-size: 12px; padding: 6px 14px; border-radius: 8px; cursor: pointer;"><i class="fa-solid fa-check" style="margin-right: 4px;"></i>${dict.btn_tandai_lunas}</button>` : `<button type="button" class="btn btn-batal-lunas" onclick="openBatalLunasModal('${inv.id}')" style="background: #fff1f2; border: 1px solid #fecdd3; color: #e11d48; font-weight: 500; font-size: 12px; padding: 6px 14px; border-radius: 8px; cursor: pointer;" title="${currentLang === 'en' ? 'Revert paid status' : 'Ubah status lunas jika belum lunas'}"><i class="fa-solid fa-rotate-left" style="margin-right: 4px;"></i>${dict.btn_batal_lunas || 'Batal Lunas'}</button>`}
                         <button type="button" class="btn-icon" onclick="muatInvoiceKeEditor('${inv.id}')" title="Pilih & Tampilkan Invoice" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 8px; background: white; color: #555; cursor: pointer;"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button type="button" class="btn-icon" onclick="unduhPdfDariSaved('${inv.id}')" title="Unduh PDF" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 8px; background: white; color: #555; cursor: pointer;"><i class="fa-regular fa-file-pdf"></i></button>
                         <button type="button" class="btn-icon" onclick="openPaymentHistoryModal('${inv.id}')" title="Riwayat Pembayaran" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 8px; background: white; color: #555; cursor: pointer;"><i class="fa-solid fa-wallet"></i></button>
@@ -3894,7 +3963,57 @@ Terima kasih banyak! 🤍`;
             });
         }
 
-        function tandaiLunas(invId) {
+        let pendingLunasInvId = null;
+        let pendingBatalLunasInvId = null;
+
+        function openConfirmLunasModal(invId) {
+            pendingLunasInvId = invId;
+            const inv = (savedInvoicesCache || []).find(item => String(item.id) === String(invId));
+            const detailsEl = document.getElementById('confirmLunasDetails');
+            if (detailsEl) {
+                if (inv) {
+                    const noInv = inv.invoice_number || 'INV';
+                    const client = inv.client_name || inv.customer_name || '-';
+                    const grandTotal = parseFloat(inv.grand_total || 0);
+                    const paid = parseFloat(inv.total_dp || 0);
+                    const sisa = Math.max(0, grandTotal - paid);
+                    detailsEl.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
+                            <span style="color:#64748b;">No. Invoice:</span>
+                            <span style="font-weight:600; color:#1e293b;">${noInv} (${client})</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
+                            <span style="color:#64748b;">Total Tagihan:</span>
+                            <span style="font-weight:600; color:#1e293b;">Rp ${formatRupiah(grandTotal)}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="color:#64748b;">Sisa Pelunasan:</span>
+                            <span style="font-weight:700; color:#16a34a;">Rp ${formatRupiah(sisa > 0 ? sisa : grandTotal)}</span>
+                        </div>
+                    `;
+                } else {
+                    detailsEl.innerHTML = `<div style="color:#64748b;">Memproses invoice #${invId}...</div>`;
+                }
+            }
+            const modal = document.getElementById('confirmLunasModal');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function closeConfirmLunasModal() {
+            pendingLunasInvId = null;
+            const modal = document.getElementById('confirmLunasModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function eksekusiTandaiLunas() {
+            if (!pendingLunasInvId) return;
+            const invId = pendingLunasInvId;
+            const btn = document.getElementById('btnSubmitConfirmLunas');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+            }
+
             fetch(`/api/invoices/${invId}/mark-paid`, {
                 method: 'POST',
                 headers: {
@@ -3905,12 +4024,104 @@ Terima kasih banyak! 🤍`;
             })
             .then(res => res.json())
             .then(data => {
+                closeConfirmLunasModal();
                 if (data.success) {
-                    showToastNotification(currentLang === 'en' ? "Invoice marked as paid" : "Invoice ditandai lunas");
+                    showToastNotification(currentLang === 'en' ? "Invoice marked as paid" : "Invoice berhasil ditandai lunas");
                     loadSavedInvoicesTab();
+                } else {
+                    showToastNotification(data.error || (currentLang === 'en' ? "Failed to mark as paid" : "Gagal menandai lunas"));
                 }
             })
-            .catch(() => {});
+            .catch(() => {
+                closeConfirmLunasModal();
+                showToastNotification(currentLang === 'en' ? "Error marking invoice as paid" : "Terjadi kesalahan saat memproses pelunasan");
+            })
+            .finally(() => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-check"></i> Ya, Sudah Lunas`;
+                }
+            });
+        }
+
+        function openBatalLunasModal(invId) {
+            pendingBatalLunasInvId = invId;
+            const inv = (savedInvoicesCache || []).find(item => String(item.id) === String(invId));
+            const detailsEl = document.getElementById('batalLunasDetails');
+            if (detailsEl) {
+                if (inv) {
+                    const noInv = inv.invoice_number || 'INV';
+                    const client = inv.client_name || inv.customer_name || '-';
+                    const grandTotal = parseFloat(inv.grand_total || 0);
+                    detailsEl.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 4px;">
+                            <span style="color:#64748b;">No. Invoice:</span>
+                            <span style="font-weight:600; color:#1e293b;">${noInv} (${client})</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="color:#64748b;">Total Tagihan:</span>
+                            <span style="font-weight:600; color:#1e293b;">Rp ${formatRupiah(grandTotal)}</span>
+                        </div>
+                    `;
+                } else {
+                    detailsEl.innerHTML = `<div style="color:#64748b;">Memproses invoice #${invId}...</div>`;
+                }
+            }
+            const sel = document.getElementById('batalLunasTargetStatus');
+            if (sel) sel.value = 'auto';
+            const modal = document.getElementById('batalLunasModal');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function closeBatalLunasModal() {
+            pendingBatalLunasInvId = null;
+            const modal = document.getElementById('batalLunasModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function eksekusiBatalLunas() {
+            if (!pendingBatalLunasInvId) return;
+            const invId = pendingBatalLunasInvId;
+            const targetStatus = document.getElementById('batalLunasTargetStatus')?.value || 'auto';
+            const btn = document.getElementById('btnSubmitBatalLunas');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+            }
+
+            fetch(`/api/invoices/${invId}/revert-paid`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ target_status: targetStatus })
+            })
+            .then(res => res.json())
+            .then(data => {
+                closeBatalLunasModal();
+                if (data.success) {
+                    showToastNotification(data.message || (currentLang === 'en' ? "Invoice status reverted" : "Status invoice berhasil dikembalikan"));
+                    loadSavedInvoicesTab();
+                } else {
+                    showToastNotification(data.error || (currentLang === 'en' ? "Failed to revert invoice status" : "Gagal mengembalikan status invoice"));
+                }
+            })
+            .catch(() => {
+                closeBatalLunasModal();
+                showToastNotification(currentLang === 'en' ? "Error reverting invoice status" : "Terjadi kesalahan saat mengembalikan status");
+            })
+            .finally(() => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-rotate-left"></i> Ya, Batalkan Lunas`;
+                }
+            });
+        }
+
+        function tandaiLunas(invId) {
+            openConfirmLunasModal(invId);
         }
 
         function salinLinkPublik(invId) {

@@ -1132,53 +1132,185 @@
             });
             expenses.forEach(e => pengeluaranManual += cleanNumber(e.nominal));
             
-            const sisaPiutang = totalOmset - uangMasuk;
+            const sisaPiutang = Math.max(0, totalOmset - uangMasuk);
             const totalPengeluaran = pengeluaranOperasional + pengeluaranManual;
             const profitBersih = totalOmset - totalPengeluaran;
-            const chartProfit = uangMasuk - totalPengeluaran;
-            
-            const formatter = new Intl.DateTimeFormat('id-ID', { month: 'short', year: '2-digit' });
-            const monthStr = formatter.format(currentFilterStart || new Date());
-            
-            let csv = "RINGKASAN KEUANGAN\n";
-            csv += `Total Omset,${totalOmset}\n`;
-            csv += `Uang Masuk,${uangMasuk}\n`;
-            csv += `Sisa Piutang,${sisaPiutang > 0 ? sisaPiutang : 0}\n`;
-            csv += `Total Pengeluaran,${totalPengeluaran}\n`;
-            csv += `Profit Bersih,${profitBersih}\n\n`;
-            
-            csv += "CASH FLOW BULANAN\n";
-            csv += "Bulan,Uang Masuk,Pengeluaran,Net Profit\n";
-            csv += `${monthStr},${uangMasuk},${totalPengeluaran},${chartProfit}\n\n`;
-            
-            csv += "RIWAYAT PENGELUARAN\n";
-            csv += "Tanggal,Kategori,Judul,Acara,Nominal,Catatan\n";
-            expenses.forEach(e => {
-                let acaraName = '';
-                if(e.acaraId) {
-                    const b = allBookings.find(x => x.id == e.acaraId);
-                    if(b) acaraName = b.client_name;
-                }
-                const cat = e.catatan ? e.catatan.replace(/,/g, ' ') : '';
-                csv += `${e.tanggal || ''},${e.kategori || ''},${e.judul || ''},${acaraName},${cleanNumber(e.nominal)},${cat}\n`;
-            });
-            csv += "\n";
-            
-            csv += "PROFITABILITAS PER ACARA\n";
-            csv += "Klien,Tanggal Acara,Paket,Harga Paket,Total Biaya,Profit Margin\n";
-            bookings.forEach(b => {
-                const linkedExpenses = expenses.filter(e => e.acaraId == b.id).reduce((sum, e) => sum + cleanNumber(e.nominal), 0);
-                let bOpCost = cleanNumber(b.total_operational_cost);
-                if (bOpCost === 0 && Array.isArray(b.operational_costs) && b.operational_costs.length > 0) {
-                    bOpCost = b.operational_costs.reduce((sum, item) => sum + (cleanNumber(item.price) * (cleanNumber(item.qty) || 1)), 0);
-                }
-                const bookingCost = bOpCost + linkedExpenses;
-                const bookingIncome = cleanNumber(b.total_income) || (cleanNumber(b.package_price) * (cleanNumber(b.package_qty) || 1));
-                const bookingProfit = bookingIncome - bookingCost;
-                csv += `${b.client_name || ''},${b.event_date || ''},${b.package_name || ''},${bookingIncome},${bookingCost},${bookingProfit}\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const cashFlowProfit = uangMasuk - totalPengeluaran;
+
+            // Helper formatters
+            const escapeCsv = (val) => {
+                if (val === null || val === undefined) return '""';
+                const str = String(val).replace(/"/g, '""');
+                return `"${str}"`;
+            };
+            const fmtRp = (num) => {
+                const rounded = Math.round(cleanNumber(num));
+                return `Rp ${formatRupiah(rounded)}`;
+            };
+
+            const dFormatter = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+            let periodeStr = 'Semua Periode';
+            if (currentFilterStart && currentFilterEnd) {
+                periodeStr = `${dFormatter.format(currentFilterStart)} s/d ${dFormatter.format(currentFilterEnd)}`;
+            } else if (activeFilterType) {
+                periodeStr = activeFilterType;
+            }
+            const nowStr = new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date());
+
+            const lines = [];
+
+            // Title & Meta
+            lines.push([escapeCsv("LAPORAN KEUANGAN & ARUS KAS")]);
+            lines.push([escapeCsv(`Periode: ${periodeStr}`)]);
+            lines.push([escapeCsv(`Waktu Unduh: ${nowStr}`)]);
+            lines.push([]);
+
+            // Section 1: Ringkasan Eksekutif Keuangan
+            lines.push([escapeCsv("1. RINGKASAN EKSEKUTIF KEUANGAN")]);
+            lines.push([escapeCsv("Indikator"), escapeCsv("Nominal"), escapeCsv("Keterangan")]);
+            lines.push([escapeCsv("Total Omset"), escapeCsv(fmtRp(totalOmset)), escapeCsv("Total nilai seluruh kontrak/paket acara")]);
+            lines.push([escapeCsv("Total Uang Masuk (Kas Riil)"), escapeCsv(fmtRp(uangMasuk)), escapeCsv("Total DP dan pelunasan yang telah diterima")]);
+            lines.push([escapeCsv("Sisa Piutang"), escapeCsv(fmtRp(sisaPiutang)), escapeCsv("Tagihan yang belum dilunasi klien")]);
+            lines.push([escapeCsv("Biaya Operasional Acara"), escapeCsv(fmtRp(pengeluaranOperasional)), escapeCsv("Total biaya operasional tim/alat pada paket")]);
+            lines.push([escapeCsv("Biaya Pengeluaran Lainnya"), escapeCsv(fmtRp(pengeluaranManual)), escapeCsv("Biaya operasional kantor, transport, konsumsi, kas keluar")]);
+            lines.push([escapeCsv("Total Seluruh Pengeluaran"), escapeCsv(fmtRp(totalPengeluaran)), escapeCsv("Akumulasi biaya operasional + pengeluaran lain")]);
+            lines.push([escapeCsv("Net Cash Flow (Kas Riil - Pengeluaran)"), escapeCsv(fmtRp(cashFlowProfit)), escapeCsv(cashFlowProfit >= 0 ? "Surplus kas (Positif)" : "Defisit kas")]);
+            lines.push([escapeCsv("Proyeksi Laba Bersih (Omset - Pengeluaran)"), escapeCsv(fmtRp(profitBersih)), escapeCsv("Estimasi laba bersih setelah seluruh tagihan lunas")]);
+            lines.push([]);
+
+            // Section 2: Cash Flow Bulanan
+            const monthFormatter = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' });
+            const monthStr = monthFormatter.format(currentFilterStart || new Date());
+            lines.push([escapeCsv("2. ARUS KAS BULANAN (CASH FLOW)")]);
+            lines.push([escapeCsv("Periode"), escapeCsv("Uang Masuk"), escapeCsv("Pengeluaran"), escapeCsv("Net Cash Flow"), escapeCsv("Status Arus Kas")]);
+            lines.push([
+                escapeCsv(monthStr),
+                escapeCsv(fmtRp(uangMasuk)),
+                escapeCsv(fmtRp(totalPengeluaran)),
+                escapeCsv(fmtRp(cashFlowProfit)),
+                escapeCsv(cashFlowProfit >= 0 ? "Surplus (Sehat)" : "Defisit")
+            ]);
+            lines.push([]);
+
+            // Section 3: Profitabilitas Per Acara
+            lines.push([escapeCsv("3. PROFITABILITAS PER EVENT / ACARA")]);
+            lines.push([
+                escapeCsv("No"),
+                escapeCsv("Nama Klien"),
+                escapeCsv("Tanggal Acara"),
+                escapeCsv("Paket Layanan"),
+                escapeCsv("Harga Paket"),
+                escapeCsv("Biaya Operasional"),
+                escapeCsv("Biaya Tambahan"),
+                escapeCsv("Total Biaya Acara"),
+                escapeCsv("Profit Bersih Acara"),
+                escapeCsv("Margin (%)")
+            ]);
+
+            let totalBookingIncome = 0;
+            let totalBookingOpCost = 0;
+            let totalBookingExtraCost = 0;
+            let totalBookingAllCost = 0;
+            let totalBookingProfit = 0;
+
+            if (bookings.length === 0) {
+                lines.push([escapeCsv("-"), escapeCsv("Tidak ada data booking pada periode ini"), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv("")]);
+            } else {
+                bookings.forEach((b, idx) => {
+                    const linkedExpenses = expenses.filter(e => e.acaraId == b.id).reduce((sum, e) => sum + cleanNumber(e.nominal), 0);
+                    let bOpCost = cleanNumber(b.total_operational_cost);
+                    if (bOpCost === 0 && Array.isArray(b.operational_costs) && b.operational_costs.length > 0) {
+                        bOpCost = b.operational_costs.reduce((sum, item) => sum + (cleanNumber(item.price) * (cleanNumber(item.qty) || 1)), 0);
+                    }
+                    const bCost = bOpCost + linkedExpenses;
+                    const bIncome = cleanNumber(b.total_income) || (cleanNumber(b.package_price) * (cleanNumber(b.package_qty) || 1));
+                    const bProfit = bIncome - bCost;
+                    const margin = bIncome > 0 ? ((bProfit / bIncome) * 100).toFixed(1) + '%' : '0%';
+
+                    totalBookingIncome += bIncome;
+                    totalBookingOpCost += bOpCost;
+                    totalBookingExtraCost += linkedExpenses;
+                    totalBookingAllCost += bCost;
+                    totalBookingProfit += bProfit;
+
+                    lines.push([
+                        escapeCsv(idx + 1),
+                        escapeCsv(b.client_name || '-'),
+                        escapeCsv(b.event_date || '-'),
+                        escapeCsv(b.package_name || '-'),
+                        escapeCsv(fmtRp(bIncome)),
+                        escapeCsv(fmtRp(bOpCost)),
+                        escapeCsv(fmtRp(linkedExpenses)),
+                        escapeCsv(fmtRp(bCost)),
+                        escapeCsv(fmtRp(bProfit)),
+                        escapeCsv(margin)
+                    ]);
+                });
+
+                const totalMargin = totalBookingIncome > 0 ? ((totalBookingProfit / totalBookingIncome) * 100).toFixed(1) + '%' : '0%';
+                lines.push([
+                    escapeCsv("TOTAL"),
+                    escapeCsv(`${bookings.length} Acara`),
+                    escapeCsv(""),
+                    escapeCsv(""),
+                    escapeCsv(fmtRp(totalBookingIncome)),
+                    escapeCsv(fmtRp(totalBookingOpCost)),
+                    escapeCsv(fmtRp(totalBookingExtraCost)),
+                    escapeCsv(fmtRp(totalBookingAllCost)),
+                    escapeCsv(fmtRp(totalBookingProfit)),
+                    escapeCsv(totalMargin)
+                ]);
+            }
+            lines.push([]);
+
+            // Section 4: Riwayat Pengeluaran
+            lines.push([escapeCsv("4. RINCIAN PENGELUARAN")]);
+            lines.push([
+                escapeCsv("No"),
+                escapeCsv("Tanggal"),
+                escapeCsv("Kategori"),
+                escapeCsv("Judul / Keterangan"),
+                escapeCsv("Terkait Acara"),
+                escapeCsv("Nominal"),
+                escapeCsv("Catatan")
+            ]);
+
+            let totalExpSum = 0;
+            if (expenses.length === 0) {
+                lines.push([escapeCsv("-"), escapeCsv("Tidak ada data pengeluaran pada periode ini"), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv("")]);
+            } else {
+                expenses.forEach((e, idx) => {
+                    let acaraName = '-';
+                    if (e.acaraId) {
+                        const b = allBookings.find(x => x.id == e.acaraId);
+                        if (b) acaraName = b.client_name || '-';
+                    }
+                    const nominal = cleanNumber(e.nominal);
+                    totalExpSum += nominal;
+                    lines.push([
+                        escapeCsv(idx + 1),
+                        escapeCsv(e.tanggal || '-'),
+                        escapeCsv(e.kategori || '-'),
+                        escapeCsv(e.judul || '-'),
+                        escapeCsv(acaraName),
+                        escapeCsv(fmtRp(nominal)),
+                        escapeCsv(e.catatan || '')
+                    ]);
+                });
+
+                lines.push([
+                    escapeCsv("TOTAL"),
+                    escapeCsv(`${expenses.length} Transaksi`),
+                    escapeCsv(""),
+                    escapeCsv(""),
+                    escapeCsv(""),
+                    escapeCsv(fmtRp(totalExpSum)),
+                    escapeCsv("")
+                ]);
+            }
+
+            const csvContent = "\uFEFF" + lines.map(row => row.join(",")).join("\r\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             const url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
@@ -1189,7 +1321,7 @@
             link.click();
             document.body.removeChild(link);
             
-            showToast("Laporan diunduh");
+            showToast("Laporan keuangan CSV berhasil diunduh");
         }
 
         let fpInstance = null;
