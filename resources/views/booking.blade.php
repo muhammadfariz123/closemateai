@@ -950,18 +950,30 @@
             if (editingBookingId) {
                 payload.id = editingBookingId;
             }
+
+            if (!payload.event_date) payload.event_date = null;
+            if (!payload.payment_date) payload.payment_date = null;
+            if (!payload.start_time) payload.start_time = null;
+            if (!payload.end_time) payload.end_time = null;
             
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             fetch('/api/bookings', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': csrfToken
                 },
                 body: JSON.stringify(payload)
-            }).then(r => r.json()).then(data => {
+            }).then(async r => {
+                const data = await r.json().catch(() => null);
+                if (!r.ok || !data || !data.success) {
+                    throw new Error(data?.error || data?.message || 'Gagal menyimpan booking');
+                }
+                return data;
+            }).then(data => {
                 if(window.logSysActivity && !editingBookingId) {
-                    window.logSysActivity('Lead', 'Sistem', 'Booking / Lead baru ditambahkan', 'Klien: ' + payload.client_name + ' (' + payload.event_date + ')', 'fa-bolt', 'purple');
+                    window.logSysActivity('Lead', 'Sistem', 'Booking / Lead baru ditambahkan', 'Klien: ' + payload.client_name + ' (' + (payload.event_date || '-') + ')', 'fa-bolt', 'purple');
                 }
 
                 showToast(editingBookingId ? 'Booking diperbarui!' : 'Booking ditambahkan!');
@@ -972,7 +984,7 @@
                 btn.disabled = false;
             }).catch(e => {
                 console.error(e);
-                alert('Gagal menyimpan booking');
+                alert(e.message || 'Gagal menyimpan booking');
                 btn.innerHTML = 'Simpan Booking';
                 btn.disabled = false;
             });
