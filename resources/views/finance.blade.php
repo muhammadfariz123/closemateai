@@ -347,8 +347,15 @@
             <button class="btn btn-date" id="btn_custom_range_wrapper"><i class="fa-regular fa-calendar"></i> <span id="btn_custom_range">Custom Range</span></button>
         </div>
         
-        <div class="filter-row" style="margin-bottom: 24px;">
-            <button class="btn btn-outline" onclick="exportLaporanCSV()"><i class="fa-solid fa-download"></i> Export Laporan (CSV)</button>
+        <div class="filter-row" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-outline" onclick="exportLaporanKeuangan('excel')" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; border-color: #10b981; color: #047857; background: #ecfdf5; cursor: pointer; padding: 9px 18px; border-radius: 8px;">
+                    <i class="fa-solid fa-file-excel" style="font-size: 16px; color: #10b981;"></i> Export Laporan (Excel & Warna)
+                </button>
+                <button class="btn btn-outline" onclick="exportLaporanKeuangan('csv')" style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 9px 16px; border-radius: 8px;">
+                    <i class="fa-solid fa-file-csv"></i> Export CSV Polos
+                </button>
+            </div>
             <button class="btn btn-primary" onclick="openExpenseModal()"><i class="fa-solid fa-plus"></i> Catat Pengeluaran Baru</button>
         </div>
         
@@ -1079,6 +1086,10 @@
         }
 
         function exportLaporanCSV() {
+            exportLaporanKeuangan('excel');
+        }
+
+        function exportLaporanKeuangan(format = 'excel') {
             let allBookings = (Array.isArray(globalBookingsFinance) && globalBookingsFinance.length > 0)
                 ? globalBookingsFinance
                 : (JSON.parse(localStorage.getItem('b_events')) || []);
@@ -1137,12 +1148,6 @@
             const profitBersih = totalOmset - totalPengeluaran;
             const cashFlowProfit = uangMasuk - totalPengeluaran;
 
-            // Helper formatters
-            const escapeCsv = (val) => {
-                if (val === null || val === undefined) return '""';
-                const str = String(val).replace(/"/g, '""');
-                return `"${str}"`;
-            };
             const fmtRp = (num) => {
                 const rounded = Math.round(cleanNumber(num));
                 return `Rp ${formatRupiah(rounded)}`;
@@ -1156,172 +1161,410 @@
                 periodeStr = activeFilterType;
             }
             const nowStr = new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date());
-
-            const lines = [];
-
-            // Title & Meta
-            lines.push([escapeCsv("LAPORAN KEUANGAN & ARUS KAS")]);
-            lines.push([escapeCsv(`Periode: ${periodeStr}`)]);
-            lines.push([escapeCsv(`Waktu Unduh: ${nowStr}`)]);
-            lines.push([]);
-
-            // Section 1: Ringkasan Eksekutif Keuangan
-            lines.push([escapeCsv("1. RINGKASAN EKSEKUTIF KEUANGAN")]);
-            lines.push([escapeCsv("Indikator"), escapeCsv("Nominal"), escapeCsv("Keterangan")]);
-            lines.push([escapeCsv("Total Omset"), escapeCsv(fmtRp(totalOmset)), escapeCsv("Total nilai seluruh kontrak/paket acara")]);
-            lines.push([escapeCsv("Total Uang Masuk (Kas Riil)"), escapeCsv(fmtRp(uangMasuk)), escapeCsv("Total DP dan pelunasan yang telah diterima")]);
-            lines.push([escapeCsv("Sisa Piutang"), escapeCsv(fmtRp(sisaPiutang)), escapeCsv("Tagihan yang belum dilunasi klien")]);
-            lines.push([escapeCsv("Biaya Operasional Acara"), escapeCsv(fmtRp(pengeluaranOperasional)), escapeCsv("Total biaya operasional tim/alat pada paket")]);
-            lines.push([escapeCsv("Biaya Pengeluaran Lainnya"), escapeCsv(fmtRp(pengeluaranManual)), escapeCsv("Biaya operasional kantor, transport, konsumsi, kas keluar")]);
-            lines.push([escapeCsv("Total Seluruh Pengeluaran"), escapeCsv(fmtRp(totalPengeluaran)), escapeCsv("Akumulasi biaya operasional + pengeluaran lain")]);
-            lines.push([escapeCsv("Net Cash Flow (Kas Riil - Pengeluaran)"), escapeCsv(fmtRp(cashFlowProfit)), escapeCsv(cashFlowProfit >= 0 ? "Surplus kas (Positif)" : "Defisit kas")]);
-            lines.push([escapeCsv("Proyeksi Laba Bersih (Omset - Pengeluaran)"), escapeCsv(fmtRp(profitBersih)), escapeCsv("Estimasi laba bersih setelah seluruh tagihan lunas")]);
-            lines.push([]);
-
-            // Section 2: Cash Flow Bulanan
             const monthFormatter = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' });
             const monthStr = monthFormatter.format(currentFilterStart || new Date());
-            lines.push([escapeCsv("2. ARUS KAS BULANAN (CASH FLOW)")]);
-            lines.push([escapeCsv("Periode"), escapeCsv("Uang Masuk"), escapeCsv("Pengeluaran"), escapeCsv("Net Cash Flow"), escapeCsv("Status Arus Kas")]);
-            lines.push([
-                escapeCsv(monthStr),
-                escapeCsv(fmtRp(uangMasuk)),
-                escapeCsv(fmtRp(totalPengeluaran)),
-                escapeCsv(fmtRp(cashFlowProfit)),
-                escapeCsv(cashFlowProfit >= 0 ? "Surplus (Sehat)" : "Defisit")
-            ]);
-            lines.push([]);
+            const yyyymmdd = new Date().toISOString().split('T')[0];
 
-            // Section 3: Profitabilitas Per Acara
-            lines.push([escapeCsv("3. PROFITABILITAS PER EVENT / ACARA")]);
-            lines.push([
-                escapeCsv("No"),
-                escapeCsv("Nama Klien"),
-                escapeCsv("Tanggal Acara"),
-                escapeCsv("Paket Layanan"),
-                escapeCsv("Harga Paket"),
-                escapeCsv("Biaya Operasional"),
-                escapeCsv("Biaya Tambahan"),
-                escapeCsv("Total Biaya Acara"),
-                escapeCsv("Profit Bersih Acara"),
-                escapeCsv("Margin (%)")
-            ]);
+            if (format === 'csv') {
+                // Raw CSV export
+                const escapeCsv = (val) => {
+                    if (val === null || val === undefined) return '""';
+                    const str = String(val).replace(/"/g, '""');
+                    return `"${str}"`;
+                };
 
-            let totalBookingIncome = 0;
-            let totalBookingOpCost = 0;
-            let totalBookingExtraCost = 0;
-            let totalBookingAllCost = 0;
-            let totalBookingProfit = 0;
+                const lines = [];
+                lines.push([escapeCsv("LAPORAN KEUANGAN & ARUS KAS")]);
+                lines.push([escapeCsv(`Periode: ${periodeStr}`)]);
+                lines.push([escapeCsv(`Waktu Unduh: ${nowStr}`)]);
+                lines.push([]);
 
+                lines.push([escapeCsv("1. RINGKASAN EKSEKUTIF KEUANGAN")]);
+                lines.push([escapeCsv("Indikator"), escapeCsv("Nominal"), escapeCsv("Keterangan")]);
+                lines.push([escapeCsv("Total Omset"), escapeCsv(fmtRp(totalOmset)), escapeCsv("Total nilai seluruh kontrak/paket acara")]);
+                lines.push([escapeCsv("Total Uang Masuk (Kas Riil)"), escapeCsv(fmtRp(uangMasuk)), escapeCsv("Total DP dan pelunasan yang telah diterima")]);
+                lines.push([escapeCsv("Sisa Piutang"), escapeCsv(fmtRp(sisaPiutang)), escapeCsv("Tagihan yang belum dilunasi klien")]);
+                lines.push([escapeCsv("Biaya Operasional Acara"), escapeCsv(fmtRp(pengeluaranOperasional)), escapeCsv("Total biaya operasional tim/alat pada paket")]);
+                lines.push([escapeCsv("Biaya Pengeluaran Lainnya"), escapeCsv(fmtRp(pengeluaranManual)), escapeCsv("Biaya operasional kantor, transport, konsumsi, kas keluar")]);
+                lines.push([escapeCsv("Total Seluruh Pengeluaran"), escapeCsv(fmtRp(totalPengeluaran)), escapeCsv("Akumulasi biaya operasional + pengeluaran lain")]);
+                lines.push([escapeCsv("Net Cash Flow (Kas Riil - Pengeluaran)"), escapeCsv(fmtRp(cashFlowProfit)), escapeCsv(cashFlowProfit >= 0 ? "Surplus kas (Positif)" : "Defisit kas")]);
+                lines.push([escapeCsv("Proyeksi Laba Bersih (Omset - Pengeluaran)"), escapeCsv(fmtRp(profitBersih)), escapeCsv("Estimasi laba bersih setelah seluruh tagihan lunas")]);
+                lines.push([]);
+
+                lines.push([escapeCsv("2. ARUS KAS BULANAN (CASH FLOW)")]);
+                lines.push([escapeCsv("Periode"), escapeCsv("Uang Masuk"), escapeCsv("Pengeluaran"), escapeCsv("Net Cash Flow"), escapeCsv("Status Arus Kas")]);
+                lines.push([
+                    escapeCsv(monthStr),
+                    escapeCsv(fmtRp(uangMasuk)),
+                    escapeCsv(fmtRp(totalPengeluaran)),
+                    escapeCsv(fmtRp(cashFlowProfit)),
+                    escapeCsv(cashFlowProfit >= 0 ? "Surplus (Sehat)" : "Defisit")
+                ]);
+                lines.push([]);
+
+                lines.push([escapeCsv("3. PROFITABILITAS PER EVENT / ACARA")]);
+                lines.push([escapeCsv("No"), escapeCsv("Nama Klien"), escapeCsv("Tanggal Acara"), escapeCsv("Paket Layanan"), escapeCsv("Harga Paket"), escapeCsv("Biaya Operasional"), escapeCsv("Biaya Tambahan"), escapeCsv("Total Biaya Acara"), escapeCsv("Profit Bersih Acara"), escapeCsv("Margin (%)")]);
+                
+                let totInc = 0, totOp = 0, totExt = 0, totCost = 0, totProf = 0;
+                if (bookings.length === 0) {
+                    lines.push([escapeCsv("-"), escapeCsv("Tidak ada data booking pada periode ini"), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv("")]);
+                } else {
+                    bookings.forEach((b, idx) => {
+                        const linked = expenses.filter(e => e.acaraId == b.id).reduce((sum, e) => sum + cleanNumber(e.nominal), 0);
+                        let bOp = cleanNumber(b.total_operational_cost);
+                        if (bOp === 0 && Array.isArray(b.operational_costs) && b.operational_costs.length > 0) {
+                            bOp = b.operational_costs.reduce((sum, item) => sum + (cleanNumber(item.price) * (cleanNumber(item.qty) || 1)), 0);
+                        }
+                        const bC = bOp + linked;
+                        const bI = cleanNumber(b.total_income) || (cleanNumber(b.package_price) * (cleanNumber(b.package_qty) || 1));
+                        const bP = bI - bC;
+                        const m = bI > 0 ? ((bP / bI) * 100).toFixed(1) + '%' : '0%';
+                        totInc += bI; totOp += bOp; totExt += linked; totCost += bC; totProf += bP;
+                        lines.push([escapeCsv(idx + 1), escapeCsv(b.client_name || '-'), escapeCsv(b.event_date || '-'), escapeCsv(b.package_name || '-'), escapeCsv(fmtRp(bI)), escapeCsv(fmtRp(bOp)), escapeCsv(fmtRp(linked)), escapeCsv(fmtRp(bC)), escapeCsv(fmtRp(bP)), escapeCsv(m)]);
+                    });
+                    const totM = totInc > 0 ? ((totProf / totInc) * 100).toFixed(1) + '%' : '0%';
+                    lines.push([escapeCsv("TOTAL"), escapeCsv(`${bookings.length} Acara`), escapeCsv(""), escapeCsv(""), escapeCsv(fmtRp(totInc)), escapeCsv(fmtRp(totOp)), escapeCsv(fmtRp(totExt)), escapeCsv(fmtRp(totCost)), escapeCsv(fmtRp(totProf)), escapeCsv(totM)]);
+                }
+                lines.push([]);
+
+                lines.push([escapeCsv("4. RINCIAN PENGELUARAN")]);
+                lines.push([escapeCsv("No"), escapeCsv("Tanggal"), escapeCsv("Kategori"), escapeCsv("Judul / Keterangan"), escapeCsv("Terkait Acara"), escapeCsv("Nominal"), escapeCsv("Catatan")]);
+                let totExp = 0;
+                if (expenses.length === 0) {
+                    lines.push([escapeCsv("-"), escapeCsv("Tidak ada data pengeluaran pada periode ini"), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv("")]);
+                } else {
+                    expenses.forEach((e, idx) => {
+                        let acara = '-';
+                        if (e.acaraId) {
+                            const b = allBookings.find(x => x.id == e.acaraId);
+                            if (b) acara = b.client_name || '-';
+                        }
+                        const nom = cleanNumber(e.nominal);
+                        totExp += nom;
+                        lines.push([escapeCsv(idx + 1), escapeCsv(e.tanggal || '-'), escapeCsv(e.kategori || '-'), escapeCsv(e.judul || '-'), escapeCsv(acara), escapeCsv(fmtRp(nom)), escapeCsv(e.catatan || '')]);
+                    });
+                    lines.push([escapeCsv("TOTAL"), escapeCsv(`${expenses.length} Transaksi`), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(fmtRp(totExp)), escapeCsv("")]);
+                }
+
+                const csvContent = "\uFEFF" + lines.map(row => row.join(",")).join("\r\n");
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `laporan-keuangan-${yyyymmdd}.csv`;
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast("Laporan CSV berhasil diunduh");
+                return;
+            }
+
+            // EXCEL RICH STYLED SPREADSHEET (.xls HTML)
+            let rowsHtml1 = `
+                <tr style="background:#ffffff;">
+                    <td style="font-weight:600; padding:8px 12px; border:1px solid #cbd5e1;">Total Omset</td>
+                    <td style="font-weight:700; text-align:right; color:#0f172a; padding:8px 12px; border:1px solid #cbd5e1;">${fmtRp(totalOmset)}</td>
+                    <td style="color:#475569; padding:8px 12px; border:1px solid #cbd5e1;">Total nilai seluruh kontrak / paket acara</td>
+                </tr>
+                <tr style="background:#f8fafc;">
+                    <td style="font-weight:600; padding:8px 12px; border:1px solid #cbd5e1;">Total Uang Masuk (Kas Riil)</td>
+                    <td style="font-weight:700; text-align:right; color:#16a34a; padding:8px 12px; border:1px solid #cbd5e1;">${fmtRp(uangMasuk)}</td>
+                    <td style="color:#475569; padding:8px 12px; border:1px solid #cbd5e1;">Total DP dan pelunasan yang telah diterima</td>
+                </tr>
+                <tr style="background:#ffffff;">
+                    <td style="font-weight:600; padding:8px 12px; border:1px solid #cbd5e1;">Sisa Piutang</td>
+                    <td style="font-weight:700; text-align:right; color:#d97706; padding:8px 12px; border:1px solid #cbd5e1;">${fmtRp(sisaPiutang)}</td>
+                    <td style="color:#475569; padding:8px 12px; border:1px solid #cbd5e1;">Tagihan yang belum dilunasi klien</td>
+                </tr>
+                <tr style="background:#f8fafc;">
+                    <td style="font-weight:600; padding:8px 12px; border:1px solid #cbd5e1;">Biaya Operasional Acara</td>
+                    <td style="font-weight:700; text-align:right; color:#dc2626; padding:8px 12px; border:1px solid #cbd5e1;">${fmtRp(pengeluaranOperasional)}</td>
+                    <td style="color:#475569; padding:8px 12px; border:1px solid #cbd5e1;">Total biaya operasional tim/alat pada paket</td>
+                </tr>
+                <tr style="background:#ffffff;">
+                    <td style="font-weight:600; padding:8px 12px; border:1px solid #cbd5e1;">Biaya Pengeluaran Lainnya</td>
+                    <td style="font-weight:700; text-align:right; color:#dc2626; padding:8px 12px; border:1px solid #cbd5e1;">${fmtRp(pengeluaranManual)}</td>
+                    <td style="color:#475569; padding:8px 12px; border:1px solid #cbd5e1;">Biaya operasional kantor, transport, konsumsi, kas keluar</td>
+                </tr>
+                <tr style="background:#fef2f2;">
+                    <td style="font-weight:700; padding:9px 12px; border:1px solid #cbd5e1; color:#991b1b;">Total Seluruh Pengeluaran</td>
+                    <td style="font-weight:700; text-align:right; color:#dc2626; padding:9px 12px; border:1px solid #cbd5e1;">${fmtRp(totalPengeluaran)}</td>
+                    <td style="color:#7f1d1d; padding:9px 12px; border:1px solid #cbd5e1;">Akumulasi biaya operasional + pengeluaran lain</td>
+                </tr>
+                <tr style="background:${cashFlowProfit >= 0 ? '#ecfdf5' : '#fef2f2'};">
+                    <td style="font-weight:700; padding:9px 12px; border:1px solid #cbd5e1; color:${cashFlowProfit >= 0 ? '#065f46' : '#991b1b'};">Net Cash Flow (Kas Riil - Pengeluaran)</td>
+                    <td style="font-weight:800; text-align:right; color:${cashFlowProfit >= 0 ? '#047857' : '#b91c1c'}; padding:9px 12px; border:1px solid #cbd5e1;">${fmtRp(cashFlowProfit)}</td>
+                    <td style="font-weight:600; color:${cashFlowProfit >= 0 ? '#047857' : '#b91c1c'}; padding:9px 12px; border:1px solid #cbd5e1;">${cashFlowProfit >= 0 ? 'Surplus Kas (Positif / Sehat)' : 'Defisit Kas'}</td>
+                </tr>
+                <tr style="background:#f0fdf4;">
+                    <td style="font-weight:700; padding:9px 12px; border:1px solid #cbd5e1; color:#14532d;">Proyeksi Laba Bersih (Omset - Pengeluaran)</td>
+                    <td style="font-weight:800; text-align:right; color:#15803d; padding:9px 12px; border:1px solid #cbd5e1;">${fmtRp(profitBersih)}</td>
+                    <td style="color:#14532d; padding:9px 12px; border:1px solid #cbd5e1;">Estimasi laba bersih setelah seluruh tagihan lunas</td>
+                </tr>
+            `;
+
+            let rowsAcara = '';
+            let totInc = 0, totOp = 0, totExt = 0, totCost = 0, totProf = 0;
             if (bookings.length === 0) {
-                lines.push([escapeCsv("-"), escapeCsv("Tidak ada data booking pada periode ini"), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv("")]);
+                rowsAcara = `<tr><td colspan="10" style="text-align:center; padding:16px; color:#94a3b8; border:1px solid #cbd5e1;">Tidak ada data booking pada periode ini</td></tr>`;
             } else {
                 bookings.forEach((b, idx) => {
-                    const linkedExpenses = expenses.filter(e => e.acaraId == b.id).reduce((sum, e) => sum + cleanNumber(e.nominal), 0);
-                    let bOpCost = cleanNumber(b.total_operational_cost);
-                    if (bOpCost === 0 && Array.isArray(b.operational_costs) && b.operational_costs.length > 0) {
-                        bOpCost = b.operational_costs.reduce((sum, item) => sum + (cleanNumber(item.price) * (cleanNumber(item.qty) || 1)), 0);
+                    const linked = expenses.filter(e => e.acaraId == b.id).reduce((sum, e) => sum + cleanNumber(e.nominal), 0);
+                    let bOp = cleanNumber(b.total_operational_cost);
+                    if (bOp === 0 && Array.isArray(b.operational_costs) && b.operational_costs.length > 0) {
+                        bOp = b.operational_costs.reduce((sum, item) => sum + (cleanNumber(item.price) * (cleanNumber(item.qty) || 1)), 0);
                     }
-                    const bCost = bOpCost + linkedExpenses;
-                    const bIncome = cleanNumber(b.total_income) || (cleanNumber(b.package_price) * (cleanNumber(b.package_qty) || 1));
-                    const bProfit = bIncome - bCost;
-                    const margin = bIncome > 0 ? ((bProfit / bIncome) * 100).toFixed(1) + '%' : '0%';
-
-                    totalBookingIncome += bIncome;
-                    totalBookingOpCost += bOpCost;
-                    totalBookingExtraCost += linkedExpenses;
-                    totalBookingAllCost += bCost;
-                    totalBookingProfit += bProfit;
-
-                    lines.push([
-                        escapeCsv(idx + 1),
-                        escapeCsv(b.client_name || '-'),
-                        escapeCsv(b.event_date || '-'),
-                        escapeCsv(b.package_name || '-'),
-                        escapeCsv(fmtRp(bIncome)),
-                        escapeCsv(fmtRp(bOpCost)),
-                        escapeCsv(fmtRp(linkedExpenses)),
-                        escapeCsv(fmtRp(bCost)),
-                        escapeCsv(fmtRp(bProfit)),
-                        escapeCsv(margin)
-                    ]);
+                    const bC = bOp + linked;
+                    const bI = cleanNumber(b.total_income) || (cleanNumber(b.package_price) * (cleanNumber(b.package_qty) || 1));
+                    const bP = bI - bC;
+                    const m = bI > 0 ? ((bP / bI) * 100).toFixed(1) + '%' : '0%';
+                    totInc += bI; totOp += bOp; totExt += linked; totCost += bC; totProf += bP;
+                    const bg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+                    rowsAcara += `
+                        <tr style="background:${bg};">
+                            <td style="text-align:center; padding:7px 10px; border:1px solid #cbd5e1;">${idx + 1}</td>
+                            <td style="font-weight:600; padding:7px 10px; border:1px solid #cbd5e1;">${b.client_name || '-'}</td>
+                            <td style="text-align:center; padding:7px 10px; border:1px solid #cbd5e1; color:#475569;">${b.event_date || '-'}</td>
+                            <td style="padding:7px 10px; border:1px solid #cbd5e1;">${b.package_name || '-'}</td>
+                            <td style="text-align:right; font-weight:600; padding:7px 10px; border:1px solid #cbd5e1;">${fmtRp(bI)}</td>
+                            <td style="text-align:right; color:#dc2626; padding:7px 10px; border:1px solid #cbd5e1;">${fmtRp(bOp)}</td>
+                            <td style="text-align:right; color:#dc2626; padding:7px 10px; border:1px solid #cbd5e1;">${fmtRp(linked)}</td>
+                            <td style="text-align:right; font-weight:600; color:#b91c1c; padding:7px 10px; border:1px solid #cbd5e1;">${fmtRp(bC)}</td>
+                            <td style="text-align:right; font-weight:700; color:${bP >= 0 ? '#16a34a' : '#dc2626'}; padding:7px 10px; border:1px solid #cbd5e1;">${fmtRp(bP)}</td>
+                            <td style="text-align:center; font-weight:600; color:${bP >= 0 ? '#15803d' : '#b91c1c'}; padding:7px 10px; border:1px solid #cbd5e1;">${m}</td>
+                        </tr>
+                    `;
                 });
-
-                const totalMargin = totalBookingIncome > 0 ? ((totalBookingProfit / totalBookingIncome) * 100).toFixed(1) + '%' : '0%';
-                lines.push([
-                    escapeCsv("TOTAL"),
-                    escapeCsv(`${bookings.length} Acara`),
-                    escapeCsv(""),
-                    escapeCsv(""),
-                    escapeCsv(fmtRp(totalBookingIncome)),
-                    escapeCsv(fmtRp(totalBookingOpCost)),
-                    escapeCsv(fmtRp(totalBookingExtraCost)),
-                    escapeCsv(fmtRp(totalBookingAllCost)),
-                    escapeCsv(fmtRp(totalBookingProfit)),
-                    escapeCsv(totalMargin)
-                ]);
+                const totM = totInc > 0 ? ((totProf / totInc) * 100).toFixed(1) + '%' : '0%';
+                rowsAcara += `
+                    <tr style="background:#e0f2fe; font-weight:bold; color:#0369a1; border-top:2px solid #0284c7; border-bottom:2px solid #0284c7;">
+                        <td colspan="4" style="text-align:center; padding:9px 10px; border:1px solid #94a3b8; font-weight:700;">TOTAL (${bookings.length} ACARA)</td>
+                        <td style="text-align:right; padding:9px 10px; border:1px solid #94a3b8; font-weight:700;">${fmtRp(totInc)}</td>
+                        <td style="text-align:right; padding:9px 10px; border:1px solid #94a3b8; font-weight:700; color:#dc2626;">${fmtRp(totOp)}</td>
+                        <td style="text-align:right; padding:9px 10px; border:1px solid #94a3b8; font-weight:700; color:#dc2626;">${fmtRp(totExt)}</td>
+                        <td style="text-align:right; padding:9px 10px; border:1px solid #94a3b8; font-weight:700; color:#b91c1c;">${fmtRp(totCost)}</td>
+                        <td style="text-align:right; padding:9px 10px; border:1px solid #94a3b8; font-weight:800; color:${totProf >= 0 ? '#15803d' : '#b91c1c'};">${fmtRp(totProf)}</td>
+                        <td style="text-align:center; padding:9px 10px; border:1px solid #94a3b8; font-weight:700;">${totM}</td>
+                    </tr>
+                `;
             }
-            lines.push([]);
 
-            // Section 4: Riwayat Pengeluaran
-            lines.push([escapeCsv("4. RINCIAN PENGELUARAN")]);
-            lines.push([
-                escapeCsv("No"),
-                escapeCsv("Tanggal"),
-                escapeCsv("Kategori"),
-                escapeCsv("Judul / Keterangan"),
-                escapeCsv("Terkait Acara"),
-                escapeCsv("Nominal"),
-                escapeCsv("Catatan")
-            ]);
-
-            let totalExpSum = 0;
+            let rowsExp = '';
+            let totExp = 0;
             if (expenses.length === 0) {
-                lines.push([escapeCsv("-"), escapeCsv("Tidak ada data pengeluaran pada periode ini"), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv(""), escapeCsv("")]);
+                rowsExp = `<tr><td colspan="7" style="text-align:center; padding:16px; color:#94a3b8; border:1px solid #cbd5e1;">Tidak ada data pengeluaran pada periode ini</td></tr>`;
             } else {
                 expenses.forEach((e, idx) => {
-                    let acaraName = '-';
+                    let acara = '-';
                     if (e.acaraId) {
                         const b = allBookings.find(x => x.id == e.acaraId);
-                        if (b) acaraName = b.client_name || '-';
+                        if (b) acara = b.client_name || '-';
                     }
-                    const nominal = cleanNumber(e.nominal);
-                    totalExpSum += nominal;
-                    lines.push([
-                        escapeCsv(idx + 1),
-                        escapeCsv(e.tanggal || '-'),
-                        escapeCsv(e.kategori || '-'),
-                        escapeCsv(e.judul || '-'),
-                        escapeCsv(acaraName),
-                        escapeCsv(fmtRp(nominal)),
-                        escapeCsv(e.catatan || '')
-                    ]);
+                    const nom = cleanNumber(e.nominal);
+                    totExp += nom;
+                    const bg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+                    rowsExp += `
+                        <tr style="background:${bg};">
+                            <td style="text-align:center; padding:7px 10px; border:1px solid #cbd5e1;">${idx + 1}</td>
+                            <td style="text-align:center; padding:7px 10px; border:1px solid #cbd5e1; color:#475569;">${e.tanggal || '-'}</td>
+                            <td style="text-align:center; padding:7px 10px; border:1px solid #cbd5e1;"><span style="background:#f1f5f9; color:#334155; font-size:9pt; padding:3px 8px; border-radius:4px; font-weight:600;">${e.kategori || '-'}</span></td>
+                            <td style="font-weight:600; padding:7px 10px; border:1px solid #cbd5e1;">${e.judul || '-'}</td>
+                            <td style="padding:7px 10px; border:1px solid #cbd5e1; color:#475569;">${acara}</td>
+                            <td style="text-align:right; font-weight:700; color:#dc2626; padding:7px 10px; border:1px solid #cbd5e1;">${fmtRp(nom)}</td>
+                            <td style="color:#64748b; font-size:9pt; padding:7px 10px; border:1px solid #cbd5e1;">${e.catatan || ''}</td>
+                        </tr>
+                    `;
                 });
-
-                lines.push([
-                    escapeCsv("TOTAL"),
-                    escapeCsv(`${expenses.length} Transaksi`),
-                    escapeCsv(""),
-                    escapeCsv(""),
-                    escapeCsv(""),
-                    escapeCsv(fmtRp(totalExpSum)),
-                    escapeCsv("")
-                ]);
+                rowsExp += `
+                    <tr style="background:#fef2f2; font-weight:bold; color:#991b1b; border-top:2px solid #ef4444; border-bottom:2px solid #ef4444;">
+                        <td colspan="5" style="text-align:center; padding:9px 10px; border:1px solid #94a3b8; font-weight:700;">TOTAL PENGELUARAN (${expenses.length} TRANSAKSI)</td>
+                        <td style="text-align:right; padding:9px 10px; border:1px solid #94a3b8; font-weight:800; color:#dc2626;">${fmtRp(totExp)}</td>
+                        <td style="border:1px solid #94a3b8;"></td>
+                    </tr>
+                `;
             }
 
-            const csvContent = "\uFEFF" + lines.map(row => row.join(",")).join("\r\n");
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const excelHtml = `
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--[if gte mso 9]>
+<xml>
+ <x:ExcelWorkbook>
+  <x:ExcelWorksheets>
+   <x:ExcelWorksheet>
+    <x:Name>Laporan Keuangan</x:Name>
+    <x:WorksheetOptions>
+     <x:DisplayGridlines/>
+    </x:WorksheetOptions>
+   </x:ExcelWorksheet>
+  </x:ExcelWorksheets>
+ </x:ExcelWorkbook>
+</xml>
+<![endif]-->
+<style>
+  body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 11pt; color: #1e293b; }
+  table { border-collapse: collapse; margin-bottom: 24px; font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; }
+  th, td { border: 1px solid #cbd5e1; padding: 7px 10px; font-size: 10pt; vertical-align: middle; }
+</style>
+</head>
+<body>
+    <!-- Title Banner -->
+    <table style="width:100%; border:none; margin-bottom:16px;">
+        <tr>
+            <td colspan="10" style="background:#0f172a; color:#ffffff; font-size:16pt; font-weight:bold; padding:14px 16px; border:none;">
+                LAPORAN KEUANGAN &amp; ARUS KAS - CLOSEMATE AI / PENAPICT
+            </td>
+        </tr>
+        <tr>
+            <td colspan="10" style="background:#f1f5f9; color:#475569; font-size:10pt; padding:6px 16px; border:none;">
+                <strong>Periode:</strong> ${periodeStr} &nbsp;|&nbsp; <strong>Waktu Cetak:</strong> ${nowStr}
+            </td>
+        </tr>
+    </table>
+
+    <!-- Section 1: Ringkasan Eksekutif -->
+    <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+        <colgroup>
+            <col style="width:300px;">
+            <col style="width:200px;">
+            <col style="width:400px;">
+        </colgroup>
+        <thead>
+            <tr>
+                <th colspan="3" style="background:#1e40af; color:#ffffff; font-size:11pt; font-weight:bold; text-align:left; padding:10px 14px; border:1px solid #1e40af;">
+                    1. RINGKASAN EKSEKUTIF KEUANGAN
+                </th>
+            </tr>
+            <tr style="background:#e2e8f0; color:#0f172a; font-weight:bold;">
+                <th style="text-align:left; padding:8px 12px; border:1px solid #94a3b8;">Indikator</th>
+                <th style="text-align:right; padding:8px 12px; border:1px solid #94a3b8;">Nominal (Rp)</th>
+                <th style="text-align:left; padding:8px 12px; border:1px solid #94a3b8;">Keterangan</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${rowsHtml1}
+        </tbody>
+    </table>
+
+    <!-- Section 2: Cash Flow Bulanan -->
+    <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+        <colgroup>
+            <col style="width:200px;">
+            <col style="width:180px;">
+            <col style="width:180px;">
+            <col style="width:180px;">
+            <col style="width:160px;">
+        </colgroup>
+        <thead>
+            <tr>
+                <th colspan="5" style="background:#0d9488; color:#ffffff; font-size:11pt; font-weight:bold; text-align:left; padding:10px 14px; border:1px solid #0d9488;">
+                    2. ARUS KAS BULANAN (CASH FLOW)
+                </th>
+            </tr>
+            <tr style="background:#e2e8f0; color:#0f172a; font-weight:bold;">
+                <th style="text-align:left; padding:8px 12px; border:1px solid #94a3b8;">Periode / Bulan</th>
+                <th style="text-align:right; padding:8px 12px; border:1px solid #94a3b8;">Uang Masuk (Rp)</th>
+                <th style="text-align:right; padding:8px 12px; border:1px solid #94a3b8;">Pengeluaran (Rp)</th>
+                <th style="text-align:right; padding:8px 12px; border:1px solid #94a3b8;">Net Cash Flow (Rp)</th>
+                <th style="text-align:center; padding:8px 12px; border:1px solid #94a3b8;">Status Arus Kas</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr style="background:#ffffff;">
+                <td style="font-weight:600; padding:9px 12px; border:1px solid #cbd5e1;">${monthStr}</td>
+                <td style="text-align:right; font-weight:700; color:#16a34a; padding:9px 12px; border:1px solid #cbd5e1;">${fmtRp(uangMasuk)}</td>
+                <td style="text-align:right; font-weight:700; color:#dc2626; padding:9px 12px; border:1px solid #cbd5e1;">${fmtRp(totalPengeluaran)}</td>
+                <td style="text-align:right; font-weight:800; color:${cashFlowProfit >= 0 ? '#15803d' : '#b91c1c'}; padding:9px 12px; border:1px solid #cbd5e1;">${fmtRp(cashFlowProfit)}</td>
+                <td style="text-align:center; font-weight:700; background:${cashFlowProfit >= 0 ? '#dcfce7' : '#fee2e2'}; color:${cashFlowProfit >= 0 ? '#15803d' : '#b91c1c'}; padding:9px 12px; border:1px solid #cbd5e1;">
+                    ${cashFlowProfit >= 0 ? 'Surplus (Sehat)' : 'Defisit'}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Section 3: Profitabilitas Per Acara -->
+    <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+        <colgroup>
+            <col style="width:45px;">
+            <col style="width:170px;">
+            <col style="width:120px;">
+            <col style="width:160px;">
+            <col style="width:140px;">
+            <col style="width:140px;">
+            <col style="width:140px;">
+            <col style="width:140px;">
+            <col style="width:140px;">
+            <col style="width:90px;">
+        </colgroup>
+        <thead>
+            <tr>
+                <th colspan="10" style="background:#4338ca; color:#ffffff; font-size:11pt; font-weight:bold; text-align:left; padding:10px 14px; border:1px solid #4338ca;">
+                    3. PROFITABILITAS PER EVENT / ACARA
+                </th>
+            </tr>
+            <tr style="background:#e2e8f0; color:#0f172a; font-weight:bold;">
+                <th style="text-align:center; padding:8px 8px; border:1px solid #94a3b8;">No</th>
+                <th style="text-align:left; padding:8px 10px; border:1px solid #94a3b8;">Nama Klien</th>
+                <th style="text-align:center; padding:8px 10px; border:1px solid #94a3b8;">Tanggal Acara</th>
+                <th style="text-align:left; padding:8px 10px; border:1px solid #94a3b8;">Paket Layanan</th>
+                <th style="text-align:right; padding:8px 10px; border:1px solid #94a3b8;">Harga Paket</th>
+                <th style="text-align:right; padding:8px 10px; border:1px solid #94a3b8;">Biaya Operasional</th>
+                <th style="text-align:right; padding:8px 10px; border:1px solid #94a3b8;">Biaya Tambahan</th>
+                <th style="text-align:right; padding:8px 10px; border:1px solid #94a3b8;">Total Biaya</th>
+                <th style="text-align:right; padding:8px 10px; border:1px solid #94a3b8;">Profit Bersih</th>
+                <th style="text-align:center; padding:8px 8px; border:1px solid #94a3b8;">Margin</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${rowsAcara}
+        </tbody>
+    </table>
+
+    <!-- Section 4: Rincian Pengeluaran -->
+    <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+        <colgroup>
+            <col style="width:45px;">
+            <col style="width:120px;">
+            <col style="width:140px;">
+            <col style="width:220px;">
+            <col style="width:160px;">
+            <col style="width:150px;">
+            <col style="width:250px;">
+        </colgroup>
+        <thead>
+            <tr>
+                <th colspan="7" style="background:#c2410c; color:#ffffff; font-size:11pt; font-weight:bold; text-align:left; padding:10px 14px; border:1px solid #c2410c;">
+                    4. RINCIAN PENGELUARAN
+                </th>
+            </tr>
+            <tr style="background:#e2e8f0; color:#0f172a; font-weight:bold;">
+                <th style="text-align:center; padding:8px 8px; border:1px solid #94a3b8;">No</th>
+                <th style="text-align:center; padding:8px 10px; border:1px solid #94a3b8;">Tanggal</th>
+                <th style="text-align:center; padding:8px 10px; border:1px solid #94a3b8;">Kategori</th>
+                <th style="text-align:left; padding:8px 10px; border:1px solid #94a3b8;">Judul / Keterangan</th>
+                <th style="text-align:left; padding:8px 10px; border:1px solid #94a3b8;">Terkait Acara</th>
+                <th style="text-align:right; padding:8px 10px; border:1px solid #94a3b8;">Nominal (Rp)</th>
+                <th style="text-align:left; padding:8px 10px; border:1px solid #94a3b8;">Catatan</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${rowsExp}
+        </tbody>
+    </table>
+</body>
+</html>
+            `;
+
+            const blob = new Blob([excelHtml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
             const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            const yyyymmdd = new Date().toISOString().split('T')[0];
-            link.setAttribute("download", `laporan-keuangan-${yyyymmdd}.csv`);
+            link.href = URL.createObjectURL(blob);
+            link.download = `laporan-keuangan-${yyyymmdd}.xls`;
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
-            showToast("Laporan keuangan CSV berhasil diunduh");
+            showToast("Laporan keuangan Excel (berwarna) berhasil diunduh");
         }
 
         let fpInstance = null;

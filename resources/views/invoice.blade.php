@@ -3208,6 +3208,8 @@ Terima kasih banyak! 🤍`;
 
         // --- Saved Invoices & Filtering System ---
         let savedInvoicesData = [];
+        window.savedInvoicesData = savedInvoicesData;
+        window.savedInvoicesCache = savedInvoicesData;
         let activeFilterStatus = 'all';
         let activeDateFilter = 'all';
         let customRangeStart = '2026-09-13';
@@ -3293,6 +3295,8 @@ Terima kasih banyak! 🤍`;
                 .then(res => res.json())
                 .then(list => {
                     savedInvoicesData = Array.isArray(list) ? list : [];
+                    window.savedInvoicesData = savedInvoicesData;
+                    window.savedInvoicesCache = savedInvoicesData;
                     filterSavedInvoices();
                     loadSavedInvoicesCount();
                 })
@@ -3966,9 +3970,21 @@ Terima kasih banyak! 🤍`;
         let pendingLunasInvId = null;
         let pendingBatalLunasInvId = null;
 
+        function getSavedInvoiceById(invId) {
+            let list = [];
+            if (typeof savedInvoicesData !== 'undefined' && Array.isArray(savedInvoicesData) && savedInvoicesData.length > 0) {
+                list = savedInvoicesData;
+            } else if (window.savedInvoicesData && Array.isArray(window.savedInvoicesData)) {
+                list = window.savedInvoicesData;
+            } else if (window.savedInvoicesCache && Array.isArray(window.savedInvoicesCache)) {
+                list = window.savedInvoicesCache;
+            }
+            return list.find(item => item && (String(item.id) === String(invId) || String(item.invoice_number) === String(invId)));
+        }
+
         function openConfirmLunasModal(invId) {
             pendingLunasInvId = invId;
-            const inv = (savedInvoicesCache || []).find(item => String(item.id) === String(invId));
+            const inv = getSavedInvoiceById(invId);
             const detailsEl = document.getElementById('confirmLunasDetails');
             if (detailsEl) {
                 if (inv) {
@@ -4046,7 +4062,7 @@ Terima kasih banyak! 🤍`;
 
         function openBatalLunasModal(invId) {
             pendingBatalLunasInvId = invId;
-            const inv = (savedInvoicesCache || []).find(item => String(item.id) === String(invId));
+            const inv = getSavedInvoiceById(invId);
             const detailsEl = document.getElementById('batalLunasDetails');
             if (detailsEl) {
                 if (inv) {
