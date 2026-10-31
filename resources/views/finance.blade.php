@@ -347,15 +347,8 @@
             <button class="btn btn-date" id="btn_custom_range_wrapper"><i class="fa-regular fa-calendar"></i> <span id="btn_custom_range">Custom Range</span></button>
         </div>
         
-        <div class="filter-row" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                <button class="btn btn-outline" onclick="exportLaporanKeuangan('excel')" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; border-color: #10b981; color: #047857; background: #ecfdf5; cursor: pointer; padding: 9px 18px; border-radius: 8px;">
-                    <i class="fa-solid fa-file-excel" style="font-size: 16px; color: #10b981;"></i> Export Laporan (Excel & Warna)
-                </button>
-                <button class="btn btn-outline" onclick="exportLaporanKeuangan('csv')" style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 9px 16px; border-radius: 8px;">
-                    <i class="fa-solid fa-file-csv"></i> Export CSV Polos
-                </button>
-            </div>
+        <div class="filter-row" style="margin-bottom: 24px;">
+            <button class="btn btn-outline" onclick="exportLaporanCSV()"><i class="fa-solid fa-download"></i> Export Laporan CSV</button>
             <button class="btn btn-primary" onclick="openExpenseModal()"><i class="fa-solid fa-plus"></i> Catat Pengeluaran Baru</button>
         </div>
         
@@ -1550,7 +1543,7 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            showToast("Laporan keuangan Excel (berwarna) berhasil diunduh");
+            showToast("Laporan keuangan berhasil diunduh");
         }
 
         let fpInstance = null;
