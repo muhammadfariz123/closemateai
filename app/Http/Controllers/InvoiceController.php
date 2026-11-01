@@ -61,6 +61,28 @@ class InvoiceController extends Controller
             if ($needsMigration) {
                 Artisan::call('migrate', ['--force' => true]);
             }
+
+            if (Schema::hasTable('bookings')) {
+                \Illuminate\Support\Facades\DB::table('bookings')
+                    ->whereNull('payment_status')
+                    ->orWhere('payment_status', '')
+                    ->update(['payment_status' => 'DP 1']);
+
+                \Illuminate\Support\Facades\DB::table('bookings')
+                    ->whereNull('production_status')
+                    ->orWhere('production_status', '')
+                    ->update(['production_status' => 'Pre-Event']);
+
+                \Illuminate\Support\Facades\DB::table('bookings')
+                    ->whereNull('client_name')
+                    ->orWhere('client_name', '')
+                    ->update(['client_name' => 'Klien Baru']);
+
+                \Illuminate\Support\Facades\DB::table('bookings')
+                    ->whereNull('client_wa_number')
+                    ->orWhere('client_wa_number', '')
+                    ->update(['client_wa_number' => '-']);
+            }
         } catch (\Throwable $e) {
             Log::error('Schema auto-migration error: ' . $e->getMessage());
         }
@@ -249,9 +271,19 @@ class InvoiceController extends Controller
                     if ($totalDp >= $grandTotal && $grandTotal > 0) {
                         $booking->payment_status = 'Lunas';
                     } elseif ($dp2 > 0) {
-                        $booking->payment_status = 'Termin 2';
+                        $booking->payment_status = 'DP 2';
                     } elseif ($dp1 > 0) {
                         $booking->payment_status = 'DP 1';
+                    } else {
+                        if (empty($booking->payment_status)) {
+                            $booking->payment_status = 'DP 1';
+                        }
+                    }
+                    if (empty($booking->payment_status)) {
+                        $booking->payment_status = 'DP 1';
+                    }
+                    if (empty($booking->production_status)) {
+                        $booking->production_status = 'Pre-Event';
                     }
                     $booking->save();
                 }
@@ -315,6 +347,9 @@ class InvoiceController extends Controller
                 if ($booking) {
                     $booking->paid_amount = $grandTotal;
                     $booking->payment_status = 'Lunas';
+                    if (empty($booking->production_status)) {
+                        $booking->production_status = 'Pre-Event';
+                    }
                     $booking->save();
                 }
             }
@@ -439,7 +474,10 @@ class InvoiceController extends Controller
                 $booking = Booking::where('user_id', $user->id)->find($invoice->booking_id);
                 if ($booking) {
                     $booking->paid_amount = $totalPaid;
-                    $booking->payment_status = $bookingStatus;
+                    $booking->payment_status = !empty($bookingStatus) ? $bookingStatus : 'DP 1';
+                    if (empty($booking->production_status)) {
+                        $booking->production_status = 'Pre-Event';
+                    }
                     $booking->save();
                 }
             }
@@ -529,7 +567,10 @@ class InvoiceController extends Controller
                 $booking = Booking::where('user_id', $user->id)->find($invoice->booking_id);
                 if ($booking) {
                     $booking->paid_amount = $totalPaid;
-                    $booking->payment_status = $bookingStatus;
+                    $booking->payment_status = !empty($bookingStatus) ? $bookingStatus : 'DP 1';
+                    if (empty($booking->production_status)) {
+                        $booking->production_status = 'Pre-Event';
+                    }
                     $booking->save();
                 }
             }
@@ -612,7 +653,10 @@ class InvoiceController extends Controller
                 $booking = Booking::where('user_id', $user->id)->find($invoice->booking_id);
                 if ($booking) {
                     $booking->paid_amount = $totalPaid;
-                    $booking->payment_status = $bookingStatus;
+                    $booking->payment_status = !empty($bookingStatus) ? $bookingStatus : 'DP 1';
+                    if (empty($booking->production_status)) {
+                        $booking->production_status = 'Pre-Event';
+                    }
                     $booking->save();
                 }
             }

@@ -33,6 +33,28 @@ class BookingController extends Controller
             if ($needsMigration) {
                 Artisan::call('migrate', ['--force' => true]);
             }
+
+            if (Schema::hasTable('bookings')) {
+                \Illuminate\Support\Facades\DB::table('bookings')
+                    ->whereNull('payment_status')
+                    ->orWhere('payment_status', '')
+                    ->update(['payment_status' => 'DP 1']);
+
+                \Illuminate\Support\Facades\DB::table('bookings')
+                    ->whereNull('production_status')
+                    ->orWhere('production_status', '')
+                    ->update(['production_status' => 'Pre-Event']);
+
+                \Illuminate\Support\Facades\DB::table('bookings')
+                    ->whereNull('client_name')
+                    ->orWhere('client_name', '')
+                    ->update(['client_name' => 'Klien Baru']);
+
+                \Illuminate\Support\Facades\DB::table('bookings')
+                    ->whereNull('client_wa_number')
+                    ->orWhere('client_wa_number', '')
+                    ->update(['client_wa_number' => '-']);
+            }
         } catch (\Throwable $e) {
             Log::error('Booking schema migration error: ' . $e->getMessage());
         }
@@ -162,6 +184,18 @@ class BookingController extends Controller
                         }
                     }
 
+                    if ($field === 'payment_status') {
+                        if (empty($val) || (is_string($val) && trim($val) === '')) {
+                            $val = 'DP 1';
+                        }
+                    }
+
+                    if ($field === 'production_status') {
+                        if (empty($val) || (is_string($val) && trim($val) === '')) {
+                            $val = 'Pre-Event';
+                        }
+                    }
+
                     $booking->{$field} = $val;
                 }
             }
@@ -172,6 +206,12 @@ class BookingController extends Controller
             }
             if (empty($booking->client_wa_number)) {
                 $booking->client_wa_number = '-';
+            }
+            if (empty($booking->payment_status)) {
+                $booking->payment_status = 'DP 1';
+            }
+            if (empty($booking->production_status)) {
+                $booking->production_status = 'Pre-Event';
             }
 
             $booking->save();

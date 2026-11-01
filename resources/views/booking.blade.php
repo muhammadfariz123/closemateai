@@ -655,7 +655,16 @@
                     document.getElementById('b_paid_amount').value = b.paid_amount ? new Intl.NumberFormat('id-ID').format(b.paid_amount) : '0';
                     document.getElementById('b_discount').value = b.discount ? new Intl.NumberFormat('id-ID').format(b.discount) : '0';
                     document.getElementById('b_payment_date').value = b.payment_date ? b.payment_date.substring(0, 10) : '';
-                    document.getElementById('b_payment_status').value = b.payment_status || 'DP 1';
+                    let currentPayStatus = b.payment_status || 'DP 1';
+                    if (currentPayStatus === 'Termin 2' || currentPayStatus === 'DP 2') {
+                        currentPayStatus = 'DP 2';
+                    } else if (currentPayStatus !== 'Lunas') {
+                        currentPayStatus = 'DP 1';
+                    }
+                    document.getElementById('b_payment_status').value = currentPayStatus;
+                    if (!document.getElementById('b_payment_status').value) {
+                        document.getElementById('b_payment_status').value = 'DP 1';
+                    }
                     
                     // Production Status Custom Logic
                     const stdOptions = ['Pre-Event', 'Hari H', 'Proses Edit', 'Revisi', 'Selesai & Terkirim'];
@@ -940,8 +949,8 @@
                 total_operational_cost: totalCost,
                 net_profit: profit,
                 payment_date: document.getElementById('b_payment_date').value,
-                payment_status: document.getElementById('b_payment_status').value,
-                production_status: prodStatus,
+                payment_status: (document.getElementById('b_payment_status')?.value || 'DP 1'),
+                production_status: (prodStatus || 'Pre-Event'),
                 result_link: document.getElementById('b_result_link').value,
                 team_members: teamData,
                 notes: document.getElementById('b_notes').value,
@@ -955,6 +964,8 @@
             if (!payload.payment_date) payload.payment_date = null;
             if (!payload.start_time) payload.start_time = null;
             if (!payload.end_time) payload.end_time = null;
+            if (!payload.payment_status) payload.payment_status = 'DP 1';
+            if (!payload.production_status) payload.production_status = 'Pre-Event';
             
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             fetch('/api/bookings', {
@@ -1363,7 +1374,7 @@
                     let textCol = '#fff';
                     let borderCol = '#e0b000';
                     
-                    if (evt.payment_status === 'DP 2') {
+                    if (evt.payment_status === 'DP 2' || evt.payment_status === 'Termin 2') {
                         bgCol = '#50cd89';
                         textCol = '#fff';
                         borderCol = '#47b679';
@@ -1408,7 +1419,7 @@
             let html = '';
             bookings.forEach(b => {
                 let badgeClass = 'badge-dp1';
-                if (b.payment_status === 'DP 2') badgeClass = 'badge-dp2';
+                if (b.payment_status === 'DP 2' || b.payment_status === 'Termin 2') badgeClass = 'badge-dp2';
                 if (b.payment_status === 'Lunas') badgeClass = 'badge-lunas';
                 
                 const ownerName = '{{ auth()->check() ? auth()->user()->name : 'Penapict' }}';

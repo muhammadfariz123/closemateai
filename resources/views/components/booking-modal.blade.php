@@ -148,9 +148,10 @@
                     <div>
                         <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Status Pembayaran</label>
                         <select id="b_payment_status" class="form-control">
-                            <option>DP 1</option>
-                            <option>DP 2</option>
-                            <option>Lunas</option>
+                            <option value="DP 1">DP 1</option>
+                            <option value="DP 2">DP 2</option>
+                            <option value="Termin 2">Termin 2</option>
+                            <option value="Lunas">Lunas</option>
                         </select>
                     </div>
                     <div>
