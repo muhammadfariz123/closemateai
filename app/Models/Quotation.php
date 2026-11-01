@@ -16,4 +16,14 @@ class Quotation extends Model
         'event_date' => 'date',
         'valid_until' => 'date',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            if (empty($model->id)) {
+                $model->id = (string) \Illuminate\Support\Str::uuid();
+            }
+        });
+    }
 }
