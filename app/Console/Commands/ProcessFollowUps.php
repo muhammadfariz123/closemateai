@@ -37,26 +37,49 @@ class ProcessFollowUps extends Command
                 continue;
             }
 
+            $defaultTemplates = \App\Http\Controllers\FollowUpController::getDefaultTemplates();
+            $oldDefault2 = 'Halo Kak {nama}, sekadar mengabarkan bahwa slot tanggal {tanggal} sedang ada beberapa calon pengantin lain yang menanyakan. Apakah Kakak mau keep slot dulu?';
+            $oldDefault3 = 'Halo Kak {nama}, apakah ada opsi penyesuaian budget atau isi paket {paket} yang ingin disesuaikan dengan kebutuhan Kakak?';
+
+            $tpl1 = !empty($user->fu_1_template) ? $user->fu_1_template : $defaultTemplates[1];
+            $tpl2 = (!empty($user->fu_2_template) && $user->fu_2_template !== $oldDefault2) ? $user->fu_2_template : $defaultTemplates[2];
+            $tpl3 = (!empty($user->fu_3_template) && $user->fu_3_template !== $oldDefault3) ? $user->fu_3_template : $defaultTemplates[3];
+
             $levels = [
                 1 => [
                     'from' => 'Follow Up',
                     'to' => 'Done Follow-up 1',
                     'days' => $user->fu_1_days ?? 1,
-                    'template' => $user->fu_1_template ?? 'Halo Kak {nama}, mau tanya apakah ada yang ingin didiskusikan lagi terkait paket {paket} untuk tanggal {tanggal}? 😊'
+                    'template' => $tpl1
                 ],
                 2 => [
                     'from' => 'Done Follow-up 1',
                     'to' => 'Done Follow-up 2',
                     'days' => $user->fu_2_days ?? 3,
-                    'template' => $user->fu_2_template ?? 'Halo Kak {nama}, sekadar mengabarkan bahwa slot tanggal {tanggal} sedang ada beberapa calon pengantin lain yang menanyakan. Apakah Kakak mau keep slot dulu?'
+                    'template' => $tpl2
                 ],
                 3 => [
                     'from' => 'Done Follow-up 2',
                     'to' => 'Done Follow-up 2',
                     'days' => $user->fu_3_days ?? 7,
-                    'template' => $user->fu_3_template ?? 'Halo Kak {nama}, apakah ada opsi penyesuaian budget atau isi paket {paket} yang ingin disesuaikan dengan kebutuhan Kakak?'
+                    'template' => $tpl3
                 ]
             ];
+
+            // Resolve {link} if needed
+            $shareLink = '';
+            if (!empty($user->price_list_links)) {
+                $links = is_array($user->price_list_links) 
+                    ? $user->price_list_links 
+                    : json_decode((string)$user->price_list_links, true);
+                if (!empty($links) && is_array($links)) {
+                    $first = reset($links);
+                    $shareLink = $first['url'] ?? ($first['link'] ?? '');
+                }
+            }
+            if (empty($shareLink) && !empty($user->vendor_website)) {
+                $shareLink = $user->vendor_website;
+            }
 
             foreach ($levels as $level => $config) {
                 // Get chats that are due for follow-up
@@ -83,6 +106,7 @@ class ProcessFollowUps extends Command
                         $message = str_replace('{nama}', $chat->client_name ?: $chat->client_wa_number, $message);
                         $message = str_replace('{paket}', $chat->package ?: '-', $message);
                         $message = str_replace('{tanggal}', $chat->event_date ?: '-', $message);
+                        $message = str_replace('{link}', $shareLink ?: ($user->vendor_website ?? ''), $message);
 
                         try {
                             \Illuminate\Support\Facades\Http::withHeaders([

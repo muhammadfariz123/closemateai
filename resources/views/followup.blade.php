@@ -105,6 +105,47 @@
         .form-control { width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; resize: vertical; min-height: 80px; }
         .form-control:focus { border-color: var(--primary); }
         
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            font-size: 11px;
+            background: #f1f1f4;
+            color: var(--text-dark);
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: monospace;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: 1px solid #e4e6ef;
+            user-select: none;
+        }
+        .tag-pill:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+        .save-status-badge {
+            font-size: 12px;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .save-hint-badge {
+            font-size: 11px;
+            color: var(--text-muted);
+            background: var(--bg-light);
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
         .btn { padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { opacity: 0.9; }
@@ -316,8 +357,8 @@
                 <div class="fu-header">
                     <div class="fu-icon">1</div>
                     <div class="fu-title">
-                        <h3>Follow Up</h3>
-                        <p>Kontak berlabel "Follow Up"</p>
+                        <h3>Follow Up (Pesan Follow-Up)</h3>
+                        <p>Kontak berlabel "Follow Up" &bull; Pesan follow up awal</p>
                     </div>
                 </div>
                 
@@ -347,8 +388,25 @@
                     <div class="empty-box">Belum ada kontak</div>
                 @endif
                 
-                <label class="form-label">Template Pesan</label>
-                <textarea class="form-control" id="fu_1_template">{{ $settings['fu_1_template'] }}</textarea>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                    <label class="form-label" style="margin-bottom: 0;">Template Pesan</label>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span id="fu_1_save_status" class="save-status-badge" style="color: var(--success); opacity: 0;">
+                            <i class="fa-solid fa-check-circle"></i> Tersimpan otomatis
+                        </span>
+                        <span class="save-hint-badge">
+                            <i class="fa-regular fa-floppy-disk"></i> Klik di luar kotak untuk simpan otomatis
+                        </span>
+                    </div>
+                </div>
+                <textarea class="form-control" id="fu_1_template" rows="3" placeholder="Tulis template pesan follow-up di sini...">{{ $settings['fu_1_template'] }}</textarea>
+                <div style="margin-top: 6px; margin-bottom: 16px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                    <span style="font-size: 11px; color: var(--text-muted);">Sisipkan variabel:</span>
+                    <span class="tag-pill" onclick="insertVariable(1, '{nama}')" title="Klik untuk menyisipkan ke pesan">{nama}</span>
+                    <span class="tag-pill" onclick="insertVariable(1, '{paket}')" title="Klik untuk menyisipkan ke pesan">{paket}</span>
+                    <span class="tag-pill" onclick="insertVariable(1, '{tanggal}')" title="Klik untuk menyisipkan ke pesan">{tanggal}</span>
+                    <span class="tag-pill" onclick="insertVariable(1, '{link}')" title="Klik untuk menyisipkan ke pesan">{link}</span>
+                </div>
                 
                 <div class="action-row">
                     <button class="btn btn-secondary" onclick="processManual(1)"><i class="fa-regular fa-paper-plane"></i> Proses</button>
@@ -361,8 +419,8 @@
                 <div class="fu-header">
                     <div class="fu-icon">2</div>
                     <div class="fu-title">
-                        <h3>Done Follow-up 1</h3>
-                        <p>Kontak berlabel "Done Follow-up 1"</p>
+                        <h3>Done Follow-up 1 (Share Link)</h3>
+                        <p>Kontak berlabel "Done Follow-up 1" &bull; Pesan share link katalog / portofolio</p>
                     </div>
                 </div>
                 
@@ -392,8 +450,25 @@
                     <div class="empty-box">Belum ada kontak</div>
                 @endif
                 
-                <label class="form-label">Template Pesan</label>
-                <textarea class="form-control" id="fu_2_template">{{ $settings['fu_2_template'] }}</textarea>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                    <label class="form-label" style="margin-bottom: 0;">Template Pesan</label>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span id="fu_2_save_status" class="save-status-badge" style="color: var(--success); opacity: 0;">
+                            <i class="fa-solid fa-check-circle"></i> Tersimpan otomatis
+                        </span>
+                        <span class="save-hint-badge">
+                            <i class="fa-regular fa-floppy-disk"></i> Klik di luar kotak untuk simpan otomatis
+                        </span>
+                    </div>
+                </div>
+                <textarea class="form-control" id="fu_2_template" rows="3" placeholder="Tulis template pesan share link di sini...">{{ $settings['fu_2_template'] }}</textarea>
+                <div style="margin-top: 6px; margin-bottom: 16px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                    <span style="font-size: 11px; color: var(--text-muted);">Sisipkan variabel:</span>
+                    <span class="tag-pill" onclick="insertVariable(2, '{nama}')" title="Klik untuk menyisipkan ke pesan">{nama}</span>
+                    <span class="tag-pill" onclick="insertVariable(2, '{paket}')" title="Klik untuk menyisipkan ke pesan">{paket}</span>
+                    <span class="tag-pill" onclick="insertVariable(2, '{tanggal}')" title="Klik untuk menyisipkan ke pesan">{tanggal}</span>
+                    <span class="tag-pill" onclick="insertVariable(2, '{link}')" title="Klik untuk menyisipkan ke pesan">{link}</span>
+                </div>
                 
                 <div class="action-row">
                     <button class="btn btn-secondary" onclick="processManual(2)"><i class="fa-regular fa-paper-plane"></i> Proses</button>
@@ -406,8 +481,8 @@
                 <div class="fu-header">
                     <div class="fu-icon">3</div>
                     <div class="fu-title">
-                        <h3>Done Follow-up 2</h3>
-                        <p>Kontak berlabel "Done Follow-up 2"</p>
+                        <h3>Done Follow-up 2 (Penawaran Kerjasama)</h3>
+                        <p>Kontak berlabel "Done Follow-up 2" &bull; Penawaran kerjasama vendor (MUA, Dekorasi, WO, Entertain)</p>
                     </div>
                 </div>
                 
@@ -437,8 +512,25 @@
                     <div class="empty-box">Belum ada kontak</div>
                 @endif
                 
-                <label class="form-label">Template Pesan</label>
-                <textarea class="form-control" id="fu_3_template">{{ $settings['fu_3_template'] }}</textarea>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                    <label class="form-label" style="margin-bottom: 0;">Template Pesan</label>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span id="fu_3_save_status" class="save-status-badge" style="color: var(--success); opacity: 0;">
+                            <i class="fa-solid fa-check-circle"></i> Tersimpan otomatis
+                        </span>
+                        <span class="save-hint-badge">
+                            <i class="fa-regular fa-floppy-disk"></i> Klik di luar kotak untuk simpan otomatis
+                        </span>
+                    </div>
+                </div>
+                <textarea class="form-control" id="fu_3_template" rows="3" placeholder="Tulis template pesan penawaran kerjasama di sini...">{{ $settings['fu_3_template'] }}</textarea>
+                <div style="margin-top: 6px; margin-bottom: 16px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                    <span style="font-size: 11px; color: var(--text-muted);">Sisipkan variabel:</span>
+                    <span class="tag-pill" onclick="insertVariable(3, '{nama}')" title="Klik untuk menyisipkan ke pesan">{nama}</span>
+                    <span class="tag-pill" onclick="insertVariable(3, '{paket}')" title="Klik untuk menyisipkan ke pesan">{paket}</span>
+                    <span class="tag-pill" onclick="insertVariable(3, '{tanggal}')" title="Klik untuk menyisipkan ke pesan">{tanggal}</span>
+                    <span class="tag-pill" onclick="insertVariable(3, '{link}')" title="Klik untuk menyisipkan ke pesan">{link}</span>
+                </div>
                 
                 <div class="action-row">
                     <button class="btn btn-secondary" onclick="processManual(3)"><i class="fa-regular fa-paper-plane"></i> Proses</button>
@@ -574,6 +666,101 @@
             });
         }
 
+        // Tracking template values to avoid redundant saves
+        const templateState = {
+            1: (document.getElementById('fu_1_template')?.value || ''),
+            2: (document.getElementById('fu_2_template')?.value || ''),
+            3: (document.getElementById('fu_3_template')?.value || '')
+        };
+
+        function insertVariable(level, variable) {
+            const textarea = document.getElementById(`fu_${level}_template`);
+            if (!textarea) return;
+            
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            
+            if (start !== undefined && end !== undefined) {
+                textarea.value = text.substring(0, start) + variable + text.substring(end);
+                textarea.selectionStart = textarea.selectionEnd = start + variable.length;
+            } else {
+                textarea.value += variable;
+            }
+            textarea.focus();
+            autoSaveTemplate(level);
+        }
+
+        function autoSaveTemplate(level) {
+            const textarea = document.getElementById(`fu_${level}_template`);
+            if (!textarea) return;
+            const currentVal = textarea.value;
+            
+            // Only save if the value has actually changed
+            if (templateState[level] === currentVal) {
+                return;
+            }
+
+            const statusBadge = document.getElementById(`fu_${level}_save_status`);
+            if (statusBadge) {
+                statusBadge.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+                statusBadge.style.color = 'var(--text-muted)';
+                statusBadge.style.opacity = '1';
+            }
+
+            const payload = {};
+            payload[`fu_${level}_template`] = currentVal;
+
+            fetch('/api/followup/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    templateState[level] = currentVal;
+                    if (statusBadge) {
+                        statusBadge.innerHTML = `<i class="fa-solid fa-check-circle"></i> Tersimpan otomatis`;
+                        statusBadge.style.color = 'var(--success)';
+                        statusBadge.style.opacity = '1';
+                        setTimeout(() => {
+                            statusBadge.style.opacity = '0';
+                        }, 3000);
+                    }
+                    showToast(`Template Follow Up ${level} berhasil disimpan otomatis!`);
+                } else {
+                    if (statusBadge) {
+                        statusBadge.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Gagal menyimpan`;
+                        statusBadge.style.color = 'var(--danger)';
+                    }
+                    showToast("Gagal menyimpan template pesan", true);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (statusBadge) {
+                    statusBadge.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Gagal menyimpan`;
+                    statusBadge.style.color = 'var(--danger)';
+                }
+                showToast("Terjadi kesalahan jaringan saat menyimpan template", true);
+            });
+        }
+
+        // Attach auto-save when user leaves textarea (click outside / blur)
+        document.addEventListener('DOMContentLoaded', () => {
+            [1, 2, 3].forEach(level => {
+                const el = document.getElementById(`fu_${level}_template`);
+                if (el) {
+                    el.addEventListener('blur', () => autoSaveTemplate(level));
+                    el.addEventListener('change', () => autoSaveTemplate(level));
+                }
+            });
+        });
+
         function saveSettings() {
             const data = {
                 fu_is_active: document.getElementById('fu_is_active').checked,
@@ -596,6 +783,9 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
+                    templateState[1] = data.fu_1_template || document.getElementById('fu_1_template').value;
+                    templateState[2] = data.fu_2_template || document.getElementById('fu_2_template').value;
+                    templateState[3] = data.fu_3_template || document.getElementById('fu_3_template').value;
                     showToast(data.message);
                 }
             })
@@ -606,15 +796,36 @@
         }
 
         function processManual(level) {
+            const templateInput = document.getElementById(`fu_${level}_template`);
+            const currentTemplate = templateInput ? templateInput.value : '';
+
+            // Update templateState
+            templateState[level] = currentTemplate;
+
+            const targetBtn = event?.currentTarget || event?.target;
+            let originalHtml = '';
+            if (targetBtn) {
+                originalHtml = targetBtn.innerHTML;
+                targetBtn.disabled = true;
+                targetBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memproses...`;
+            }
+
             fetch(`/api/followup/process/${level}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
+                },
+                body: JSON.stringify({
+                    template: currentTemplate
+                })
             })
             .then(res => res.json())
             .then(data => {
+                if (targetBtn) {
+                    targetBtn.disabled = false;
+                    targetBtn.innerHTML = originalHtml;
+                }
                 if (data.success) {
                     showToast(data.message);
                     setTimeout(() => {
@@ -638,6 +849,10 @@
             })
             .catch(err => {
                 console.error(err);
+                if (targetBtn) {
+                    targetBtn.disabled = false;
+                    targetBtn.innerHTML = originalHtml;
+                }
                 alert("Gagal memproses follow-up.");
             });
         }

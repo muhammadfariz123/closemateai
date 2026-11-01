@@ -55,6 +55,13 @@ class User extends Authenticatable
         'invoice_format',
         'role',
         'owner_id',
+        'fu_is_active',
+        'fu_1_days',
+        'fu_1_template',
+        'fu_2_days',
+        'fu_2_template',
+        'fu_3_days',
+        'fu_3_template',
     ];
 
     public function getEffectiveOwner()
