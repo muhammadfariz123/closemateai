@@ -129,32 +129,42 @@ class FinanceController extends Controller
         $owner = $this->getEffectiveOwnerUser();
         $ownerId = $owner ? $owner->id : 1;
 
+        $deletedIds = $request->input('deleted_ids', []);
+        if (!empty($deletedIds) && is_array($deletedIds)) {
+            FinancialMasterSalary::where('user_id', $ownerId)->whereIn('id', $deletedIds)->delete();
+        }
+
         $items = $request->input('items', []);
         foreach ($items as $item) {
-            if (!empty($item['id'])) {
+            $name = trim($item['name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+
+            $qty = isset($item['qty']) ? (float)$item['qty'] : 1;
+            $price = isset($item['price']) ? (float)$item['price'] : 0;
+            $total = $qty * $price;
+
+            if (!empty($item['id']) && is_numeric($item['id'])) {
                 $sal = FinancialMasterSalary::where('user_id', $ownerId)->find($item['id']);
                 if ($sal) {
-                    $qty = isset($item['qty']) ? (float)$item['qty'] : (float)$sal->qty;
-                    $price = isset($item['price']) ? (float)$item['price'] : (float)$sal->price;
                     $sal->update([
-                        'name' => $item['name'] ?? $sal->name,
+                        'name' => $name,
                         'position' => $item['position'] ?? $sal->position,
                         'qty' => $qty,
                         'price' => $price,
-                        'total' => $qty * $price,
+                        'total' => $total,
                     ]);
                 }
-            } elseif (!empty($item['name'])) {
-                $qty = isset($item['qty']) ? (float)$item['qty'] : 1;
-                $price = isset($item['price']) ? (float)$item['price'] : 0;
+            } else {
                 FinancialMasterSalary::create([
                     'user_id' => $ownerId,
                     'division' => $item['division'] ?? 'studio',
-                    'name' => $item['name'],
+                    'name' => $name,
                     'position' => $item['position'] ?? null,
                     'qty' => $qty,
                     'price' => $price,
-                    'total' => $qty * $price,
+                    'total' => $total,
                 ]);
             }
         }
@@ -177,29 +187,39 @@ class FinanceController extends Controller
         $owner = $this->getEffectiveOwnerUser();
         $ownerId = $owner ? $owner->id : 1;
 
+        $deletedIds = $request->input('deleted_ids', []);
+        if (!empty($deletedIds) && is_array($deletedIds)) {
+            FinancialMonthlyOperation::where('user_id', $ownerId)->whereIn('id', $deletedIds)->delete();
+        }
+
         $items = $request->input('items', []);
         foreach ($items as $item) {
-            if (!empty($item['id'])) {
+            $name = trim($item['name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+
+            $qty = isset($item['qty']) ? (float)$item['qty'] : 1;
+            $price = isset($item['price']) ? (float)$item['price'] : 0;
+            $total = $qty * $price;
+
+            if (!empty($item['id']) && is_numeric($item['id'])) {
                 $op = FinancialMonthlyOperation::where('user_id', $ownerId)->find($item['id']);
                 if ($op) {
-                    $qty = isset($item['qty']) ? (float)$item['qty'] : (float)$op->qty;
-                    $price = isset($item['price']) ? (float)$item['price'] : (float)$op->price;
                     $op->update([
-                        'name' => $item['name'] ?? $op->name,
+                        'name' => $name,
                         'qty' => $qty,
                         'price' => $price,
-                        'total' => $qty * $price,
+                        'total' => $total,
                     ]);
                 }
-            } elseif (!empty($item['name'])) {
-                $qty = isset($item['qty']) ? (float)$item['qty'] : 1;
-                $price = isset($item['price']) ? (float)$item['price'] : 0;
+            } else {
                 FinancialMonthlyOperation::create([
                     'user_id' => $ownerId,
-                    'name' => $item['name'],
+                    'name' => $name,
                     'qty' => $qty,
                     'price' => $price,
-                    'total' => $qty * $price,
+                    'total' => $total,
                 ]);
             }
         }

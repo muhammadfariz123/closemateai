@@ -605,7 +605,12 @@
             <div id="master_tab_content">
                 <!-- Studio Tab -->
                 <div id="master_content_studio">
-                    <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Daftar staf tetap studio Penapict (tab <strong>BEBAN GAJI DIVISI STUDIO</strong> di Excel):</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <p style="font-size: 12px; color: #64748b; margin: 0;">Daftar staf tetap studio Penapict (tab <strong>BEBAN GAJI DIVISI STUDIO</strong> di Excel):</p>
+                        <button type="button" class="btn btn-outline" onclick="addMasterStudioRow()" style="font-size: 12px; padding: 6px 14px; font-weight: 600; border-color: #2563eb; color: #2563eb; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-plus"></i> Tambah Staf Baru
+                        </button>
+                    </div>
                     <div id="master_studio_table_container" style="overflow-x: auto; margin-bottom: 16px;">
                         <!-- Table injected via JS -->
                     </div>
@@ -613,7 +618,12 @@
 
                 <!-- Sosmed Tab -->
                 <div id="master_content_sosmed" style="display: none;">
-                    <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Daftar channel sosmed (tab <strong>BEBAN GAJI DIVISI SOSMED</strong> di Excel):</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <p style="font-size: 12px; color: #64748b; margin: 0;">Daftar channel sosmed (tab <strong>BEBAN GAJI DIVISI SOSMED</strong> di Excel):</p>
+                        <button type="button" class="btn btn-outline" onclick="addMasterSosmedRow()" style="font-size: 12px; padding: 6px 14px; font-weight: 600; border-color: #2563eb; color: #2563eb; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-plus"></i> Tambah Channel / Pos
+                        </button>
+                    </div>
                     <div id="master_sosmed_table_container" style="overflow-x: auto; margin-bottom: 16px;">
                         <!-- Table injected via JS -->
                     </div>
@@ -621,7 +631,12 @@
 
                 <!-- Ops Tab -->
                 <div id="master_content_ops" style="display: none;">
-                    <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Biaya operasional rutin tetap (tab <strong>OPERASIONAL BULANAN</strong> di Excel):</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <p style="font-size: 12px; color: #64748b; margin: 0;">Biaya operasional rutin tetap (tab <strong>OPERASIONAL BULANAN</strong> di Excel):</p>
+                        <button type="button" class="btn btn-outline" onclick="addMasterOpsRow()" style="font-size: 12px; padding: 6px 14px; font-weight: 600; border-color: #2563eb; color: #2563eb; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-plus"></i> Tambah Pengeluaran Rutin
+                        </button>
+                    </div>
                     <div id="master_ops_table_container" style="overflow-x: auto; margin-bottom: 16px;">
                         <!-- Table injected via JS -->
                     </div>
@@ -698,10 +713,14 @@
 
         let masterSalariesData = [];
         let masterOpsData = [];
+        let deletedSalariesIds = [];
+        let deletedOpsIds = [];
         let currentMasterTab = 'studio';
 
         async function openMasterModal() {
             document.getElementById('masterModal').style.display = 'flex';
+            deletedSalariesIds = [];
+            deletedOpsIds = [];
             await loadMasterData();
         }
 
@@ -729,6 +748,34 @@
             });
         }
 
+        function syncInputsToState() {
+            masterSalariesData.forEach(s => {
+                const nameInp = document.getElementById('ms_name_' + s.id);
+                const posInp = document.getElementById('ms_pos_' + s.id);
+                const qtyInp = document.getElementById('ms_qty_' + s.id);
+                const priceInp = document.getElementById('ms_price_' + s.id);
+                if (nameInp) s.name = nameInp.value;
+                if (posInp) s.position = posInp.value;
+                if (qtyInp) s.qty = parseInt(qtyInp.value) || 1;
+                if (priceInp) {
+                    s.price = parseRupiah(priceInp.value) || 0;
+                    s.total = s.qty * s.price;
+                }
+            });
+
+            masterOpsData.forEach(op => {
+                const nameInp = document.getElementById('mop_name_' + op.id);
+                const qtyInp = document.getElementById('mop_qty_' + op.id);
+                const priceInp = document.getElementById('mop_price_' + op.id);
+                if (nameInp) op.name = nameInp.value;
+                if (qtyInp) op.qty = parseInt(qtyInp.value) || 1;
+                if (priceInp) {
+                    op.price = parseRupiah(priceInp.value) || 0;
+                    op.total = op.qty * op.price;
+                }
+            });
+        }
+
         async function loadMasterData() {
             try {
                 const resSal = await fetch('/api/finance/master-salaries');
@@ -750,6 +797,127 @@
             }
         }
 
+        // Live Calculation functions
+        function updateStudioTotal() {
+            let sum = 0;
+            const studioItems = masterSalariesData.filter(s => s.division === 'studio');
+            studioItems.forEach(s => {
+                const qtyEl = document.getElementById('ms_qty_' + s.id);
+                const priceEl = document.getElementById('ms_price_' + s.id);
+                const qty = qtyEl ? (parseInt(qtyEl.value) || 0) : (s.qty || 0);
+                const price = priceEl ? (parseRupiah(priceEl.value) || 0) : (s.price || 0);
+                sum += (qty * price);
+            });
+            const disp = document.getElementById('total_studio_display');
+            if (disp) disp.innerText = 'Rp ' + formatRupiah(sum);
+        }
+
+        function updateSosmedTotal() {
+            let sum = 0;
+            const sosmedItems = masterSalariesData.filter(s => s.division === 'sosmed');
+            sosmedItems.forEach(s => {
+                const qtyEl = document.getElementById('ms_qty_' + s.id);
+                const priceEl = document.getElementById('ms_price_' + s.id);
+                const qty = qtyEl ? (parseInt(qtyEl.value) || 0) : (s.qty || 0);
+                const price = priceEl ? (parseRupiah(priceEl.value) || 0) : (s.price || 0);
+                sum += (qty * price);
+            });
+            const disp = document.getElementById('total_sosmed_display');
+            if (disp) disp.innerText = 'Rp ' + formatRupiah(sum);
+        }
+
+        function updateOpsTotal() {
+            let sum = 0;
+            masterOpsData.forEach(op => {
+                const qtyEl = document.getElementById('mop_qty_' + op.id);
+                const priceEl = document.getElementById('mop_price_' + op.id);
+                const qty = qtyEl ? (parseInt(qtyEl.value) || 0) : (op.qty || 0);
+                const price = priceEl ? (parseRupiah(priceEl.value) || 0) : (op.price || 0);
+                sum += (qty * price);
+            });
+            const disp = document.getElementById('total_ops_display');
+            if (disp) disp.innerText = 'Rp ' + formatRupiah(sum);
+        }
+
+        // Add new row functions (automatic insert at the bottom)
+        function addMasterStudioRow() {
+            syncInputsToState();
+            const newId = 'new_studio_' + Date.now();
+            masterSalariesData.push({
+                id: newId,
+                division: 'studio',
+                name: '',
+                position: '',
+                qty: 1,
+                price: 0,
+                total: 0
+            });
+            renderMasterStudioTable();
+            setTimeout(() => {
+                const el = document.getElementById('ms_name_' + newId);
+                if (el) el.focus();
+            }, 50);
+        }
+
+        function addMasterSosmedRow() {
+            syncInputsToState();
+            const newId = 'new_sosmed_' + Date.now();
+            masterSalariesData.push({
+                id: newId,
+                division: 'sosmed',
+                name: '',
+                position: '',
+                qty: 1,
+                price: 0,
+                total: 0
+            });
+            renderMasterSosmedTable();
+            setTimeout(() => {
+                const el = document.getElementById('ms_name_' + newId);
+                if (el) el.focus();
+            }, 50);
+        }
+
+        function addMasterOpsRow() {
+            syncInputsToState();
+            const newId = 'new_ops_' + Date.now();
+            masterOpsData.push({
+                id: newId,
+                name: '',
+                qty: 1,
+                price: 0,
+                total: 0
+            });
+            renderMasterOpsTable();
+            setTimeout(() => {
+                const el = document.getElementById('mop_name_' + newId);
+                if (el) el.focus();
+            }, 50);
+        }
+
+        // Delete row functions
+        function deleteMasterSalaryRow(id, division) {
+            syncInputsToState();
+            if (typeof id === 'number' || (!String(id).startsWith('new_') && !isNaN(id))) {
+                deletedSalariesIds.push(Number(id));
+            }
+            masterSalariesData = masterSalariesData.filter(s => String(s.id) !== String(id));
+            if (division === 'sosmed') {
+                renderMasterSosmedTable();
+            } else {
+                renderMasterStudioTable();
+            }
+        }
+
+        function deleteMasterOpsRow(id) {
+            syncInputsToState();
+            if (typeof id === 'number' || (!String(id).startsWith('new_') && !isNaN(id))) {
+                deletedOpsIds.push(Number(id));
+            }
+            masterOpsData = masterOpsData.filter(op => String(op.id) !== String(id));
+            renderMasterOpsTable();
+        }
+
         function renderMasterStudioTable() {
             const container = document.getElementById('master_studio_table_container');
             if (!container) return;
@@ -762,22 +930,47 @@
                             <th style="padding: 8px 10px; border: 1px solid #cbd5e1;">Jabatan</th>
                             <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 60px;">QTY</th>
                             <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 140px;">Gaji / Tarif (Rp)</th>
+                            <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 45px; text-align: center;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
-            studioItems.forEach((item, idx) => {
+            studioItems.forEach((item) => {
                 html += `
                     <tr>
-                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_name_${item.id}" value="${item.name || ''}"></td>
-                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_pos_${item.id}" value="${item.position || ''}"></td>
-                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="number" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_qty_${item.id}" value="${item.qty || 1}"></td>
-                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_price_${item.id}" value="${formatRupiah(item.price || 0)}" oninput="formatRupiahInput(this)"></td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
+                            <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_name_${item.id}" value="${item.name || ''}" placeholder="Nama staf">
+                        </td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
+                            <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_pos_${item.id}" value="${item.position || ''}" placeholder="Jabatan">
+                        </td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
+                            <input type="number" min="1" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_qty_${item.id}" value="${item.qty || 1}" oninput="updateStudioTotal()">
+                        </td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
+                            <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_price_${item.id}" value="${formatRupiah(item.price || 0)}" oninput="formatRupiahInput(this); updateStudioTotal()">
+                        </td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1; text-align: center;">
+                            <button type="button" onclick="deleteMasterSalaryRow('${item.id}', 'studio')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px; font-size: 14px;" title="Hapus baris">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
-            html += `</tbody></table>`;
+            html += `
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #f8fafc; font-weight: 700; color: #1e293b;">
+                            <td colspan="3" style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: right;">TOTAL:</td>
+                            <td id="total_studio_display" style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: right; color: #2563eb;">Rp 0</td>
+                            <td style="border: 1px solid #cbd5e1;"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
             container.innerHTML = html;
+            updateStudioTotal();
         }
 
         function renderMasterSosmedTable() {
@@ -791,21 +984,44 @@
                             <th style="padding: 8px 10px; border: 1px solid #cbd5e1;">Nama Channel Sosmed</th>
                             <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 60px;">QTY</th>
                             <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 140px;">Biaya / Gaji (Rp)</th>
+                            <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 45px; text-align: center;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
-            sosmedItems.forEach((item, idx) => {
+            sosmedItems.forEach((item) => {
                 html += `
                     <tr>
-                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_name_${item.id}" value="${item.name || ''}"></td>
-                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="number" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_qty_${item.id}" value="${item.qty || 1}"></td>
-                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_price_${item.id}" value="${formatRupiah(item.price || 0)}" oninput="formatRupiahInput(this)"></td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
+                            <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_name_${item.id}" value="${item.name || ''}" placeholder="Nama channel / pos">
+                        </td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
+                            <input type="number" min="1" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_qty_${item.id}" value="${item.qty || 1}" oninput="updateSosmedTotal()">
+                        </td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
+                            <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_price_${item.id}" value="${formatRupiah(item.price || 0)}" oninput="formatRupiahInput(this); updateSosmedTotal()">
+                        </td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1; text-align: center;">
+                            <button type="button" onclick="deleteMasterSalaryRow('${item.id}', 'sosmed')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px; font-size: 14px;" title="Hapus baris">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
-            html += `</tbody></table>`;
+            html += `
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #f8fafc; font-weight: 700; color: #1e293b;">
+                            <td colspan="2" style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: right;">TOTAL:</td>
+                            <td id="total_sosmed_display" style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: right; color: #2563eb;">Rp 0</td>
+                            <td style="border: 1px solid #cbd5e1;"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
             container.innerHTML = html;
+            updateSosmedTotal();
         }
 
         function renderMasterOpsTable() {
@@ -818,21 +1034,44 @@
                             <th style="padding: 8px 10px; border: 1px solid #cbd5e1;">Nama Pengeluaran Bulanan</th>
                             <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 60px;">QTY</th>
                             <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 140px;">Biaya Rutin (Rp)</th>
+                            <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 45px; text-align: center;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
-            masterOpsData.forEach((item, idx) => {
+            masterOpsData.forEach((item) => {
                 html += `
                     <tr>
-                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="mop_name_${item.id}" value="${item.name || ''}"></td>
-                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="number" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="mop_qty_${item.id}" value="${item.qty || 1}"></td>
-                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="mop_price_${item.id}" value="${formatRupiah(item.price || 0)}" oninput="formatRupiahInput(this)"></td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
+                            <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="mop_name_${item.id}" value="${item.name || ''}" placeholder="Nama pengeluaran">
+                        </td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
+                            <input type="number" min="1" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="mop_qty_${item.id}" value="${item.qty || 1}" oninput="updateOpsTotal()">
+                        </td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
+                            <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="mop_price_${item.id}" value="${formatRupiah(item.price || 0)}" oninput="formatRupiahInput(this); updateOpsTotal()">
+                        </td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1; text-align: center;">
+                            <button type="button" onclick="deleteMasterOpsRow('${item.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px; font-size: 14px;" title="Hapus baris">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
-            html += `</tbody></table>`;
+            html += `
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #f8fafc; font-weight: 700; color: #1e293b;">
+                            <td colspan="2" style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: right;">TOTAL:</td>
+                            <td id="total_ops_display" style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: right; color: #2563eb;">Rp 0</td>
+                            <td style="border: 1px solid #cbd5e1;"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
             container.innerHTML = html;
+            updateOpsTotal();
         }
 
         async function saveMasterData() {
@@ -840,50 +1079,42 @@
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Menyimpan...';
             btn.disabled = true;
 
+            syncInputsToState();
+
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-            const updatedSalaries = masterSalariesData.map(s => {
-                const nameInp = document.getElementById('ms_name_' + s.id);
-                const posInp = document.getElementById('ms_pos_' + s.id);
-                const qtyInp = document.getElementById('ms_qty_' + s.id);
-                const priceInp = document.getElementById('ms_price_' + s.id);
-                return {
-                    id: s.id,
-                    division: s.division,
-                    name: nameInp ? nameInp.value : s.name,
-                    position: posInp ? posInp.value : s.position,
-                    qty: qtyInp ? parseInt(qtyInp.value) : s.qty,
-                    price: priceInp ? parseRupiah(priceInp.value) : s.price
-                };
-            });
+            const updatedSalaries = masterSalariesData.map(s => ({
+                id: (typeof s.id === 'string' && s.id.startsWith('new_')) ? null : s.id,
+                division: s.division,
+                name: s.name,
+                position: s.position,
+                qty: s.qty,
+                price: s.price
+            }));
 
-            const updatedOps = masterOpsData.map(op => {
-                const nameInp = document.getElementById('mop_name_' + op.id);
-                const qtyInp = document.getElementById('mop_qty_' + op.id);
-                const priceInp = document.getElementById('mop_price_' + op.id);
-                return {
-                    id: op.id,
-                    name: nameInp ? nameInp.value : op.name,
-                    qty: qtyInp ? parseInt(qtyInp.value) : op.qty,
-                    price: priceInp ? parseRupiah(priceInp.value) : op.price
-                };
-            });
+            const updatedOps = masterOpsData.map(op => ({
+                id: (typeof op.id === 'string' && op.id.startsWith('new_')) ? null : op.id,
+                name: op.name,
+                qty: op.qty,
+                price: op.price
+            }));
 
             try {
                 await fetch('/api/finance/master-salaries', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken || '' },
-                    body: JSON.stringify({ items: updatedSalaries })
+                    body: JSON.stringify({ items: updatedSalaries, deleted_ids: deletedSalariesIds })
                 });
 
                 await fetch('/api/finance/monthly-operations', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken || '' },
-                    body: JSON.stringify({ items: updatedOps })
+                    body: JSON.stringify({ items: updatedOps, deleted_ids: deletedOpsIds })
                 });
 
                 showToast("Master biaya & gaji berhasil diperbarui!");
                 closeMasterModal();
+                await loadMasterData();
             } catch(e) {
                 console.error("Save master error:", e);
                 alert("Gagal menyimpan data master");
