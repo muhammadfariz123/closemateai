@@ -348,8 +348,9 @@
             <button class="btn btn-date" id="btn_custom_range_wrapper"><i class="fa-regular fa-calendar"></i> <span id="btn_custom_range">Custom Range</span></button>
         </div>
         
-        <div class="filter-row" style="margin-bottom: 24px;">
+        <div class="filter-row" style="margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 10px;">
             <button class="btn btn-outline" onclick="exportLaporanCSV()" style="font-weight: 600; display: inline-flex; align-items: center; gap: 8px;"><i class="fa-solid fa-file-excel" style="color: #10b981; font-size: 1.1rem;"></i> Export Laporan CSV</button>
+            <button class="btn btn-outline" onclick="openMasterModal()" style="font-weight: 600; display: inline-flex; align-items: center; gap: 8px;"><i class="fa-solid fa-sliders" style="color: #6366f1;"></i> Master Biaya &amp; Gaji</button>
             <button class="btn btn-primary" onclick="openExpenseModal()"><i class="fa-solid fa-plus"></i> Catat Pengeluaran Baru</button>
         </div>
         
@@ -580,6 +581,76 @@
         </div>
     </div>
 
+    <!-- Master Biaya & Gaji Modal -->
+    <div class="modal-overlay" id="masterModal" style="display: none; align-items: center; justify-content: center; z-index: 1050;">
+        <div class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; background: white; border-radius: 12px; padding: 24px;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                <div>
+                    <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 4px; color: #1e293b;">
+                        <i class="fa-solid fa-sliders" style="color: #6366f1; margin-right: 6px;"></i> Kelola Master Biaya &amp; Gaji
+                    </h2>
+                    <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Pengaturan nilai gaji divisi dan biaya operasional bulanan yang masuk ke tab Excel.</p>
+                </div>
+                <button onclick="closeMasterModal()" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Tabs -->
+            <div style="display: flex; gap: 8px; border-bottom: 2px solid #e2e8f0; margin-bottom: 16px;">
+                <button type="button" class="master-tab-btn active" id="mtab_btn_studio" onclick="switchMasterTab('studio')" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: none; border-bottom: 2px solid #2563eb; color: #2563eb; cursor: pointer;">Gaji Studio</button>
+                <button type="button" class="master-tab-btn" id="mtab_btn_sosmed" onclick="switchMasterTab('sosmed')" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: none; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer;">Gaji Sosmed</button>
+                <button type="button" class="master-tab-btn" id="mtab_btn_ops" onclick="switchMasterTab('ops')" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: none; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer;">Operasional Bulanan</button>
+                <button type="button" class="master-tab-btn" id="mtab_btn_album" onclick="switchMasterTab('album')" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: none; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer;">Info Album</button>
+            </div>
+
+            <div id="master_tab_content">
+                <!-- Studio Tab -->
+                <div id="master_content_studio">
+                    <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Daftar staf tetap studio Penapict (tab <strong>BEBAN GAJI DIVISI STUDIO</strong> di Excel):</p>
+                    <div id="master_studio_table_container" style="overflow-x: auto; margin-bottom: 16px;">
+                        <!-- Table injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Sosmed Tab -->
+                <div id="master_content_sosmed" style="display: none;">
+                    <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Daftar channel sosmed (tab <strong>BEBAN GAJI DIVISI SOSMED</strong> di Excel):</p>
+                    <div id="master_sosmed_table_container" style="overflow-x: auto; margin-bottom: 16px;">
+                        <!-- Table injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Ops Tab -->
+                <div id="master_content_ops" style="display: none;">
+                    <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Biaya operasional rutin tetap (tab <strong>OPERASIONAL BULANAN</strong> di Excel):</p>
+                    <div id="master_ops_table_container" style="overflow-x: auto; margin-bottom: 16px;">
+                        <!-- Table injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Album Tab -->
+                <div id="master_content_album" style="display: none;">
+                    <div style="padding: 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; color: #166534; font-size: 13px;">
+                        <h4 style="font-weight: 700; margin-bottom: 6px;"><i class="fa-solid fa-boxes-stacked"></i> Tab ALBUM Terhubung ke Stock Opname</h4>
+                        <p style="margin-bottom: 8px;">Semua data pada tab <strong>ALBUM</strong> di file Excel diambil langsung secara otomatis dari menu <strong>Stock Opname &amp; Inventaris</strong> (kategori Album).</p>
+                        <p style="margin: 0;">Untuk menambah, mengubah stok fisik, atau harga persediaan album, Anda dapat langsung mengaturnya di menu <strong>Stock Opname</strong>.</p>
+                        <div style="margin-top: 12px;">
+                            <a href="/stock" class="btn btn-primary" style="font-size: 12px; padding: 6px 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Menu Stock Opname
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                <button class="btn btn-outline" onclick="closeMasterModal()">Tutup</button>
+                <button class="btn btn-primary" id="btnSaveMaster" onclick="saveMasterData()">
+                    <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container" id="toast-container"></div>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     
@@ -622,6 +693,203 @@
                 }
             } catch(e) {
                 console.warn("Could not sync expenses from server:", e);
+            }
+        }
+
+        let masterSalariesData = [];
+        let masterOpsData = [];
+        let currentMasterTab = 'studio';
+
+        async function openMasterModal() {
+            document.getElementById('masterModal').style.display = 'flex';
+            await loadMasterData();
+        }
+
+        function closeMasterModal() {
+            document.getElementById('masterModal').style.display = 'none';
+        }
+
+        function switchMasterTab(tab) {
+            currentMasterTab = tab;
+            ['studio', 'sosmed', 'ops', 'album'].forEach(t => {
+                const btn = document.getElementById('mtab_btn_' + t);
+                const content = document.getElementById('master_content_' + t);
+                if (btn) {
+                    if (t === tab) {
+                        btn.style.color = '#2563eb';
+                        btn.style.borderBottomColor = '#2563eb';
+                    } else {
+                        btn.style.color = '#64748b';
+                        btn.style.borderBottomColor = 'transparent';
+                    }
+                }
+                if (content) {
+                    content.style.display = (t === tab) ? 'block' : 'none';
+                }
+            });
+        }
+
+        async function loadMasterData() {
+            try {
+                const resSal = await fetch('/api/finance/master-salaries');
+                const dataSal = await resSal.json();
+                if (dataSal.success) {
+                    masterSalariesData = dataSal.data || [];
+                    renderMasterStudioTable();
+                    renderMasterSosmedTable();
+                }
+
+                const resOps = await fetch('/api/finance/monthly-operations');
+                const dataOps = await resOps.json();
+                if (dataOps.success) {
+                    masterOpsData = dataOps.data || [];
+                    renderMasterOpsTable();
+                }
+            } catch(e) {
+                console.error("Error loading master data:", e);
+            }
+        }
+
+        function renderMasterStudioTable() {
+            const container = document.getElementById('master_studio_table_container');
+            if (!container) return;
+            const studioItems = masterSalariesData.filter(s => s.division === 'studio');
+            let html = `
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f1f5f9; text-align: left; color: #334155;">
+                            <th style="padding: 8px 10px; border: 1px solid #cbd5e1;">Nama</th>
+                            <th style="padding: 8px 10px; border: 1px solid #cbd5e1;">Jabatan</th>
+                            <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 60px;">QTY</th>
+                            <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 140px;">Gaji / Tarif (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            studioItems.forEach((item, idx) => {
+                html += `
+                    <tr>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_name_${item.id}" value="${item.name || ''}"></td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_pos_${item.id}" value="${item.position || ''}"></td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="number" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_qty_${item.id}" value="${item.qty || 1}"></td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_price_${item.id}" value="${formatRupiah(item.price || 0)}" oninput="formatRupiahInput(this)"></td>
+                    </tr>
+                `;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        function renderMasterSosmedTable() {
+            const container = document.getElementById('master_sosmed_table_container');
+            if (!container) return;
+            const sosmedItems = masterSalariesData.filter(s => s.division === 'sosmed');
+            let html = `
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f1f5f9; text-align: left; color: #334155;">
+                            <th style="padding: 8px 10px; border: 1px solid #cbd5e1;">Nama Channel Sosmed</th>
+                            <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 60px;">QTY</th>
+                            <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 140px;">Biaya / Gaji (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            sosmedItems.forEach((item, idx) => {
+                html += `
+                    <tr>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_name_${item.id}" value="${item.name || ''}"></td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="number" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_qty_${item.id}" value="${item.qty || 1}"></td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_price_${item.id}" value="${formatRupiah(item.price || 0)}" oninput="formatRupiahInput(this)"></td>
+                    </tr>
+                `;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        function renderMasterOpsTable() {
+            const container = document.getElementById('master_ops_table_container');
+            if (!container) return;
+            let html = `
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f1f5f9; text-align: left; color: #334155;">
+                            <th style="padding: 8px 10px; border: 1px solid #cbd5e1;">Nama Pengeluaran Bulanan</th>
+                            <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 60px;">QTY</th>
+                            <th style="padding: 8px 10px; border: 1px solid #cbd5e1; width: 140px;">Biaya Rutin (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            masterOpsData.forEach((item, idx) => {
+                html += `
+                    <tr>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="mop_name_${item.id}" value="${item.name || ''}"></td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="number" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="mop_qty_${item.id}" value="${item.qty || 1}"></td>
+                        <td style="padding: 6px 10px; border: 1px solid #cbd5e1;"><input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="mop_price_${item.id}" value="${formatRupiah(item.price || 0)}" oninput="formatRupiahInput(this)"></td>
+                    </tr>
+                `;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        async function saveMasterData() {
+            const btn = document.getElementById('btnSaveMaster');
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Menyimpan...';
+            btn.disabled = true;
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            const updatedSalaries = masterSalariesData.map(s => {
+                const nameInp = document.getElementById('ms_name_' + s.id);
+                const posInp = document.getElementById('ms_pos_' + s.id);
+                const qtyInp = document.getElementById('ms_qty_' + s.id);
+                const priceInp = document.getElementById('ms_price_' + s.id);
+                return {
+                    id: s.id,
+                    division: s.division,
+                    name: nameInp ? nameInp.value : s.name,
+                    position: posInp ? posInp.value : s.position,
+                    qty: qtyInp ? parseInt(qtyInp.value) : s.qty,
+                    price: priceInp ? parseRupiah(priceInp.value) : s.price
+                };
+            });
+
+            const updatedOps = masterOpsData.map(op => {
+                const nameInp = document.getElementById('mop_name_' + op.id);
+                const qtyInp = document.getElementById('mop_qty_' + op.id);
+                const priceInp = document.getElementById('mop_price_' + op.id);
+                return {
+                    id: op.id,
+                    name: nameInp ? nameInp.value : op.name,
+                    qty: qtyInp ? parseInt(qtyInp.value) : op.qty,
+                    price: priceInp ? parseRupiah(priceInp.value) : op.price
+                };
+            });
+
+            try {
+                await fetch('/api/finance/master-salaries', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken || '' },
+                    body: JSON.stringify({ items: updatedSalaries })
+                });
+
+                await fetch('/api/finance/monthly-operations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken || '' },
+                    body: JSON.stringify({ items: updatedOps })
+                });
+
+                showToast("Master biaya & gaji berhasil diperbarui!");
+                closeMasterModal();
+            } catch(e) {
+                console.error("Save master error:", e);
+                alert("Gagal menyimpan data master");
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan';
+                btn.disabled = false;
             }
         }
 

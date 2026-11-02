@@ -26,7 +26,7 @@ class BookingController extends Controller
             $needsMigration = false;
             if (!Schema::hasTable('bookings')) {
                 $needsMigration = true;
-            } elseif (!Schema::hasColumn('bookings', 'quotation_id') || !Schema::hasColumn('bookings', 'groom_name') || !Schema::hasColumn('bookings', 'production_tracks')) {
+            } elseif (!Schema::hasColumn('bookings', 'quotation_id') || !Schema::hasColumn('bookings', 'groom_name') || !Schema::hasColumn('bookings', 'production_tracks') || !Schema::hasColumn('bookings', 'cost_crew_foto')) {
                 $needsMigration = true;
             }
 
@@ -138,12 +138,22 @@ class BookingController extends Controller
                 'vendor_mc', 'vendor_dekorasi', 'vendor_wo',
                 'sort_foto', 'dp_amount', 'transport_cost', 'total_dp',
                 'source', 'chat_id',
+                // Financial Breakdown Fields
+                'marketing_name',
+                'cost_crew_foto', 'cost_cetak_4r', 'cost_packaging', 'cost_album',
+                'cost_cetak_jumbo', 'cost_crew_cinema', 'laba_cinema',
+                'cost_crew_liputan', 'laba_liputan', 'cost_crew_konten', 'laba_konten',
+                'sales_fee', 'crew_fee_details', 'package_features', 'extras_detail',
             ];
 
             $numericFields = [
                 'package_price', 'package_qty', 'paid_amount', 'discount', 
                 'total_income', 'total_operational_cost', 'net_profit',
                 'dp_amount', 'transport_cost', 'total_dp',
+                'cost_crew_foto', 'cost_cetak_4r', 'cost_packaging', 'cost_album',
+                'cost_cetak_jumbo', 'cost_crew_cinema', 'laba_cinema',
+                'cost_crew_liputan', 'laba_liputan', 'cost_crew_konten', 'laba_konten',
+                'sales_fee',
             ];
 
             $dateOrTimeFields = [

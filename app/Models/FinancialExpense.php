@@ -33,3 +33,4 @@ class FinancialExpense extends Model
         return $this->belongsTo(Booking::class);
     }
 }
+

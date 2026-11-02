@@ -9,7 +9,7 @@
             </div>
             
             <div style="padding: 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 20px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
                     <div>
                         <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Nama Klien</label>
                         <input type="text" id="b_client_name" class="form-control" placeholder="Pilih dari lead Booked atau ketik manual" oninput="toggleHandlerBadge()">
@@ -20,6 +20,18 @@
                     <div>
                         <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">No. WhatsApp</label>
                         <input type="text" id="b_client_wa" class="form-control" placeholder="628123456789">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Marketing (Closing)</label>
+                        <input type="text" id="b_marketing_name" list="marketing_options" class="form-control" placeholder="Danu" value="Danu">
+                        <datalist id="marketing_options">
+                            <option value="Danu">
+                            <option value="Mahkota">
+                            <option value="Dina">
+                            <option value="Arselia">
+                            <option value="Naufal">
+                            <option value="Nanang">
+                        </datalist>
                     </div>
                 </div>
                 
@@ -121,6 +133,161 @@
                     <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
                         <span style="font-size: 13px; color: var(--text-muted);">Total Biaya Operasional</span>
                         <strong style="font-size: 14px;" id="b_label_total_cost">Rp 0</strong>
+                    </div>
+                </div>
+                
+                <!-- RINCIAN LAPORAN KEUANGAN & KATEGORI PENAPICT (SINKRON KE EXCEL) -->
+                <div style="border: 1px solid #bfdbfe; border-radius: 10px; background: #f0f7ff; overflow: hidden;">
+                    <div onclick="toggleFinancialSection()" style="padding: 12px 16px; background: #dbeafe; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
+                        <span style="font-weight: 700; font-size: 13px; color: #1e40af; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-file-invoice-dollar" style="color: #2563eb; font-size: 15px;"></i>
+                            Rincian Kolom Laporan Keuangan &amp; Kategori Paket (Sinkron Excel)
+                        </span>
+                        <span style="font-size: 11px; color: #3b82f6; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                            <span id="financial_section_status">Buka / Edit Kolom</span>
+                            <i id="financial_chevron" class="fa-solid fa-chevron-down" style="transition: transform 0.2s;"></i>
+                        </span>
+                    </div>
+                    <div id="financial_section_body" style="display: none; padding: 16px; flex-direction: column; gap: 16px;">
+                        <!-- 1. Kategori Checkbox -->
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e3a8a; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                1. Kategori Layanan (Tampil sebagai Checkbox ☑ di Excel)
+                            </label>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; background: white; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                <div>
+                                    <strong style="font-size: 11px; color: #2563eb; display: block; margin-bottom: 4px;">PHOTO</strong>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_p_b" value="B"> B (Basic)</label>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_p_e" value="E"> E (Exclusive)</label>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_p_wb" value="WB"> WB (Book)</label>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_p_roll" value="ROLL"> ROLL</label>
+                                </div>
+                                <div>
+                                    <strong style="font-size: 11px; color: #2563eb; display: block; margin-bottom: 4px;">CINEMA</strong>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_c_b" value="B"> B (Basic)</label>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_c_e" value="E"> E (Exclusive)</label>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_c_l" value="L"> L (Liputan)</label>
+                                </div>
+                                <div>
+                                    <strong style="font-size: 11px; color: #2563eb; display: block; margin-bottom: 4px;">LIPUTAN</strong>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_l_b" value="B"> B (Basic)</label>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_l_e" value="E"> E (Exclusive)</label>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_l_l" value="L"> L (Liputan)</label>
+                                </div>
+                                <div>
+                                    <strong style="font-size: 11px; color: #2563eb; display: block; margin-bottom: 4px;">KONTEN</strong>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_k_h" value="H"> H (Highlight)</label>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_k_f" value="F"> F (Full)</label>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_k_sde" value="SDE"> SDE (Same Day)</label>
+                                </div>
+                                <div>
+                                    <strong style="font-size: 11px; color: #2563eb; display: block; margin-bottom: 4px;">BUNDLING</strong>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_b_bk" value="BK"> BK (Basic)</label>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_b_bc" value="BC"> BC (Custom)</label>
+                                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; margin-bottom: 2px;"><input type="checkbox" id="feat_b_l" value="L"> L (Lengkap)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Rincian Biaya Produksi & Laba (Kolom di Excel) -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <label style="font-size: 12px; font-weight: 700; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">
+                                    2. Rincian Biaya Produksi, Cetak &amp; Laba Acara
+                                </label>
+                                <button type="button" onclick="autoDistributeCosts()" class="btn btn-secondary" style="font-size: 11px; padding: 3px 8px;">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Hitung Otomatis dari HPP
+                                </button>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; background: white; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Crew Foto (Rp)</label>
+                                    <input type="text" id="b_cost_crew_foto" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Cetak 4R (Rp)</label>
+                                    <input type="text" id="b_cost_cetak_4r" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Packaging (Rp)</label>
+                                    <input type="text" id="b_cost_packaging" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Album (Rp)</label>
+                                    <input type="text" id="b_cost_album" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Cetak Jumbo &amp; Frame</label>
+                                    <input type="text" id="b_cost_cetak_jumbo" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Crew Cinema (Rp)</label>
+                                    <input type="text" id="b_cost_crew_cinema" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Laba Cinema (Rp)</label>
+                                    <input type="text" id="b_laba_cinema" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Crew Liputan (Rp)</label>
+                                    <input type="text" id="b_cost_crew_liputan" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Laba Liputan (Rp)</label>
+                                    <input type="text" id="b_laba_liputan" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Crew Konten (Rp)</label>
+                                    <input type="text" id="b_cost_crew_konten" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Laba Konten (Rp)</label>
+                                    <input type="text" id="b_laba_konten" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Sales Fee / Fee Marketing</label>
+                                    <input type="text" id="b_sales_fee" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Extras -->
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e3a8a; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                3. Extras (Tambahan Biaya di Excel)
+                            </label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1.5fr; gap: 10px; background: white; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Cetak Tambahan (Rp)</label>
+                                    <input type="text" id="b_extra_cetak" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Penambahan Drive (Rp)</label>
+                                    <input type="text" id="b_extra_drive" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Transportasi (Rp)</label>
+                                    <input type="text" id="b_extra_transport" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="0" oninput="formatRupiahInput(this)">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px;">Keterangan Extras</label>
+                                    <input type="text" id="b_extra_keterangan" class="form-control" style="font-size: 12px; padding: 6px 8px;" placeholder="Transport, FD tambahan, dll.">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. FG & VG Crew Fee Matrix -->
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 700; color: #1e3a8a; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                4. Pembagian Honor Crew (Masuk ke Tab BEBAN GAJI FG &amp; VG)
+                            </label>
+                            <div style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Pilih crew yang bertugas dan masukkan nominal honor masing-masing:</p>
+                                <div id="b_crew_fee_matrix_container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; max-height: 180px; overflow-y: auto; padding-right: 4px;">
+                                    <!-- Injected via JavaScript for 24 crew members -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 

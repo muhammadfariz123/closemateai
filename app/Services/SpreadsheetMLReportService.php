@@ -193,6 +193,16 @@ class SpreadsheetMLReportService
         <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
       </Borders>
     </Style>
+    <Style ss:ID="CellCheckbox">
+      <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+      <Font ss:FontName="Calibri" ss:Size="11" ss:Color="#1E3A8A"/>
+      <Borders>
+        <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+        <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+        <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+        <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+      </Borders>
+    </Style>
     <Style ss:ID="CellCurrency">
       <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
       <Font ss:FontName="Calibri" ss:Size="9" ss:Color="#0F172A"/>
@@ -249,12 +259,151 @@ class SpreadsheetMLReportService
   </Styles>' . "\r\n";
     }
 
+    public function getEffectiveFeatures($b): array
+    {
+        $features = is_array($b->package_features) ? $b->package_features : [];
+        $hasAny = false;
+        foreach (['photo', 'cinema', 'liputan', 'konten', 'bundling'] as $k) {
+            if (!empty($features[$k]) && is_array($features[$k]) && count($features[$k]) > 0) {
+                $hasAny = true;
+                break;
+            }
+        }
+        if ($hasAny) {
+            return $features;
+        }
+
+        // Auto-detect from package name if not explicitly set
+        $name = strtolower($b->package_name ?? '');
+        $det = ['photo' => [], 'cinema' => [], 'liputan' => [], 'konten' => [], 'bundling' => []];
+
+        if (str_contains($name, 'bundling') || str_contains($name, 'aio')) {
+            if (str_contains($name, 'basic') || str_contains($name, 'bk')) {
+                $det['bundling'][] = 'BK';
+            } elseif (str_contains($name, 'custom') || str_contains($name, 'bc')) {
+                $det['bundling'][] = 'BC';
+            } else {
+                $det['bundling'][] = 'BK';
+            }
+        }
+        if (str_contains($name, 'photo') || str_contains($name, 'foto')) {
+            if (str_contains($name, 'exclusive') || str_contains($name, 'excl')) {
+                $det['photo'][] = 'E';
+            } elseif (str_contains($name, 'wedding book') || str_contains($name, 'wb')) {
+                $det['photo'][] = 'WB';
+            } elseif (str_contains($name, 'roll')) {
+                $det['photo'][] = 'ROLL';
+            } else {
+                $det['photo'][] = 'B';
+            }
+        }
+        if (str_contains($name, 'cinema') || str_contains($name, 'wcc') || str_contains($name, 'video')) {
+            if (str_contains($name, 'exclusive')) {
+                $det['cinema'][] = 'E';
+            } elseif (str_contains($name, 'liputan')) {
+                $det['cinema'][] = 'L';
+            } else {
+                $det['cinema'][] = 'B';
+            }
+        }
+        if (str_contains($name, 'liputan')) {
+            $det['liputan'][] = 'B';
+        }
+        if (str_contains($name, 'konten') || str_contains($name, 'content') || str_contains($name, 'sde')) {
+            if (str_contains($name, 'sde')) {
+                $det['konten'][] = 'SDE';
+            } elseif (str_contains($name, 'full')) {
+                $det['konten'][] = 'F';
+            } else {
+                $det['konten'][] = 'H';
+            }
+        }
+
+        return $det;
+    }
+
+    public function getEffectiveCosts($b): array
+    {
+        $costs = [
+            'crew_foto' => $this->cleanNumber($b->cost_crew_foto),
+            'cetak_4r' => $this->cleanNumber($b->cost_cetak_4r),
+            'packaging' => $this->cleanNumber($b->cost_packaging),
+            'album' => $this->cleanNumber($b->cost_album),
+            'frame' => $this->cleanNumber($b->cost_cetak_jumbo),
+            'crew_cinema' => $this->cleanNumber($b->cost_crew_cinema),
+            'laba_cinema' => $this->cleanNumber($b->laba_cinema),
+            'crew_liputan' => $this->cleanNumber($b->cost_crew_liputan),
+            'laba_liputan' => $this->cleanNumber($b->laba_liputan),
+            'crew_konten' => $this->cleanNumber($b->cost_crew_konten),
+            'laba_konten' => $this->cleanNumber($b->laba_konten),
+            'sales_fee' => $this->cleanNumber($b->sales_fee),
+        ];
+
+        // If specific breakdown columns are empty, auto-detect from operational_costs
+        $totalSpecific = array_sum($costs);
+        if ($totalSpecific == 0 && is_array($b->operational_costs) && !empty($b->operational_costs)) {
+            foreach ($b->operational_costs as $op) {
+                $itemTitle = strtolower($op['name'] ?? '');
+                $itemAmt = $this->cleanNumber($op['price'] ?? 0) * (int)($op['qty'] ?? 1);
+                if (str_contains($itemTitle, '4r')) $costs['cetak_4r'] += $itemAmt;
+                elseif (str_contains($itemTitle, 'pack') || str_contains($itemTitle, 'box') || str_contains($itemTitle, 'fd')) $costs['packaging'] += $itemAmt;
+                elseif (str_contains($itemTitle, 'album')) $costs['album'] += $itemAmt;
+                elseif (str_contains($itemTitle, 'frame') || str_contains($itemTitle, 'jumbo') || str_contains($itemTitle, 'bingkai')) $costs['frame'] += $itemAmt;
+                elseif (str_contains($itemTitle, 'cinema')) $costs['crew_cinema'] += $itemAmt;
+                elseif (str_contains($itemTitle, 'liputan')) $costs['crew_liputan'] += $itemAmt;
+                elseif (str_contains($itemTitle, 'konten')) $costs['crew_konten'] += $itemAmt;
+                elseif (str_contains($itemTitle, 'foto') || str_contains($itemTitle, 'fg')) $costs['crew_foto'] += $itemAmt;
+            }
+        }
+
+        // If sales fee is 0, auto default to 10% of package_price if marketing exists
+        if ($costs['sales_fee'] == 0 && $this->cleanNumber($b->package_price) > 0) {
+            $costs['sales_fee'] = round($this->cleanNumber($b->package_price) * 0.1);
+        }
+
+        return $costs;
+    }
+
+    public function getEffectiveCrewFees($b, array $crewList): array
+    {
+        $details = is_array($b->crew_fee_details) ? $b->crew_fee_details : [];
+        if (!empty($details)) {
+            return $details;
+        }
+
+        // Try extracting from operational_costs or team_members
+        $fees = [];
+        if (is_array($b->operational_costs)) {
+            foreach ($b->operational_costs as $op) {
+                $opName = strtoupper($op['name'] ?? '');
+                $opAmt = $this->cleanNumber($op['price'] ?? 0) * (int)($op['qty'] ?? 1);
+                foreach ($crewList as $c) {
+                    if (str_contains($opName, $c)) {
+                        $fees[$c] = ($fees[$c] ?? 0) + $opAmt;
+                    }
+                }
+            }
+        }
+        if (is_array($b->team_members)) {
+            foreach ($b->team_members as $tm) {
+                $tmName = strtoupper($tm['name'] ?? '');
+                $tmFee = $this->cleanNumber($tm['fee'] ?? 0);
+                foreach ($crewList as $c) {
+                    if (str_contains($tmName, $c) && $tmFee > 0) {
+                        $fees[$c] = ($fees[$c] ?? 0) + $tmFee;
+                    }
+                }
+            }
+        }
+        return $fees;
+    }
+
     protected function buildLaporanSheet(string $sheetName, $bookings, int $startNo, int $endNo, $monthlyOps, $expenses): string
     {
         $xml = '  <Worksheet ss:Name="' . $this->xmlEscape($sheetName) . '">' . "\r\n";
         $xml .= '    <Table ss:DefaultRowHeight="20">' . "\r\n";
 
-        // Set column widths (approximately matching standard Penapict workbook)
+        // Set column widths
         $xml .= '      <Column ss:Width="30"/>' . "\r\n"; // No
         $xml .= '      <Column ss:Width="75"/>' . "\r\n"; // TGL
         $xml .= '      <Column ss:Width="130"/>' . "\r\n"; // CLIENT
@@ -316,22 +465,30 @@ class SpreadsheetMLReportService
         $totExtraCetak = 0; $totExtraDrive = 0; $totExtraTransport = 0; $totExtraJumlah = 0;
 
         foreach ($bookings as $b) {
+            $effectiveCosts = $this->getEffectiveCosts($b);
             $totHargaPaket += $this->cleanNumber($b->package_price);
-            $totCrewFoto += $this->cleanNumber($b->cost_crew_foto);
-            $totCetak4r += $this->cleanNumber($b->cost_cetak_4r);
-            $totPackaging += $this->cleanNumber($b->cost_packaging);
-            $totAlbum += $this->cleanNumber($b->cost_album);
-            $totFrame += $this->cleanNumber($b->cost_cetak_jumbo);
-            $totCrewCinema += $this->cleanNumber($b->cost_crew_cinema);
-            $totLabaCinema += $this->cleanNumber($b->laba_cinema);
-            $totCrewLiputan += $this->cleanNumber($b->cost_crew_liputan);
-            $totLabaLiputan += $this->cleanNumber($b->laba_liputan);
-            $totCrewKonten += $this->cleanNumber($b->cost_crew_konten);
-            $totLabaKonten += $this->cleanNumber($b->laba_konten);
-            $totSalesFee += $this->cleanNumber($b->sales_fee);
-            $totDsc += $this->cleanNumber($b->discount_amount);
-            $totPengeluaran += $this->cleanNumber($b->total_operational_cost);
-            $totPendapatan += $this->cleanNumber($b->total_income);
+            $totCrewFoto += $effectiveCosts['crew_foto'];
+            $totCetak4r += $effectiveCosts['cetak_4r'];
+            $totPackaging += $effectiveCosts['packaging'];
+            $totAlbum += $effectiveCosts['album'];
+            $totFrame += $effectiveCosts['frame'];
+            $totCrewCinema += $effectiveCosts['crew_cinema'];
+            $totLabaCinema += $effectiveCosts['laba_cinema'];
+            $totCrewLiputan += $effectiveCosts['crew_liputan'];
+            $totLabaLiputan += $effectiveCosts['laba_liputan'];
+            $totCrewKonten += $effectiveCosts['crew_konten'];
+            $totLabaKonten += $effectiveCosts['laba_konten'];
+            $totSalesFee += $effectiveCosts['sales_fee'];
+            $totDsc += $this->cleanNumber($b->discount ?? $b->discount_amount);
+
+            $bOpCost = $this->cleanNumber($b->total_operational_cost);
+            if ($bOpCost == 0) {
+                $bOpCost = $effectiveCosts['crew_foto'] + $effectiveCosts['cetak_4r'] + $effectiveCosts['packaging'] + $effectiveCosts['album'] + $effectiveCosts['frame'] + $effectiveCosts['crew_cinema'] + $effectiveCosts['crew_liputan'] + $effectiveCosts['crew_konten'] + $effectiveCosts['sales_fee'];
+            }
+            $totPengeluaran += $bOpCost;
+
+            $bIncome = $this->cleanNumber($b->total_income) ?: $this->cleanNumber($b->package_price);
+            $totPendapatan += $bIncome;
             $totValidasi += $this->cleanNumber($b->package_price);
 
             if (!empty($b->extras_detail) && is_array($b->extras_detail)) {
@@ -358,40 +515,34 @@ class SpreadsheetMLReportService
         $xml .= '      <Row ss:Height="12"></Row>' . "\r\n";
 
         // Executive Summary Rows (Rows 3 to 8)
-        // Saldo Awal
         $xml .= '      <Row ss:Height="22">' . "\r\n";
         $xml .= '        <Cell ss:Index="3" ss:StyleID="SummaryLabel"><Data ss:Type="String">Saldo Awal</Data></Cell>' . "\r\n";
         $xml .= '        <Cell ss:StyleID="SummaryValue"><Data ss:Type="Number">0</Data></Cell>' . "\r\n";
         $xml .= '      </Row>' . "\r\n";
 
-        // Saldo Akhir
         $xml .= '      <Row ss:Height="22">' . "\r\n";
         $xml .= '        <Cell ss:Index="3" ss:StyleID="SummaryLabel"><Data ss:Type="String">Saldo Akhir</Data></Cell>' . "\r\n";
         $xml .= '        <Cell ss:StyleID="SummaryValue"><Data ss:Type="Number">' . $totHargaPaket . '</Data></Cell>' . "\r\n";
         $xml .= '      </Row>' . "\r\n";
 
-        // Total Pengeluaran
         $xml .= '      <Row ss:Height="22">' . "\r\n";
         $xml .= '        <Cell ss:Index="3" ss:StyleID="SummaryLabel"><Data ss:Type="String">Total Pengeluaran</Data></Cell>' . "\r\n";
         $xml .= '        <Cell ss:StyleID="SummaryValue"><Data ss:Type="Number">' . $totPengeluaran . '</Data></Cell>' . "\r\n";
         $xml .= '        <Cell ss:Index="6" ss:MergeAcross="20" ss:StyleID="SummaryNote"><Data ss:Type="String">Danu TF ke Umi = RINCIAN BIAYA PROMO</Data></Cell>' . "\r\n";
         $xml .= '      </Row>' . "\r\n";
 
-        // Total Pendapatan
         $xml .= '      <Row ss:Height="22">' . "\r\n";
         $xml .= '        <Cell ss:Index="3" ss:StyleID="SummaryLabel"><Data ss:Type="String">Total Pendapatan</Data></Cell>' . "\r\n";
         $xml .= '        <Cell ss:StyleID="SummaryValue"><Data ss:Type="Number">' . $totPendapatan . '</Data></Cell>' . "\r\n";
         $xml .= '        <Cell ss:Index="6" ss:MergeAcross="20" ss:StyleID="SummaryNote"><Data ss:Type="String">Umi TF ke Danu = JUMLAH SETORAN+FEE MARKETTING DANU+GAJI DIVISI STUDIO DANU</Data></Cell>' . "\r\n";
         $xml .= '      </Row>' . "\r\n";
 
-        // Laba Bersih
         $xml .= '      <Row ss:Height="24">' . "\r\n";
         $xml .= '        <Cell ss:Index="3" ss:StyleID="SummaryLabel"><Data ss:Type="String">Laba Bersih</Data></Cell>' . "\r\n";
         $xml .= '        <Cell ss:StyleID="SummaryValue"><Data ss:Type="Number">' . $labaBersih . '</Data></Cell>' . "\r\n";
         $xml .= '        <Cell ss:Index="6" ss:MergeAcross="30" ss:StyleID="SummaryNote"><Data ss:Type="String">Sudah Valid, Sudah dikurangi juga OPERASIONALBULANAN, jika ingin Hasilnya tidak selisih, maka Jumlahkan Laba Bersih+Operasional Bulanan+Total Pengeluaran, maka hasilnya akan sesuai dengan jumlah Saldo Akhir</Data></Cell>' . "\r\n";
         $xml .= '      </Row>' . "\r\n";
 
-        // Jumlah Setoran
         $xml .= '      <Row ss:Height="26">' . "\r\n";
         $xml .= '        <Cell ss:Index="3" ss:StyleID="SummaryLabel"><Data ss:Type="String">Jumlah Setoran</Data></Cell>' . "\r\n";
         $xml .= '        <Cell ss:StyleID="SummaryValue"><Data ss:Type="Number">' . $jumlahSetoran . '</Data></Cell>' . "\r\n";
@@ -469,62 +620,72 @@ class SpreadsheetMLReportService
         $rowIdx = $startNo;
         foreach ($bookings as $b) {
             $formattedDate = $b->event_date ? date('d/m/Y', strtotime($b->event_date)) : '-';
-            $features = is_array($b->package_features) ? $b->package_features : [];
+            $features = $this->getEffectiveFeatures($b);
+            $effectiveCosts = $this->getEffectiveCosts($b);
 
             $xml .= '      <Row ss:Height="19">' . "\r\n";
             $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="Number">' . $rowIdx . '</Data></Cell>' . "\r\n";
             $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . $this->xmlEscape($formattedDate) . '</Data></Cell>' . "\r\n";
             $xml .= '        <Cell ss:StyleID="CellText"><Data ss:Type="String">' . $this->xmlEscape($b->client_name) . '</Data></Cell>' . "\r\n";
 
-            // PHOTO checkboxes: B, E, WB, ROLL
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('B', $features['photo'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('E', $features['photo'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('WB', $features['photo'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('ROLL', $features['photo'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
+            // PHOTO checkboxes: B, E, WB, ROLL -> rendered as ☐ (unchecked) or ☑ (checked)
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('B', $features['photo'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('E', $features['photo'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('WB', $features['photo'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('ROLL', $features['photo'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
 
             // CINEMA: B, E, L
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('B', $features['cinema'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('E', $features['cinema'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('L', $features['cinema'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('B', $features['cinema'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('E', $features['cinema'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('L', $features['cinema'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
 
             // LIPUTAN: B, E, L
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('B', $features['liputan'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('E', $features['liputan'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('L', $features['liputan'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('B', $features['liputan'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('E', $features['liputan'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('L', $features['liputan'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
 
             // KONTEN: H, F, SDE
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('H', $features['konten'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('F', $features['konten'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('SDE', $features['konten'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('H', $features['konten'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('F', $features['konten'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('SDE', $features['konten'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
 
             // BUNDLING: BK, BC, L
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('BK', $features['bundling'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('BC', $features['bundling'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . (in_array('L', $features['bundling'] ?? []) ? 'TRUE' : 'FALSE') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('BK', $features['bundling'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('BC', $features['bundling'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCheckbox"><Data ss:Type="String">' . (in_array('L', $features['bundling'] ?? []) ? '☑' : '☐') . '</Data></Cell>' . "\r\n";
 
             // Alamat, HP, Marketting
+            $mktName = $b->marketing_name ?: 'Danu';
             $xml .= '        <Cell ss:StyleID="CellText"><Data ss:Type="String">' . $this->xmlEscape($b->client_address ?? '-') . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . $this->xmlEscape($b->client_phone ?? '-') . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellText"><Data ss:Type="String">' . $this->xmlEscape($b->marketing_name ?? 'Danu') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCenter"><Data ss:Type="String">' . $this->xmlEscape($b->client_phone ?? $b->client_wa_number ?? '-') . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellText"><Data ss:Type="String">' . $this->xmlEscape($mktName) . '</Data></Cell>' . "\r\n";
 
             // Financial amounts
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->package_price) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->cost_crew_foto) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->cost_cetak_4r) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->cost_packaging) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->cost_album) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->cost_cetak_jumbo) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->cost_crew_cinema) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->laba_cinema) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->cost_crew_liputan) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->laba_liputan) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->cost_crew_konten) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->laba_konten) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->sales_fee) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->discount_amount) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->total_operational_cost) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->total_income) . '</Data></Cell>' . "\r\n";
-            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->package_price) . '</Data></Cell>' . "\r\n";
+            $bPkgPrice = $this->cleanNumber($b->package_price);
+            $bOpCost = $this->cleanNumber($b->total_operational_cost);
+            if ($bOpCost == 0) {
+                $bOpCost = $effectiveCosts['crew_foto'] + $effectiveCosts['cetak_4r'] + $effectiveCosts['packaging'] + $effectiveCosts['album'] + $effectiveCosts['frame'] + $effectiveCosts['crew_cinema'] + $effectiveCosts['crew_liputan'] + $effectiveCosts['crew_konten'] + $effectiveCosts['sales_fee'];
+            }
+            $bInc = $this->cleanNumber($b->total_income) ?: $bPkgPrice;
+            $bProfit = $bInc - $bOpCost;
+
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $bPkgPrice . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $effectiveCosts['crew_foto'] . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $effectiveCosts['cetak_4r'] . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $effectiveCosts['packaging'] . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $effectiveCosts['album'] . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $effectiveCosts['frame'] . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $effectiveCosts['crew_cinema'] . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $effectiveCosts['laba_cinema'] . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $effectiveCosts['crew_liputan'] . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $effectiveCosts['laba_liputan'] . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $effectiveCosts['crew_konten'] . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $effectiveCosts['laba_konten'] . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $effectiveCosts['sales_fee'] . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $this->cleanNumber($b->discount ?? $b->discount_amount) . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $bOpCost . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $bProfit . '</Data></Cell>' . "\r\n";
+            $xml .= '        <Cell ss:StyleID="CellCurrency"><Data ss:Type="Number">' . $bPkgPrice . '</Data></Cell>' . "\r\n";
 
             // EXTRAS details
             $ext = is_array($b->extras_detail) ? $b->extras_detail : [];
@@ -532,6 +693,9 @@ class SpreadsheetMLReportService
             $drive = $this->cleanNumber($ext['drive'] ?? 0);
             $trans = $this->cleanNumber($ext['transport'] ?? 0);
             $extTotal = $this->cleanNumber($ext['jumlah'] ?? 0);
+            if ($extTotal == 0 && ($cetak > 0 || $drive > 0 || $trans > 0)) {
+                $extTotal = $cetak + $drive + $trans;
+            }
             $extKet = $ext['keterangan'] ?? '';
 
             $xml .= '        <Cell ss:StyleID="' . ($cetak > 0 ? 'CellCurrency' : 'CellCurrencyZero') . '"><Data ss:Type="Number">' . $cetak . '</Data></Cell>' . "\r\n";
@@ -562,7 +726,7 @@ class SpreadsheetMLReportService
         $xml .= '        <Cell ss:StyleID="CellTotalCurrency"><Data ss:Type="Number">' . $totSalesFee . '</Data></Cell>' . "\r\n";
         $xml .= '        <Cell ss:StyleID="CellTotalCurrency"><Data ss:Type="Number">' . $totDsc . '</Data></Cell>' . "\r\n";
         $xml .= '        <Cell ss:StyleID="CellTotalCurrency"><Data ss:Type="Number">' . $totPengeluaran . '</Data></Cell>' . "\r\n";
-        $xml .= '        <Cell ss:StyleID="CellTotalCurrency"><Data ss:Type="Number">' . $totPendapatan . '</Data></Cell>' . "\r\n";
+        $xml .= '        <Cell ss:StyleID="CellTotalCurrency"><Data ss:Type="Number">' . ($totPendapatan - $totPengeluaran) . '</Data></Cell>' . "\r\n";
         $xml .= '        <Cell ss:StyleID="CellTotalCurrency"><Data ss:Type="Number">' . $totValidasi . '</Data></Cell>' . "\r\n";
         $xml .= '        <Cell ss:StyleID="CellTotalCurrency"><Data ss:Type="Number">' . $totExtraCetak . '</Data></Cell>' . "\r\n";
         $xml .= '        <Cell ss:StyleID="CellTotalCurrency"><Data ss:Type="Number">' . $totExtraDrive . '</Data></Cell>' . "\r\n";
@@ -735,7 +899,7 @@ class SpreadsheetMLReportService
 
         foreach ($bookings as $b) {
             $formattedDate = $b->event_date ? date('d/m/Y', strtotime($b->event_date)) : '-';
-            $details = is_array($b->crew_fee_details) ? $b->crew_fee_details : [];
+            $details = $this->getEffectiveCrewFees($b, $crewList);
             $eventTotal = 0;
 
             $xml .= '      <Row ss:Height="19">' . "\r\n";
@@ -908,11 +1072,13 @@ class SpreadsheetMLReportService
         $idx = 1;
         $grandTotal = 0;
         foreach ($bookings as $b) {
-            if (strtolower(trim($b->marketing_name ?? '')) !== 'danu') {
+            $mkt = strtolower(trim($b->marketing_name ?? ''));
+            if ($mkt !== '' && $mkt !== 'danu') {
                 continue;
             }
 
-            $fee = $this->cleanNumber($b->sales_fee);
+            $effectiveCosts = $this->getEffectiveCosts($b);
+            $fee = $effectiveCosts['sales_fee'];
             $grandTotal += $fee;
             $formattedDate = $b->event_date ? date('d/m/Y', strtotime($b->event_date)) : '-';
 

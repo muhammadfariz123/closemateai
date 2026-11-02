@@ -113,4 +113,98 @@ class FinanceController extends Controller
 
         return response()->json(['success' => false, 'message' => 'Not found'], 404);
     }
+
+    public function getMasterSalaries(Request $request)
+    {
+        $owner = $this->getEffectiveOwnerUser();
+        $ownerId = $owner ? $owner->id : 1;
+        FinancialReportSeederService::seedIfEmpty($ownerId);
+
+        $salaries = FinancialMasterSalary::where('user_id', $ownerId)->get();
+        return response()->json(['success' => true, 'data' => $salaries]);
+    }
+
+    public function saveMasterSalaries(Request $request)
+    {
+        $owner = $this->getEffectiveOwnerUser();
+        $ownerId = $owner ? $owner->id : 1;
+
+        $items = $request->input('items', []);
+        foreach ($items as $item) {
+            if (!empty($item['id'])) {
+                $sal = FinancialMasterSalary::where('user_id', $ownerId)->find($item['id']);
+                if ($sal) {
+                    $qty = isset($item['qty']) ? (float)$item['qty'] : (float)$sal->qty;
+                    $price = isset($item['price']) ? (float)$item['price'] : (float)$sal->price;
+                    $sal->update([
+                        'name' => $item['name'] ?? $sal->name,
+                        'position' => $item['position'] ?? $sal->position,
+                        'qty' => $qty,
+                        'price' => $price,
+                        'total' => $qty * $price,
+                    ]);
+                }
+            } elseif (!empty($item['name'])) {
+                $qty = isset($item['qty']) ? (float)$item['qty'] : 1;
+                $price = isset($item['price']) ? (float)$item['price'] : 0;
+                FinancialMasterSalary::create([
+                    'user_id' => $ownerId,
+                    'division' => $item['division'] ?? 'studio',
+                    'name' => $item['name'],
+                    'position' => $item['position'] ?? null,
+                    'qty' => $qty,
+                    'price' => $price,
+                    'total' => $qty * $price,
+                ]);
+            }
+        }
+
+        return response()->json(['success' => true, 'data' => FinancialMasterSalary::where('user_id', $ownerId)->get()]);
+    }
+
+    public function getMonthlyOperations(Request $request)
+    {
+        $owner = $this->getEffectiveOwnerUser();
+        $ownerId = $owner ? $owner->id : 1;
+        FinancialReportSeederService::seedIfEmpty($ownerId);
+
+        $ops = FinancialMonthlyOperation::where('user_id', $ownerId)->get();
+        return response()->json(['success' => true, 'data' => $ops]);
+    }
+
+    public function saveMonthlyOperations(Request $request)
+    {
+        $owner = $this->getEffectiveOwnerUser();
+        $ownerId = $owner ? $owner->id : 1;
+
+        $items = $request->input('items', []);
+        foreach ($items as $item) {
+            if (!empty($item['id'])) {
+                $op = FinancialMonthlyOperation::where('user_id', $ownerId)->find($item['id']);
+                if ($op) {
+                    $qty = isset($item['qty']) ? (float)$item['qty'] : (float)$op->qty;
+                    $price = isset($item['price']) ? (float)$item['price'] : (float)$op->price;
+                    $op->update([
+                        'name' => $item['name'] ?? $op->name,
+                        'qty' => $qty,
+                        'price' => $price,
+                        'total' => $qty * $price,
+                    ]);
+                }
+            } elseif (!empty($item['name'])) {
+                $qty = isset($item['qty']) ? (float)$item['qty'] : 1;
+                $price = isset($item['price']) ? (float)$item['price'] : 0;
+                FinancialMonthlyOperation::create([
+                    'user_id' => $ownerId,
+                    'name' => $item['name'],
+                    'qty' => $qty,
+                    'price' => $price,
+                    'total' => $qty * $price,
+                ]);
+            }
+        }
+
+        return response()->json(['success' => true, 'data' => FinancialMonthlyOperation::where('user_id', $ownerId)->get()]);
+    }
 }
+

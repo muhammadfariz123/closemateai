@@ -140,6 +140,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/api/finance/expenses', [\App\Http\Controllers\FinanceController::class, 'getExpenses']);
         Route::post('/api/finance/expenses', [\App\Http\Controllers\FinanceController::class, 'storeExpense']);
         Route::delete('/api/finance/expenses/{id}', [\App\Http\Controllers\FinanceController::class, 'deleteExpense']);
+        Route::get('/api/finance/master-salaries', [\App\Http\Controllers\FinanceController::class, 'getMasterSalaries']);
+        Route::post('/api/finance/master-salaries', [\App\Http\Controllers\FinanceController::class, 'saveMasterSalaries']);
+        Route::get('/api/finance/monthly-operations', [\App\Http\Controllers\FinanceController::class, 'getMonthlyOperations']);
+        Route::post('/api/finance/monthly-operations', [\App\Http\Controllers\FinanceController::class, 'saveMonthlyOperations']);
 
         Route::get('/team', [\App\Http\Controllers\TeamController::class, 'index']);
         Route::get('/teams', [\App\Http\Controllers\TeamController::class, 'index']);

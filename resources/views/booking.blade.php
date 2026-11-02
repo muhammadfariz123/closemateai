@@ -634,7 +634,95 @@
             }
         }
 
+        const crewMembersList = [
+            'NANANG', 'DANU', 'DIKA', 'ARYA', 'FAUZAN', 'ADIT', 'HOHO', 'ANGGA',
+            'AFIF', 'RENDI', 'TIO', 'ZAKY', 'KELVIN', 'FARIS', 'BAGUS', 'ZEN',
+            'ITAH', 'RIZKY', 'FAIZAL', 'IRVAN', 'RYAN', 'ARIF', 'CANDRA', 'NAUFAL'
+        ];
+
+        function initCrewFeeMatrix() {
+            const container = document.getElementById('b_crew_fee_matrix_container');
+            if (!container) return;
+            container.innerHTML = crewMembersList.map(c => `
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <span style="font-size: 10px; font-weight: 700; color: #334155;">${c}</span>
+                    <input type="text" id="b_crew_fee_${c}" class="form-control" placeholder="0" style="font-size: 11px; padding: 4px 6px;" oninput="formatRupiahInput(this)">
+                </div>
+            `).join('');
+        }
+
+        function toggleFinancialSection() {
+            const body = document.getElementById('financial_section_body');
+            const chevron = document.getElementById('financial_chevron');
+            const status = document.getElementById('financial_section_status');
+            if (!body) return;
+            if (body.style.display === 'none' || !body.style.display) {
+                body.style.display = 'flex';
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+                if (status) status.innerText = 'Tutup Kolom';
+            } else {
+                body.style.display = 'none';
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+                if (status) status.innerText = 'Buka / Edit Kolom';
+            }
+        }
+
+        function autoDistributeCosts() {
+            let crewFoto = 0, c4r = 0, pkg = 0, alb = 0, frame = 0, cinema = 0, liputan = 0, konten = 0;
+            if (Array.isArray(costsData)) {
+                costsData.forEach(c => {
+                    const name = (c.name || '').toLowerCase();
+                    const amt = (parseFloat(c.price) || 0) * (parseFloat(c.qty) || 1);
+                    if (name.includes('4r')) c4r += amt;
+                    else if (name.includes('pack') || name.includes('box') || name.includes('fd')) pkg += amt;
+                    else if (name.includes('album')) alb += amt;
+                    else if (name.includes('frame') || name.includes('jumbo')) frame += amt;
+                    else if (name.includes('cinema')) cinema += amt;
+                    else if (name.includes('liputan')) liputan += amt;
+                    else if (name.includes('konten')) konten += amt;
+                    else if (name.includes('foto') || name.includes('fg')) crewFoto += amt;
+                });
+            }
+            if (c4r > 0 && document.getElementById('b_cost_cetak_4r')) document.getElementById('b_cost_cetak_4r').value = formatRupiah(c4r);
+            if (pkg > 0 && document.getElementById('b_cost_packaging')) document.getElementById('b_cost_packaging').value = formatRupiah(pkg);
+            if (alb > 0 && document.getElementById('b_cost_album')) document.getElementById('b_cost_album').value = formatRupiah(alb);
+            if (frame > 0 && document.getElementById('b_cost_cetak_jumbo')) document.getElementById('b_cost_cetak_jumbo').value = formatRupiah(frame);
+            if (cinema > 0 && document.getElementById('b_cost_crew_cinema')) document.getElementById('b_cost_crew_cinema').value = formatRupiah(cinema);
+            if (liputan > 0 && document.getElementById('b_cost_crew_liputan')) document.getElementById('b_cost_crew_liputan').value = formatRupiah(liputan);
+            if (konten > 0 && document.getElementById('b_cost_crew_konten')) document.getElementById('b_cost_crew_konten').value = formatRupiah(konten);
+            if (crewFoto > 0 && document.getElementById('b_cost_crew_foto')) document.getElementById('b_cost_crew_foto').value = formatRupiah(crewFoto);
+
+            const pkgPrice = parseRupiah(document.getElementById('b_package_price')?.value);
+            if (pkgPrice > 0 && document.getElementById('b_sales_fee') && !document.getElementById('b_sales_fee').value) {
+                document.getElementById('b_sales_fee').value = formatRupiah(Math.round(pkgPrice * 0.1));
+            }
+
+            const pName = (document.getElementById('b_package_name')?.value || '').toLowerCase();
+            if (pName.includes('basic') || pName.includes('bk')) {
+                const cb = document.getElementById('feat_p_b'); if (cb) cb.checked = true;
+                const cbb = document.getElementById('feat_b_bk'); if (cbb) cbb.checked = true;
+            }
+            if (pName.includes('exclusive')) {
+                const cb = document.getElementById('feat_p_e'); if (cb) cb.checked = true;
+                const cbc = document.getElementById('feat_c_e'); if (cbc) cbc.checked = true;
+            }
+            if (pName.includes('wb') || pName.includes('wedding book')) {
+                const cb = document.getElementById('feat_p_wb'); if (cb) cb.checked = true;
+            }
+            if (pName.includes('cinema') || pName.includes('wcc')) {
+                const cb = document.getElementById('feat_c_b'); if (cb) cb.checked = true;
+            }
+            if (pName.includes('liputan')) {
+                const cb = document.getElementById('feat_l_b'); if (cb) cb.checked = true;
+            }
+            if (pName.includes('konten') || pName.includes('sde')) {
+                const cb = document.getElementById('feat_k_sde'); if (cb) cb.checked = true;
+            }
+            showToast('Rincian biaya & kategori berhasil dihitung otomatis!');
+        }
+
         function openBookingModal(id = null) {
+            initCrewFeeMatrix();
             if (typeof id !== 'string') id = null;
             editingBookingId = id;
             if (id) {
@@ -682,6 +770,71 @@
                     
                     document.getElementById('b_result_link').value = b.result_link || '';
                     document.getElementById('b_notes').value = b.notes || '';
+
+                    // Marketing
+                    if (document.getElementById('b_marketing_name')) {
+                        document.getElementById('b_marketing_name').value = b.marketing_name || 'Danu';
+                    }
+
+                    // Package Feature Checkboxes
+                    const feat = b.package_features || {};
+                    const pFeat = feat.photo || [];
+                    const cFeat = feat.cinema || [];
+                    const lFeat = feat.liputan || [];
+                    const kFeat = feat.konten || [];
+                    const bFeat = feat.bundling || [];
+
+                    const setCb = (id, checked) => { const el = document.getElementById(id); if (el) el.checked = !!checked; };
+                    setCb('feat_p_b', pFeat.includes('B'));
+                    setCb('feat_p_e', pFeat.includes('E'));
+                    setCb('feat_p_wb', pFeat.includes('WB'));
+                    setCb('feat_p_roll', pFeat.includes('ROLL'));
+
+                    setCb('feat_c_b', cFeat.includes('B'));
+                    setCb('feat_c_e', cFeat.includes('E'));
+                    setCb('feat_c_l', cFeat.includes('L'));
+
+                    setCb('feat_l_b', lFeat.includes('B'));
+                    setCb('feat_l_e', lFeat.includes('E'));
+                    setCb('feat_l_l', lFeat.includes('L'));
+
+                    setCb('feat_k_h', kFeat.includes('H'));
+                    setCb('feat_k_f', kFeat.includes('F'));
+                    setCb('feat_k_sde', kFeat.includes('SDE'));
+
+                    setCb('feat_b_bk', bFeat.includes('BK'));
+                    setCb('feat_b_bc', bFeat.includes('BC'));
+                    setCb('feat_b_l', bFeat.includes('L'));
+
+                    // Financial Breakdown Inputs
+                    const setFmt = (id, val) => { const el = document.getElementById(id); if (el) el.value = (val && val > 0) ? formatRupiah(val) : ''; };
+                    setFmt('b_cost_crew_foto', b.cost_crew_foto);
+                    setFmt('b_cost_cetak_4r', b.cost_cetak_4r);
+                    setFmt('b_cost_packaging', b.cost_packaging);
+                    setFmt('b_cost_album', b.cost_album);
+                    setFmt('b_cost_cetak_jumbo', b.cost_cetak_jumbo);
+                    setFmt('b_cost_crew_cinema', b.cost_crew_cinema);
+                    setFmt('b_laba_cinema', b.laba_cinema);
+                    setFmt('b_cost_crew_liputan', b.cost_crew_liputan);
+                    setFmt('b_laba_liputan', b.laba_liputan);
+                    setFmt('b_cost_crew_konten', b.cost_crew_konten);
+                    setFmt('b_laba_konten', b.laba_konten);
+                    setFmt('b_sales_fee', b.sales_fee);
+
+                    // Extras
+                    const ext = b.extras_detail || {};
+                    setFmt('b_extra_cetak', ext.cetak);
+                    setFmt('b_extra_drive', ext.drive);
+                    setFmt('b_extra_transport', ext.transport);
+                    if (document.getElementById('b_extra_keterangan')) {
+                        document.getElementById('b_extra_keterangan').value = ext.keterangan || '';
+                    }
+
+                    // Crew Fee Matrix
+                    const crewFees = b.crew_fee_details || {};
+                    crewMembersList.forEach(c => {
+                        setFmt('b_crew_fee_' + c, crewFees[c]);
+                    });
                     
                     addonsData = b.addons || [];
                     costsData = b.operational_costs || [];
@@ -711,6 +864,13 @@
                 document.getElementById('b_custom_status_input').value = '';
                 document.getElementById('b_result_link').value = '';
                 document.getElementById('b_notes').value = '';
+
+                // Reset financial fields
+                if (document.getElementById('b_marketing_name')) {
+                    document.getElementById('b_marketing_name').value = 'Danu';
+                }
+                document.querySelectorAll('#financial_section_body input[type="checkbox"]').forEach(cb => cb.checked = false);
+                document.querySelectorAll('#financial_section_body input[type="text"]').forEach(inp => inp.value = '');
                 
                 addonsData = [];
                 costsData = [];
@@ -931,6 +1091,66 @@
                 prodStatus = document.getElementById('b_custom_status_input').value || 'Status Custom';
             }
 
+            // Collect Financial & Category breakdown
+            const packageFeatures = { photo: [], cinema: [], liputan: [], konten: [], bundling: [] };
+            if (document.getElementById('feat_p_b')?.checked) packageFeatures.photo.push('B');
+            if (document.getElementById('feat_p_e')?.checked) packageFeatures.photo.push('E');
+            if (document.getElementById('feat_p_wb')?.checked) packageFeatures.photo.push('WB');
+            if (document.getElementById('feat_p_roll')?.checked) packageFeatures.photo.push('ROLL');
+
+            if (document.getElementById('feat_c_b')?.checked) packageFeatures.cinema.push('B');
+            if (document.getElementById('feat_c_e')?.checked) packageFeatures.cinema.push('E');
+            if (document.getElementById('feat_c_l')?.checked) packageFeatures.cinema.push('L');
+
+            if (document.getElementById('feat_l_b')?.checked) packageFeatures.liputan.push('B');
+            if (document.getElementById('feat_l_e')?.checked) packageFeatures.liputan.push('E');
+            if (document.getElementById('feat_l_l')?.checked) packageFeatures.liputan.push('L');
+
+            if (document.getElementById('feat_k_h')?.checked) packageFeatures.konten.push('H');
+            if (document.getElementById('feat_k_f')?.checked) packageFeatures.konten.push('F');
+            if (document.getElementById('feat_k_sde')?.checked) packageFeatures.konten.push('SDE');
+
+            if (document.getElementById('feat_b_bk')?.checked) packageFeatures.bundling.push('BK');
+            if (document.getElementById('feat_b_bc')?.checked) packageFeatures.bundling.push('BC');
+            if (document.getElementById('feat_b_l')?.checked) packageFeatures.bundling.push('L');
+
+            const crewFeeDetails = {};
+            crewMembersList.forEach(c => {
+                const fee = parseRupiah(document.getElementById('b_crew_fee_' + c)?.value);
+                if (fee > 0) crewFeeDetails[c] = fee;
+            });
+
+            const extraCetak = parseRupiah(document.getElementById('b_extra_cetak')?.value);
+            const extraDrive = parseRupiah(document.getElementById('b_extra_drive')?.value);
+            const extraTransport = parseRupiah(document.getElementById('b_extra_transport')?.value);
+            const extraKet = document.getElementById('b_extra_keterangan')?.value || '';
+            const extrasDetail = {
+                cetak: extraCetak,
+                drive: extraDrive,
+                transport: extraTransport,
+                jumlah: extraCetak + extraDrive + extraTransport,
+                keterangan: extraKet
+            };
+
+            const costCrewFoto = parseRupiah(document.getElementById('b_cost_crew_foto')?.value);
+            const costCetak4r = parseRupiah(document.getElementById('b_cost_cetak_4r')?.value);
+            const costPackaging = parseRupiah(document.getElementById('b_cost_packaging')?.value);
+            const costAlbum = parseRupiah(document.getElementById('b_cost_album')?.value);
+            const costCetakJumbo = parseRupiah(document.getElementById('b_cost_cetak_jumbo')?.value);
+            const costCrewCinema = parseRupiah(document.getElementById('b_cost_crew_cinema')?.value);
+            const labaCinema = parseRupiah(document.getElementById('b_laba_cinema')?.value);
+            const costCrewLiputan = parseRupiah(document.getElementById('b_cost_crew_liputan')?.value);
+            const labaLiputan = parseRupiah(document.getElementById('b_laba_liputan')?.value);
+            const costCrewKonten = parseRupiah(document.getElementById('b_cost_crew_konten')?.value);
+            const labaKonten = parseRupiah(document.getElementById('b_laba_konten')?.value);
+            const salesFee = parseRupiah(document.getElementById('b_sales_fee')?.value);
+
+            let effectiveTotalCost = totalCost;
+            const breakdownSum = costCrewFoto + costCetak4r + costPackaging + costAlbum + costCetakJumbo + costCrewCinema + costCrewLiputan + costCrewKonten + salesFee;
+            if (effectiveTotalCost === 0 && breakdownSum > 0) {
+                effectiveTotalCost = breakdownSum;
+            }
+
             const payload = {
                 client_name: document.getElementById('b_client_name').value,
                 client_wa_number: document.getElementById('b_client_wa').value,
@@ -946,14 +1166,31 @@
                 addons: addonsData,
                 operational_costs: costsData,
                 total_income: totalIncome,
-                total_operational_cost: totalCost,
-                net_profit: profit,
+                total_operational_cost: effectiveTotalCost,
+                net_profit: (totalIncome - effectiveTotalCost),
                 payment_date: document.getElementById('b_payment_date').value,
                 payment_status: (document.getElementById('b_payment_status')?.value || 'DP 1'),
                 production_status: (prodStatus || 'Pre-Event'),
                 result_link: document.getElementById('b_result_link').value,
                 team_members: teamData,
                 notes: document.getElementById('b_notes').value,
+                // Financial breakdown fields
+                marketing_name: document.getElementById('b_marketing_name')?.value || 'Danu',
+                cost_crew_foto: costCrewFoto,
+                cost_cetak_4r: costCetak4r,
+                cost_packaging: costPackaging,
+                cost_album: costAlbum,
+                cost_cetak_jumbo: costCetakJumbo,
+                cost_crew_cinema: costCrewCinema,
+                laba_cinema: labaCinema,
+                cost_crew_liputan: costCrewLiputan,
+                laba_liputan: labaLiputan,
+                cost_crew_konten: costCrewKonten,
+                laba_konten: labaKonten,
+                sales_fee: salesFee,
+                package_features: packageFeatures,
+                extras_detail: extrasDetail,
+                crew_fee_details: crewFeeDetails,
             };
             
             if (editingBookingId) {
