@@ -28,3 +28,4 @@ class ProductionBalance extends Model
         return $this->hasMany(ProductionBalanceLog::class, 'user_id', 'user_id')->latest();
     }
 }
+

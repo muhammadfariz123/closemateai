@@ -53,3 +53,4 @@ class StockItem extends Model
         return 'Tersedia';
     }
 }
+

@@ -134,7 +134,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/knowledge/save-ai-prompt', [KnowledgeFileController::class, 'saveAiPrompt']);
         Route::post('/api/simulator/chat', [KnowledgeFileController::class, 'simulateChat']);
 
-        Route::get('/finance', function () { return view('finance'); });
+        Route::get('/finance', [\App\Http\Controllers\FinanceController::class, 'index']);
+        Route::get('/api/finance/export/excel', [\App\Http\Controllers\FinanceController::class, 'exportExcel']);
+        Route::get('/api/finance/export/csv', [\App\Http\Controllers\FinanceController::class, 'exportExcel']);
+        Route::get('/api/finance/expenses', [\App\Http\Controllers\FinanceController::class, 'getExpenses']);
+        Route::post('/api/finance/expenses', [\App\Http\Controllers\FinanceController::class, 'storeExpense']);
+        Route::delete('/api/finance/expenses/{id}', [\App\Http\Controllers\FinanceController::class, 'deleteExpense']);
 
         Route::get('/team', [\App\Http\Controllers\TeamController::class, 'index']);
         Route::get('/teams', [\App\Http\Controllers\TeamController::class, 'index']);

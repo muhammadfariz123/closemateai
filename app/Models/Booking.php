@@ -27,6 +27,22 @@ class Booking extends Model
         'transport_cost' => 'float',
         'total_dp' => 'float',
         'wa_form_filled_at' => 'datetime',
+        // Financial Breakdown Fields
+        'cost_crew_foto' => 'float',
+        'cost_cetak_4r' => 'float',
+        'cost_packaging' => 'float',
+        'cost_album' => 'float',
+        'cost_cetak_jumbo' => 'float',
+        'cost_crew_cinema' => 'float',
+        'laba_cinema' => 'float',
+        'cost_crew_liputan' => 'float',
+        'laba_liputan' => 'float',
+        'cost_crew_konten' => 'float',
+        'laba_konten' => 'float',
+        'sales_fee' => 'float',
+        'crew_fee_details' => 'array',
+        'package_features' => 'array',
+        'extras_detail' => 'array',
     ];
 
     protected function serializeDate(\DateTimeInterface $date): string

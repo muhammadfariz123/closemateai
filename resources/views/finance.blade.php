@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Laporan Keuangan - CloseMateAI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -348,7 +349,7 @@
         </div>
         
         <div class="filter-row" style="margin-bottom: 24px;">
-            <button class="btn btn-outline" onclick="exportLaporanCSV()"><i class="fa-solid fa-download"></i> Export Laporan CSV</button>
+            <button class="btn btn-outline" onclick="exportLaporanCSV()" style="font-weight: 600; display: inline-flex; align-items: center; gap: 8px;"><i class="fa-solid fa-file-excel" style="color: #10b981; font-size: 1.1rem;"></i> Export Laporan CSV</button>
             <button class="btn btn-primary" onclick="openExpenseModal()"><i class="fa-solid fa-plus"></i> Catat Pengeluaran Baru</button>
         </div>
         
@@ -600,6 +601,30 @@
             }
         }
 
+        async function fetchExpensesFinance() {
+            try {
+                const res = await fetch('/api/finance/expenses');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
+                        const mapped = data.data.map(e => ({
+                            id: e.id,
+                            acaraId: e.booking_id || '',
+                            kategori: e.category || 'Operasional',
+                            tanggal: e.date ? e.date.substring(0, 10) : '',
+                            judul: e.name || '',
+                            nominal: Number(e.amount) || 0,
+                            catatan: e.description || ''
+                        }));
+                        localStorage.setItem('f_expenses', JSON.stringify(mapped));
+                        calculateFinance();
+                    }
+                }
+            } catch(e) {
+                console.warn("Could not sync expenses from server:", e);
+            }
+        }
+
         // Sidebar Collapse
         document.getElementById('btn-collapse').addEventListener('click', function() {
             document.body.classList.toggle('sidebar-collapsed');
@@ -757,6 +782,26 @@
             
             localStorage.setItem('f_expenses', JSON.stringify(expenses));
             
+            // Sync to backend API
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            fetch('/api/finance/expenses', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || ''
+                },
+                body: JSON.stringify({
+                    id: (id && !String(id).startsWith('exp_')) ? id : null,
+                    name: judul,
+                    amount: cleanNumber(nominal),
+                    date: tanggal || new Date().toISOString().split('T')[0],
+                    category: kategori,
+                    description: catatan,
+                    booking_id: acaraId ? parseInt(acaraId) : null
+                })
+            }).catch(e => console.warn('Could not sync expense to server:', e));
+
             if(window.logSysActivity && !id) {
                 window.logSysActivity('Handler', 'Penapict', 'Mencatat pengeluaran', judul + ' (Rp ' + formatRupiah(nominal) + ')', 'fa-money-bill-wave', 'grey');
             }
@@ -1022,6 +1067,19 @@
                 } catch(e) { expenses = []; }
                 expenses = expenses.filter(e => e.id !== id);
                 localStorage.setItem('f_expenses', JSON.stringify(expenses));
+                
+                // Also delete from server if numeric ID
+                if (id && !String(id).startsWith('exp_')) {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    fetch('/api/finance/expenses/' + id, {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken || ''
+                        }
+                    }).catch(e => console.warn('Could not delete from server:', e));
+                }
+
                 showToast("Pengeluaran dihapus");
                 calculateFinance();
             }
@@ -1079,7 +1137,19 @@
         }
 
         function exportLaporanCSV() {
-            exportLaporanKeuangan('excel');
+            let url = '/api/finance/export/excel';
+            const params = [];
+            if (currentFilterStart && currentFilterEnd) {
+                const s = (currentFilterStart instanceof Date ? currentFilterStart : new Date(currentFilterStart)).toISOString().split('T')[0];
+                const e = (currentFilterEnd instanceof Date ? currentFilterEnd : new Date(currentFilterEnd)).toISOString().split('T')[0];
+                params.push(`start=${s}`);
+                params.push(`end=${e}`);
+            }
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+            showToast('Mengunduh Laporan Keuangan Multi-Tab (WPS / Excel)...');
+            window.location.href = url;
         }
 
         function exportLaporanKeuangan(format = 'excel') {
@@ -1550,6 +1620,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchBookingsFinance();
+            fetchExpensesFinance();
             setFilter('Bulan Ini', document.querySelector('.filter-tab.active'));
             
             fpInstance = flatpickr("#btn_custom_range_wrapper", {
