@@ -99,6 +99,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/production', function () { return view('production'); });
     Route::get('/activity', function () { return view('activity'); });
 
+    // Stock Opname & Inventaris (Owner & Divisi Produksi)
+    Route::get('/stock', [\App\Http\Controllers\StockController::class, 'index']);
+    Route::get('/api/stock/items', [\App\Http\Controllers\StockController::class, 'getItems']);
+    Route::post('/api/stock/items', [\App\Http\Controllers\StockController::class, 'saveItem']);
+    Route::post('/api/stock/items/{id}', [\App\Http\Controllers\StockController::class, 'saveItem']);
+    Route::delete('/api/stock/items/{id}', [\App\Http\Controllers\StockController::class, 'deleteItem']);
+    Route::get('/api/stock/opnames', [\App\Http\Controllers\StockController::class, 'getOpnames']);
+    Route::post('/api/stock/opnames', [\App\Http\Controllers\StockController::class, 'submitOpname']);
+    Route::post('/api/stock/opnames/{id}/verify', [\App\Http\Controllers\StockController::class, 'verifyOpname']);
+    Route::get('/api/stock/purchases', [\App\Http\Controllers\StockController::class, 'getPurchases']);
+    Route::post('/api/stock/purchases', [\App\Http\Controllers\StockController::class, 'submitPurchase']);
+    Route::post('/api/stock/purchases/{id}/verify', [\App\Http\Controllers\StockController::class, 'verifyPurchase']);
+    Route::get('/api/stock/balance', [\App\Http\Controllers\StockController::class, 'getBalance']);
+    Route::post('/api/stock/balance/topup', [\App\Http\Controllers\StockController::class, 'topupBalance']);
+    Route::get('/api/stock/export/csv', [\App\Http\Controllers\StockController::class, 'exportCsv']);
+
     // Restricted Owner-Only Features (Knowledge Base, Finance, Team Management, Settings)
     Route::middleware('owner_only')->group(function () {
         Route::get('/knowledge', [KnowledgeFileController::class, 'index']);

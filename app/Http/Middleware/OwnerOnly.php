@@ -17,12 +17,16 @@ class OwnerOnly
     {
         $user = auth()->user();
 
-        if ($user && $user->role === 'admin_cs') {
+        if ($user && ($user->role === 'admin_cs' || $user->isProduction())) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'success' => false,
                     'error' => 'Akses dibatasi hanya untuk Owner.'
                 ], 403);
+            }
+
+            if ($user->isProduction()) {
+                return redirect('/stock')->with('error', 'Akses dibatasi hanya untuk Owner.');
             }
 
             return redirect('/dashboard')->with('error', 'Akses dibatasi hanya untuk Owner.');

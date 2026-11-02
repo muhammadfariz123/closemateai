@@ -575,10 +575,11 @@
                                 $initials = strtoupper(substr($m->name ?: 'AD', 0, 2));
                             }
                             $isActive = ($m->status === 'active');
+                            $isProductionRole = ($m->role === 'Divisi Produksi' || $m->role === 'production');
                         @endphp
                         <div class="member-row" id="member-row-{{ $m->id }}">
                             <div class="member-info">
-                                <div class="member-avatar avatar-admin-cs">
+                                <div class="member-avatar {{ $isProductionRole ? '' : 'avatar-admin-cs' }}" style="{{ $isProductionRole ? 'background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%); color: white;' : '' }}">
                                     {{ $initials }}
                                 </div>
                                 <div class="member-text">
@@ -587,9 +588,16 @@
                                 </div>
                             </div>
                             <div style="display: flex; align-items: center; gap: 12px; position: relative;">
+                                @if($isProductionRole)
+                                <span class="role-badge" style="background: {{ $isActive ? '#e0f2fe' : '#f1f5f9' }}; color: {{ $isActive ? '#0284c7' : '#64748b' }}; border: 1px solid {{ $isActive ? '#bae6fd' : '#e2e8f0' }};" id="badge-status-{{ $m->id }}">
+                                    <i class="fa-solid fa-boxes-stacked" style="font-size: 11px; margin-right: 4px;"></i>
+                                    Divisi Produksi {{ $isActive ? 'Aktif' : 'Nonaktif' }}
+                                </span>
+                                @else
                                 <span class="role-badge {{ $isActive ? 'badge-admin-active' : 'badge-admin-inactive' }}" id="badge-status-{{ $m->id }}">
                                     {{ $isActive ? 'Admin CS Aktif' : 'Admin CS Nonaktif' }}
                                 </span>
+                                @endif
                                 <div class="member-action-menu">
                                     <button type="button" class="btn-dots-action" onclick="toggleMemberDropdown(event, {{ $m->id }})" title="Menu aksi">
                                         <i class="fa-solid fa-ellipsis-vertical"></i>
@@ -603,7 +611,7 @@
                                             <i class="fa-solid fa-key" style="color: #64748b;"></i>
                                             <span>Kirim Reset Password</span>
                                         </div>
-                                        <div class="dropdown-item-action item-danger" onclick="deleteTeamMemberFromMenu({{ $m->id }}, '{{ addslashes($m->name ?: 'Admin CS') }}')">
+                                        <div class="dropdown-item-action item-danger" onclick="deleteTeamMemberFromMenu({{ $m->id }}, '{{ addslashes($m->name ?: ($isProductionRole ? 'Divisi Produksi' : 'Admin CS')) }}')">
                                             <i class="fa-regular fa-trash-can"></i>
                                             <span>Hapus Anggota</span>
                                         </div>
@@ -614,7 +622,7 @@
                         @endforeach
                     @else
                         <div class="empty-state" id="emptyStateActive">
-                            Belum ada Admin CS aktif. Undang mereka lewat email.
+                            Belum ada anggota tim aktif. Undang mereka lewat email.
                         </div>
                     @endif
                 </div>
@@ -669,25 +677,32 @@
         </div>
     </div>
 
-    <!-- Modal Undang Admin CS (Image 1) -->
+    <!-- Modal Undang Admin CS / Divisi Produksi -->
     <div class="modal-overlay" id="inviteModal" onclick="if(event.target === this) closeInviteModal()">
-        <div class="modal-box" style="background: white; width: 90%; max-width: 440px; border-radius: 16px; padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); position: relative;">
+        <div class="modal-box" style="background: white; width: 90%; max-width: 460px; border-radius: 16px; padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); position: relative;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
-                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #181c32;">Undang Admin CS</h3>
+                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #181c32;">Undang Anggota Tim</h3>
                 <i class="fa-solid fa-xmark" style="cursor: pointer; color: #a1a5b7; font-size: 16px; padding: 4px;" onclick="closeInviteModal()"></i>
             </div>
             <p style="font-size: 13px; color: #64748b; margin-bottom: 20px; line-height: 1.5;">
-                Kami akan mengirim email undangan berisi link untuk membuat password.
+                Pilih peran dan kami akan mengirim email undangan berisi link untuk membuat password.
             </p>
 
             <form id="inviteForm" onsubmit="submitInvite(event)">
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: #181c32; margin-bottom: 6px;">Nama Admin</label>
-                    <input type="text" id="inputInviteName" class="form-control" placeholder="Admin Maya" style="width: 100%; height: 42px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 14px; font-size: 13px; color: #181c32; outline: none; box-sizing: border-box;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #181c32; margin-bottom: 6px;">Pilih Peran / Hak Akses</label>
+                    <select id="inputInviteRole" class="form-control" style="width: 100%; height: 42px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 14px; font-size: 13px; color: #181c32; outline: none; background: #fff; cursor: pointer;">
+                        <option value="Admin CS">Admin CS (Customer Service, Leads, & Live Chat)</option>
+                        <option value="Divisi Produksi">Divisi Produksi (Stok, Opname, Pembelian, & Saldo)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #181c32; margin-bottom: 6px;">Nama Anggota</label>
+                    <input type="text" id="inputInviteName" class="form-control" placeholder="Contoh: Maya CS / Budi Produksi" style="width: 100%; height: 42px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 14px; font-size: 13px; color: #181c32; outline: none; box-sizing: border-box;">
                 </div>
                 <div class="form-group" style="margin-bottom: 24px;">
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: #181c32; margin-bottom: 6px;">Email Admin</label>
-                    <input type="email" id="inputInviteEmail" class="form-control" placeholder="maya@vendor.com" required style="width: 100%; height: 42px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 14px; font-size: 13px; color: #181c32; outline: none; box-sizing: border-box;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #181c32; margin-bottom: 6px;">Email Anggota</label>
+                    <input type="email" id="inputInviteEmail" class="form-control" placeholder="nama@vendor.com" required style="width: 100%; height: 42px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 14px; font-size: 13px; color: #181c32; outline: none; box-sizing: border-box;">
                 </div>
 
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
@@ -761,9 +776,10 @@
             e.preventDefault();
             const name = document.getElementById('inputInviteName').value.trim();
             const email = document.getElementById('inputInviteEmail').value.trim();
+            const role = document.getElementById('inputInviteRole') ? document.getElementById('inputInviteRole').value : 'Admin CS';
 
             if (!email) {
-                alert("Harap masukkan alamat email Admin CS");
+                alert("Harap masukkan alamat email anggota tim");
                 return;
             }
 
@@ -778,7 +794,7 @@
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': csrfToken
                 },
-                body: JSON.stringify({ name, email })
+                body: JSON.stringify({ name, email, role })
             })
             .then(res => {
                 if (!res.ok) {
@@ -1092,9 +1108,11 @@
                     if (data.active_members && data.active_members.length > 0) {
                         let html = '';
                         data.active_members.forEach(m => {
-                            const name = m.name || 'Admin CS';
+                            const isProd = (m.role === 'Divisi Produksi' || m.role === 'production');
+                            const defaultTitle = isProd ? 'Divisi Produksi' : 'Admin CS';
+                            const name = m.name || defaultTitle;
                             const words = name.trim().split(/\s+/);
-                            let initials = 'AD';
+                            let initials = isProd ? 'PR' : 'AD';
                             if (words.length >= 2) {
                                 initials = (words[0].substring(0, 1) + words[1].substring(0, 1)).toUpperCase();
                             } else if (name.length >= 2) {
@@ -1104,10 +1122,21 @@
                             }
                             const isActive = (m.status === 'active');
 
+                            const badgeHtml = isProd
+                                ? `<span class="role-badge" style="background: ${isActive ? '#e0f2fe' : '#f1f5f9'}; color: ${isActive ? '#0284c7' : '#64748b'}; border: 1px solid ${isActive ? '#bae6fd' : '#e2e8f0'};" id="badge-status-${m.id}">
+                                    <i class="fa-solid fa-boxes-stacked" style="font-size: 11px; margin-right: 4px;"></i>
+                                    Divisi Produksi ${isActive ? 'Aktif' : 'Nonaktif'}
+                                   </span>`
+                                : `<span class="role-badge ${isActive ? 'badge-admin-active' : 'badge-admin-inactive'}" id="badge-status-${m.id}">
+                                    ${isActive ? 'Admin CS Aktif' : 'Admin CS Nonaktif'}
+                                   </span>`;
+
+                            const avatarStyle = isProd ? 'style="background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%); color: white;"' : '';
+
                             html += `
                             <div class="member-row" id="member-row-${m.id}">
                                 <div class="member-info">
-                                    <div class="member-avatar avatar-admin-cs">
+                                    <div class="member-avatar ${isProd ? '' : 'avatar-admin-cs'}" ${avatarStyle}>
                                         ${initials}
                                     </div>
                                     <div class="member-text">
@@ -1116,9 +1145,7 @@
                                     </div>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 12px; position: relative;">
-                                    <span class="role-badge ${isActive ? 'badge-admin-active' : 'badge-admin-inactive'}" id="badge-status-${m.id}">
-                                        ${isActive ? 'Admin CS Aktif' : 'Admin CS Nonaktif'}
-                                    </span>
+                                    ${badgeHtml}
                                     <div class="member-action-menu">
                                         <button type="button" class="btn-dots-action" onclick="toggleMemberDropdown(event, ${m.id})" title="Menu aksi">
                                             <i class="fa-solid fa-ellipsis-vertical"></i>
@@ -1143,7 +1170,7 @@
                         });
                         activeContainer.innerHTML = html;
                     } else {
-                        activeContainer.innerHTML = `<div class="empty-state" id="emptyStateActive">Belum ada Admin CS aktif. Undang mereka lewat email.</div>`;
+                        activeContainer.innerHTML = `<div class="empty-state" id="emptyStateActive">Belum ada anggota tim aktif. Undang mereka lewat email.</div>`;
                     }
 
                     // Update Pending list matching Image 3

@@ -30,9 +30,12 @@ class TeamController extends Controller
             return redirect('/login');
         }
 
-        // If user is Admin CS, restrict access to Team Management
-        if ($user->role === 'admin_cs') {
-            return redirect('/dashboard')->with('error', 'Akses dibatasi untuk Admin CS.');
+        // If user is Admin CS or Divisi Produksi, restrict access to Team Management
+        if ($user->role === 'admin_cs' || $user->isProduction()) {
+            if ($user->isProduction()) {
+                return redirect('/stock')->with('error', 'Akses dibatasi hanya untuk Owner.');
+            }
+            return redirect('/dashboard')->with('error', 'Akses dibatasi hanya untuk Owner.');
         }
 
         $totalSeats = 99;
@@ -110,8 +113,8 @@ class TeamController extends Controller
             return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
         }
 
-        if ($user->role === 'admin_cs') {
-            return response()->json(['success' => false, 'error' => 'Admin CS tidak dapat mengundang anggota.'], 403);
+        if ($user->role === 'admin_cs' || $user->isProduction()) {
+            return response()->json(['success' => false, 'error' => 'Hanya Owner yang dapat mengundang anggota tim.'], 403);
         }
 
         $request->validate([
@@ -120,6 +123,10 @@ class TeamController extends Controller
 
         $email = strtolower(trim($request->input('email')));
         $name = trim($request->input('name') ?: explode('@', $email)[0]);
+        $role = trim($request->input('role', 'Admin CS'));
+        if (!in_array($role, ['Admin CS', 'Divisi Produksi'])) {
+            $role = 'Admin CS';
+        }
 
         // Check if owner's email
         if (strtolower($user->email) === $email) {
@@ -134,7 +141,7 @@ class TeamController extends Controller
         if ($existing && $existing->status === 'active') {
             return response()->json([
                 'success' => false,
-                'error' => 'Email ini sudah menjadi Admin CS aktif.'
+                'error' => "Email ini sudah menjadi {$existing->role} aktif."
             ], 422);
         }
 
@@ -151,6 +158,7 @@ class TeamController extends Controller
 
         if ($existing) {
             $existing->name = $name;
+            $existing->role = $role;
             $existing->token = $token;
             $existing->status = 'pending';
             $existing->invited_at = now();
@@ -161,7 +169,7 @@ class TeamController extends Controller
                 'user_id' => $user->id,
                 'name' => $name,
                 'email' => $email,
-                'role' => 'Admin CS',
+                'role' => $role,
                 'status' => 'pending',
                 'invited_at' => now(),
                 'token' => $token,
@@ -406,6 +414,8 @@ class TeamController extends Controller
 
         $adminName = trim($request->input('name', $member->name));
 
+        $userRole = ($member->role === 'Divisi Produksi' || $member->role === 'production') ? 'production' : 'admin_cs';
+
         // Create or update user account
         $user = User::where('email', $member->email)->first();
         if (!$user) {
@@ -413,7 +423,7 @@ class TeamController extends Controller
                 'name' => $adminName,
                 'email' => $member->email,
                 'password' => Hash::make($request->input('password')),
-                'role' => 'admin_cs',
+                'role' => $userRole,
                 'owner_id' => $owner ? $owner->id : null,
                 'business_name' => $owner ? $owner->business_name : 'Workspace',
                 'email_verified_at' => now(),
@@ -421,7 +431,7 @@ class TeamController extends Controller
         } else {
             $user->name = $adminName;
             $user->password = Hash::make($request->input('password'));
-            $user->role = 'admin_cs';
+            $user->role = $userRole;
             $user->owner_id = $owner ? $owner->id : null;
             $user->business_name = $owner ? $owner->business_name : $user->business_name;
             $user->email_verified_at = $user->email_verified_at ?: now();
@@ -449,16 +459,21 @@ class TeamController extends Controller
             Log::error('TeamAccountActivatedEmail failed: ' . $e->getMessage());
         }
 
+        $roleTitle = ($member->role === 'Divisi Produksi' || $member->role === 'production') ? 'Divisi Produksi' : 'Admin CS';
         if (class_exists(SystemActivity::class) && $owner) {
             SystemActivity::create([
                 'user_id' => $owner->id,
                 'type' => 'team_activated',
-                'description' => "Admin CS {$user->name} ({$user->email}) telah mengaktifkan akun dan bergabung ke workspace",
+                'description' => "{$roleTitle} {$user->name} ({$user->email}) telah mengaktifkan akun dan bergabung ke workspace",
             ]);
         }
 
         // Login user directly into workspace
         Auth::login($user);
+
+        if ($user->isProduction()) {
+            return redirect('/stock');
+        }
 
         return redirect('/dashboard');
     }

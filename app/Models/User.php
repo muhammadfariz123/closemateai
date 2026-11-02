@@ -82,6 +82,11 @@ class User extends Authenticatable
         return $this->role === 'admin_cs';
     }
 
+    public function isProduction()
+    {
+        return $this->role === 'production' || $this->role === 'divisi_produksi';
+    }
+
     public function isOwner()
     {
         return empty($this->owner_id) && ($this->role === 'owner' || empty($this->role));

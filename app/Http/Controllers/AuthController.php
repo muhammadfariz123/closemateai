@@ -20,17 +20,20 @@ class AuthController extends Controller
 
         if (auth()->attempt($credentials)) {
             $user = auth()->user();
-            if ($user && $user->role === 'admin_cs' && $user->owner_id) {
+            if ($user && ($user->role === 'admin_cs' || $user->isProduction()) && $user->owner_id) {
                 $member = \App\Models\TeamMember::where('email', $user->email)->where('user_id', $user->owner_id)->first();
                 if ($member && $member->status === 'inactive') {
                     auth()->logout();
                     return back()->withErrors([
-                        'email' => 'Akun Admin CS Anda saat ini sedang dinonaktifkan oleh Owner.',
+                        'email' => 'Akun Anda saat ini sedang dinonaktifkan oleh Owner.',
                     ])->withInput($request->only('email'));
                 }
             }
 
             $request->session()->regenerate();
+            if ($user && $user->isProduction()) {
+                return redirect('/stock');
+            }
             return redirect('/dashboard');
         }
 
