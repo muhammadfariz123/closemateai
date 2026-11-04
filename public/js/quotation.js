@@ -380,8 +380,115 @@ function setFilter(status, el) {
     renderQuotationsList();
 }
 
+function matchesQuotation(q, rawQuery) {
+    if (!rawQuery || !rawQuery.trim()) return true;
+
+    const tokens = rawQuery.toLowerCase().trim().split(/\s+/).filter(t => t.length > 0);
+    if (tokens.length === 0) return true;
+
+    const pool = [];
+
+    // 1. Identitas & Klien
+    if (q.q_no) pool.push(String(q.q_no).toLowerCase());
+    if (q.client) pool.push(String(q.client).toLowerCase());
+    if (q.status) pool.push(String(q.status).toLowerCase());
+
+    // 2. Kontak WhatsApp / Telepon
+    if (q.phone) {
+        const p = String(q.phone).toLowerCase();
+        pool.push(p);
+        pool.push(p.replace(/[^0-9]/g, ''));
+    }
+
+    // 3. Lokasi Venue / Kota
+    if (q.venue) pool.push(String(q.venue).toLowerCase());
+
+    // 4. Tanggal Acara (event_date) & Berlaku Sampai (valid_until)
+    const addDateVariations = (dateVal) => {
+        if (!dateVal) return;
+        const strVal = String(dateVal).toLowerCase();
+        pool.push(strVal);
+
+        try {
+            const d = new Date(dateVal);
+            if (!isNaN(d.getTime())) {
+                const day = d.getDate();
+                const month = d.getMonth() + 1;
+                const year = d.getFullYear();
+                const monthsId = ['januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember'];
+                const monthName = monthsId[d.getMonth()] || '';
+                const shortMonth = monthName.substring(0, 3);
+
+                pool.push(`${day} ${monthName} ${year}`);
+                pool.push(`${day} ${shortMonth} ${year}`);
+                pool.push(`${day}/${month}/${year}`);
+                pool.push(`${month}/${day}/${year}`);
+                pool.push(`${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`);
+                pool.push(`${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}/${year}`);
+                pool.push(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+                pool.push(monthName);
+                pool.push(String(year));
+            }
+        } catch(e) {}
+    };
+
+    addDateVariations(q.event_date);
+    addDateVariations(q.valid_until);
+
+    // 5. Finansial: Grand Total & Diskon
+    const grandTotal = Number(q.grandTotal) || 0;
+    const discount = Number(q.discount) || 0;
+    pool.push(String(grandTotal));
+    pool.push(grandTotal.toLocaleString('id-ID'));
+    pool.push('rp ' + grandTotal.toLocaleString('id-ID'));
+    pool.push('rp. ' + grandTotal.toLocaleString('id-ID'));
+    pool.push(String(discount));
+    pool.push(discount.toLocaleString('id-ID'));
+
+    // 6. Items Penawaran (Layanan, Section, Deskripsi, Satuan, Harga, Subtotal)
+    if (Array.isArray(q.items)) {
+        q.items.forEach(item => {
+            if (item.name) pool.push(String(item.name).toLowerCase());
+            if (item.section) pool.push(String(item.section).toLowerCase());
+            if (item.desc) pool.push(String(item.desc).toLowerCase());
+            if (item.satuan) pool.push(String(item.satuan).toLowerCase());
+            const harga = Number(item.harga) || 0;
+            const qty = Number(item.qty) || 1;
+            const subtotal = qty * harga;
+            pool.push(String(harga));
+            pool.push(harga.toLocaleString('id-ID'));
+            pool.push(String(subtotal));
+            pool.push(subtotal.toLocaleString('id-ID'));
+        });
+    }
+
+    // 7. Termin Pembayaran
+    if (Array.isArray(q.termins)) {
+        q.termins.forEach(term => {
+            if (term.name) pool.push(String(term.name).toLowerCase());
+            if (term.type) pool.push(String(term.type).toLowerCase());
+            if (term.value !== undefined && term.value !== null) pool.push(String(term.value));
+        });
+    }
+
+    // 8. Syarat & Ketentuan (T&C)
+    if (q.tnc) pool.push(String(q.tnc).toLowerCase());
+
+    // 9. Catatan Internal
+    if (q.internal_notes) pool.push(String(q.internal_notes).toLowerCase());
+
+    return tokens.every(token => {
+        const tokenDigits = token.replace(/[^0-9]/g, '');
+        return pool.some(str => {
+            if (str.includes(token)) return true;
+            if (tokenDigits.length >= 3 && str.replace(/[^0-9]/g, '').includes(tokenDigits)) return true;
+            return false;
+        });
+    });
+}
+
 function handleSearch(query) {
-    searchQuery = query.toLowerCase();
+    searchQuery = (query || '').toLowerCase().trim();
     renderQuotationsList();
 }
 
@@ -412,17 +519,14 @@ function renderQuotationsList() {
     
     if(!container || !tableContainer || !emptyState) return;
     
-    // Filter
+    // Filter by tab status
     if(currentFilter !== 'Semua') {
         quotes = quotes.filter(q => q.status === currentFilter);
     }
     
-    // Search
+    // Search across all important fields
     if(searchQuery) {
-        quotes = quotes.filter(q => 
-            (q.client || '').toLowerCase().includes(searchQuery) ||
-            (q.q_no || '').toLowerCase().includes(searchQuery)
-        );
+        quotes = quotes.filter(q => matchesQuotation(q, searchQuery));
     }
     
     if (quotes.length === 0) {
@@ -444,6 +548,7 @@ function renderQuotationsList() {
         let validDate = q.valid_until ? new Date(q.valid_until).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-';
         let eventDateStr = q.event_date ? new Date(q.event_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '';
         let venueStr = q.venue ? ' · ' + q.venue : '';
+        let phoneStr = q.phone ? ' · ' + q.phone : '';
         
         container.innerHTML += `
             <div class="card" style="padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px; display: flex; justify-content: space-between; align-items: center; background: white;">
@@ -452,7 +557,7 @@ function renderQuotationsList() {
                         ${q.client} <span class="status-badge ${statusClass}" style="font-size: 10px; margin-left: 8px;">${q.status}</span>
                     </div>
                     <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
-                        ${q.q_no} · ${eventDateStr}${venueStr}
+                        ${q.q_no} · ${eventDateStr}${venueStr}${phoneStr}
                     </div>
                     <div style="font-weight: 700; font-size: 15px; color: var(--text-dark);">
                         Rp ${q.grandTotal.toLocaleString('id-ID')}
@@ -941,5 +1046,6 @@ window.saveQuotation = saveQuotation;
 window.copyQuotationLink = copyQuotationLink;
 window.deleteQuotation = deleteQuotation;
 window.setFilter = setFilter;
+window.handleSearch = handleSearch;
 window.formatRupiahInput = formatRupiahInput;
 

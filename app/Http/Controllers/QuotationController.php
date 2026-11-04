@@ -17,12 +17,29 @@ class QuotationController extends Controller
     }
 
     // API for vendor dashboard
-    public function getQuotations()
+    public function getQuotations(Request $request)
     {
         $user = $this->getUser();
         if (!$user) return response()->json([]);
 
-        return response()->json(Quotation::where('user_id', $user->id)->orderBy('created_at', 'desc')->get());
+        $query = Quotation::where('user_id', $user->id);
+
+        if ($request->filled('search')) {
+            $s = trim($request->search);
+            $query->where(function ($q) use ($s) {
+                $q->where('q_no', 'like', "%{$s}%")
+                  ->orWhere('client', 'like', "%{$s}%")
+                  ->orWhere('phone', 'like', "%{$s}%")
+                  ->orWhere('venue', 'like', "%{$s}%")
+                  ->orWhere('status', 'like', "%{$s}%")
+                  ->orWhere('tnc', 'like', "%{$s}%")
+                  ->orWhere('internal_notes', 'like', "%{$s}%")
+                  ->orWhere('items', 'like', "%{$s}%")
+                  ->orWhere('termins', 'like', "%{$s}%");
+            });
+        }
+
+        return response()->json($query->orderBy('created_at', 'desc')->get());
     }
 
     public function addQuotation(Request $request)

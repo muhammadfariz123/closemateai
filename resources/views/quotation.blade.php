@@ -432,7 +432,7 @@
             
             <div class="search-add">
                 <div class="search-box">
-                    <input type="text" placeholder="Cari klien / no. penawaran">
+                    <input type="text" id="quotation_search_input" placeholder="Cari klien, no. penawaran, WA, venue, item..." oninput="handleSearch(this.value)">
                 </div>
                 <button class="btn btn-primary" onclick="openQuotationModal()">
                     <i class="fa-solid fa-plus"></i> Buat Penawaran
