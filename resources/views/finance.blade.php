@@ -565,7 +565,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Nominal (Rp)</label>
-                    <input type="text" id="exp_nominal" class="form-control" placeholder="0" oninput="formatRupiahInput(this)">
+                    <input type="text" id="exp_nominal" class="form-control" placeholder="0" oninput="formatRupiahInput(this)" onblur="if(!this.value.trim()) this.value = '0';" onfocus="if(this.value === '0') this.select();">
                 </div>
 
                 <div class="form-group" style="margin-bottom: 24px;">
@@ -729,6 +729,7 @@
         }
 
         function switchMasterTab(tab) {
+            syncInputsToState();
             currentMasterTab = tab;
             ['studio', 'sosmed', 'ops', 'album'].forEach(t => {
                 const btn = document.getElementById('mtab_btn_' + t);
@@ -756,8 +757,12 @@
                 const priceInp = document.getElementById('ms_price_' + s.id);
                 if (nameInp) s.name = nameInp.value;
                 if (posInp) s.position = posInp.value;
-                if (qtyInp) s.qty = parseInt(qtyInp.value) || 1;
+                if (qtyInp) {
+                    if (!qtyInp.value || qtyInp.value.trim() === '') qtyInp.value = '1';
+                    s.qty = parseInt(qtyInp.value) || 1;
+                }
                 if (priceInp) {
+                    if (!priceInp.value || priceInp.value.trim() === '') priceInp.value = '0';
                     s.price = parseRupiah(priceInp.value) || 0;
                     s.total = s.qty * s.price;
                 }
@@ -768,8 +773,12 @@
                 const qtyInp = document.getElementById('mop_qty_' + op.id);
                 const priceInp = document.getElementById('mop_price_' + op.id);
                 if (nameInp) op.name = nameInp.value;
-                if (qtyInp) op.qty = parseInt(qtyInp.value) || 1;
+                if (qtyInp) {
+                    if (!qtyInp.value || qtyInp.value.trim() === '') qtyInp.value = '1';
+                    op.qty = parseInt(qtyInp.value) || 1;
+                }
                 if (priceInp) {
+                    if (!priceInp.value || priceInp.value.trim() === '') priceInp.value = '0';
                     op.price = parseRupiah(priceInp.value) || 0;
                     op.total = op.qty * op.price;
                 }
@@ -837,6 +846,35 @@
             });
             const disp = document.getElementById('total_ops_display');
             if (disp) disp.innerText = 'Rp ' + formatRupiah(sum);
+        }
+
+        function handleMasterPriceBlur(input, type) {
+            const val = input.value.trim();
+            if (!val || val === '') {
+                input.value = '0';
+            } else {
+                const num = parseRupiah(val);
+                input.value = formatRupiah(num);
+            }
+            if (type === 'studio') updateStudioTotal();
+            else if (type === 'sosmed') updateSosmedTotal();
+            else if (type === 'ops') updateOpsTotal();
+        }
+
+        function handleMasterQtyBlur(input, type) {
+            const val = input.value.trim();
+            if (!val || parseInt(val) < 0 || isNaN(parseInt(val))) {
+                input.value = '1';
+            }
+            if (type === 'studio') updateStudioTotal();
+            else if (type === 'sosmed') updateSosmedTotal();
+            else if (type === 'ops') updateOpsTotal();
+        }
+
+        function handleMasterPriceFocus(input) {
+            if (input.value === '0') {
+                input.select();
+            }
         }
 
         // Add new row functions (automatic insert at the bottom)
@@ -936,6 +974,8 @@
                     <tbody>
             `;
             studioItems.forEach((item) => {
+                const priceVal = (item.price !== undefined && item.price !== null && item.price !== '') ? formatRupiah(item.price) : '0';
+                const qtyVal = (item.qty !== undefined && item.qty !== null && item.qty !== '') ? item.qty : 1;
                 html += `
                     <tr>
                         <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
@@ -945,10 +985,10 @@
                             <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_pos_${item.id}" value="${item.position || ''}" placeholder="Jabatan">
                         </td>
                         <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
-                            <input type="number" min="1" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_qty_${item.id}" value="${item.qty || 1}" oninput="updateStudioTotal()">
+                            <input type="number" min="0" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_qty_${item.id}" value="${qtyVal}" oninput="updateStudioTotal()" onblur="handleMasterQtyBlur(this, 'studio')" onfocus="if(this.value === '1' || this.value === '0') this.select();">
                         </td>
                         <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
-                            <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_price_${item.id}" value="${formatRupiah(item.price || 0)}" oninput="formatRupiahInput(this); updateStudioTotal()">
+                            <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_price_${item.id}" value="${priceVal}" oninput="formatRupiahInput(this); updateStudioTotal()" onblur="handleMasterPriceBlur(this, 'studio')" onfocus="handleMasterPriceFocus(this)">
                         </td>
                         <td style="padding: 6px 10px; border: 1px solid #cbd5e1; text-align: center;">
                             <button type="button" onclick="deleteMasterSalaryRow('${item.id}', 'studio')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px; font-size: 14px;" title="Hapus baris">
@@ -990,16 +1030,18 @@
                     <tbody>
             `;
             sosmedItems.forEach((item) => {
+                const priceVal = (item.price !== undefined && item.price !== null && item.price !== '') ? formatRupiah(item.price) : '0';
+                const qtyVal = (item.qty !== undefined && item.qty !== null && item.qty !== '') ? item.qty : 1;
                 html += `
                     <tr>
                         <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
                             <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_name_${item.id}" value="${item.name || ''}" placeholder="Nama channel / pos">
                         </td>
                         <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
-                            <input type="number" min="1" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_qty_${item.id}" value="${item.qty || 1}" oninput="updateSosmedTotal()">
+                            <input type="number" min="0" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_qty_${item.id}" value="${qtyVal}" oninput="updateSosmedTotal()" onblur="handleMasterQtyBlur(this, 'sosmed')" onfocus="if(this.value === '1' || this.value === '0') this.select();">
                         </td>
                         <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
-                            <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_price_${item.id}" value="${formatRupiah(item.price || 0)}" oninput="formatRupiahInput(this); updateSosmedTotal()">
+                            <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="ms_price_${item.id}" value="${priceVal}" oninput="formatRupiahInput(this); updateSosmedTotal()" onblur="handleMasterPriceBlur(this, 'sosmed')" onfocus="handleMasterPriceFocus(this)">
                         </td>
                         <td style="padding: 6px 10px; border: 1px solid #cbd5e1; text-align: center;">
                             <button type="button" onclick="deleteMasterSalaryRow('${item.id}', 'sosmed')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px; font-size: 14px;" title="Hapus baris">
@@ -1040,16 +1082,18 @@
                     <tbody>
             `;
             masterOpsData.forEach((item) => {
+                const priceVal = (item.price !== undefined && item.price !== null && item.price !== '') ? formatRupiah(item.price) : '0';
+                const qtyVal = (item.qty !== undefined && item.qty !== null && item.qty !== '') ? item.qty : 1;
                 html += `
                     <tr>
                         <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
                             <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="mop_name_${item.id}" value="${item.name || ''}" placeholder="Nama pengeluaran">
                         </td>
                         <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
-                            <input type="number" min="1" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="mop_qty_${item.id}" value="${item.qty || 1}" oninput="updateOpsTotal()">
+                            <input type="number" min="0" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="mop_qty_${item.id}" value="${qtyVal}" oninput="updateOpsTotal()" onblur="handleMasterQtyBlur(this, 'ops')" onfocus="if(this.value === '1' || this.value === '0') this.select();">
                         </td>
                         <td style="padding: 6px 10px; border: 1px solid #cbd5e1;">
-                            <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="mop_price_${item.id}" value="${formatRupiah(item.price || 0)}" oninput="formatRupiahInput(this); updateOpsTotal()">
+                            <input type="text" class="form-control" style="font-size: 12px; padding: 4px 8px;" id="mop_price_${item.id}" value="${priceVal}" oninput="formatRupiahInput(this); updateOpsTotal()" onblur="handleMasterPriceBlur(this, 'ops')" onfocus="handleMasterPriceFocus(this)">
                         </td>
                         <td style="padding: 6px 10px; border: 1px solid #cbd5e1; text-align: center;">
                             <button type="button" onclick="deleteMasterOpsRow('${item.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px; font-size: 14px;" title="Hapus baris">
@@ -1208,8 +1252,8 @@
                 return;
             }
             const num = parseInt(raw, 10);
-            if (isNaN(num) || num === 0) {
-                input.value = '';
+            if (isNaN(num)) {
+                input.value = '0';
             } else {
                 input.value = new Intl.NumberFormat('id-ID').format(num);
             }
