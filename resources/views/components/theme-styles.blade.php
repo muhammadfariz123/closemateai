@@ -150,4 +150,31 @@
     .btn-simulator:hover {
         box-shadow: 0 6px 20px var(--primary-focus-shadow) !important;
     }
+
+    /* Global Horizontal Scroll Prevention */
+    html, body {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+        width: 100% !important;
+    }
+    .main-content {
+        min-width: 0 !important;
+        max-width: calc(100vw - 260px) !important;
+        box-sizing: border-box !important;
+    }
+    body.sidebar-collapsed .main-content {
+        max-width: calc(100vw - 80px) !important;
+    }
+    @media (max-width: 768px) {
+        .main-content {
+            margin-left: 0 !important;
+            max-width: 100vw !important;
+            width: 100% !important;
+        }
+    }
+    .table-responsive {
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
 </style>

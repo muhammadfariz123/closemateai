@@ -28,7 +28,7 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg-light); display: flex; min-height: 100vh; color: var(--text-dark); }
+        html, body { background-color: var(--bg-light); display: flex; min-height: 100vh; color: var(--text-dark); overflow-x: hidden; width: 100%; max-width: 100vw; }
 
         /* Sidebar */
         .sidebar { width: 260px; background-color: var(--sidebar-bg); display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; transition: width 0.3s ease; overflow-x: hidden; z-index: 10; }
@@ -46,7 +46,7 @@
 
         /* Sidebar Collapsed State */
         body.sidebar-collapsed .sidebar { width: 80px; }
-        body.sidebar-collapsed .main-content { margin-left: 80px; }
+        body.sidebar-collapsed .main-content { margin-left: 80px; max-width: calc(100vw - 80px); width: calc(100% - 80px); }
         body.sidebar-collapsed .sidebar-title { display: none; }
         body.sidebar-collapsed .sidebar-header { justify-content: center; padding: 24px 0; }
         body.sidebar-collapsed .nav-item span { display: none; }
@@ -54,8 +54,8 @@
         body.sidebar-collapsed #collapse-icon { transform: rotate(180deg); }
 
         /* Main Content */
-        .main-content { margin-left: 260px; flex: 1; padding: 30px; display: flex; flex-direction: column; transition: margin-left 0.3s ease; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; margin: -30px -30px 30px -30px; padding: 16px 30px; background-color: white; border-bottom: 1px solid var(--border-color); }
+        .main-content { margin-left: 260px; flex: 1; min-width: 0; max-width: calc(100vw - 260px); width: calc(100% - 260px); padding: 24px 30px; display: flex; flex-direction: column; box-sizing: border-box; overflow-x: hidden; transition: margin-left 0.3s ease; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin: -24px -30px 24px -30px; padding: 16px 30px; background-color: white; border-bottom: 1px solid var(--border-color); }
         .page-title h1 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
         .page-title p { font-size: 14px; color: var(--text-muted); }
         
@@ -88,7 +88,7 @@
         .date-info strong { color: var(--text-dark); }
 
         /* Stat Cards */
-        .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 30px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
         .stat-card { background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 12px; position: relative; }
         .stat-title { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .stat-value { font-size: 24px; font-weight: 700; color: var(--text-dark); }
@@ -118,14 +118,46 @@
         .legend-item { display: flex; align-items: center; gap: 6px; }
         .legend-color { width: 12px; height: 12px; border-radius: 2px; }
         
-        /* Table Styles */
-        .data-table { width: 100%; border-collapse: collapse; }
-        .data-table th { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border-color); font-size: 12px; font-weight: 600; color: var(--text-muted); }
-        .data-table td { padding: 16px; border-bottom: 1px solid var(--border-color); font-size: 13px; color: var(--text-dark); }
+        /* Table Styles & Responsive Table Container */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 8px;
+        }
+        .table-responsive::-webkit-scrollbar {
+            height: 6px;
+        }
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .data-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .data-table th { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border-color); font-size: 11px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+        .data-table td { padding: 12px 14px; border-bottom: 1px solid var(--border-color); font-size: 12px; color: var(--text-dark); white-space: nowrap; }
         
-        .empty-row { text-align: center; padding: 40px !important; color: var(--text-muted); font-size: 13px; border-bottom: none !important; }
+        .empty-row { text-align: center; padding: 40px !important; color: var(--text-muted); font-size: 13px; border-bottom: none !important; white-space: normal !important; }
         
         .select-filter { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; color: var(--text-dark); outline: none; background: white; cursor: pointer; }
+
+        @media (max-width: 1100px) {
+            .grid-two-col {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        @media (max-width: 900px) {
+            .grid-two-equal {
+                grid-template-columns: 1fr !important;
+            }
+        }
 
         /* Modal Styles */
         .modal-overlay {
@@ -374,35 +406,36 @@
             </button>
         </div>
 
-        <div id="panel_report_overview">
-            <div class="stat-card">
-                <div class="stat-title">TOTAL OMSET</div>
-                <div class="stat-value" id="val_omset">Rp 0</div>
-                <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
+        <div id="panel_report_overview" style="width: 100%; min-width: 0; box-sizing: border-box;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">TOTAL OMSET</div>
+                    <div class="stat-value" id="val_omset">Rp 0</div>
+                    <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-title">UANG MASUK</div>
+                    <div class="stat-value" id="val_masuk">Rp 0</div>
+                    <div class="stat-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">SISA PIUTANG KLIEN</div>
+                    <div class="stat-value" id="val_piutang">Rp 0</div>
+                    <div class="stat-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-title">TOTAL PENGELUARAN</div>
+                    <div class="stat-value" id="val_pengeluaran">Rp 0</div>
+                    <div class="stat-desc">Pengeluaran manual + biaya operasional + vendor (HPP)</div>
+                    <div class="stat-icon"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-title">PROFIT BERSIH</div>
+                    <div class="stat-value" id="val_profit">Rp 0</div>
+                    <div class="stat-desc">Nilai paket dikurangi seluruh biaya acara</div>
+                    <div class="stat-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+                </div>
             </div>
-            <div class="stat-card green">
-                <div class="stat-title">UANG MASUK</div>
-                <div class="stat-value" id="val_masuk">Rp 0</div>
-                <div class="stat-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-title">SISA PIUTANG KLIEN</div>
-                <div class="stat-value" id="val_piutang">Rp 0</div>
-                <div class="stat-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-            </div>
-            <div class="stat-card red">
-                <div class="stat-title">TOTAL PENGELUARAN</div>
-                <div class="stat-value" id="val_pengeluaran">Rp 0</div>
-                <div class="stat-desc">Pengeluaran manual + biaya operasional + vendor (HPP)</div>
-                <div class="stat-icon"><i class="fa-solid fa-arrow-trend-down"></i></div>
-            </div>
-            <div class="stat-card green">
-                <div class="stat-title">PROFIT BERSIH</div>
-                <div class="stat-value" id="val_profit">Rp 0</div>
-                <div class="stat-desc">Nilai paket dikurangi seluruh biaya acara</div>
-                <div class="stat-icon"><i class="fa-solid fa-piggy-bank"></i></div>
-            </div>
-        </div>
 
         <div class="content-section">
             <div class="section-header">
@@ -488,22 +521,24 @@
                 </select>
             </div>
             
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Judul</th>
-                        <th>Kategori</th>
-                        <th>Acara</th>
-                        <th>Nominal</th>
-                    </tr>
-                </thead>
-                <tbody id="expense_table_body">
-                    <tr>
-                        <td colspan="5" class="empty-row">Belum ada pengeluaran pada periode ini.</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Judul</th>
+                            <th>Kategori</th>
+                            <th>Acara</th>
+                            <th>Nominal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expense_table_body">
+                        <tr>
+                            <td colspan="5" class="empty-row">Belum ada pengeluaran pada periode ini.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="content-section">
@@ -514,29 +549,31 @@
                 </div>
             </div>
             
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Klien</th>
-                        <th>Tanggal Acara</th>
-                        <th>Paket</th>
-                        <th>Harga Paket</th>
-                        <th>Total Biaya</th>
-                        <th>Profit Margin</th>
-                    </tr>
-                </thead>
-                <tbody id="profit_table_body">
-                    <tr>
-                        <td colspan="6" class="empty-row">Belum ada booking untuk dihitung.</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Klien</th>
+                            <th>Tanggal Acara</th>
+                            <th>Paket</th>
+                            <th>Harga Paket</th>
+                            <th>Total Biaya</th>
+                            <th>Profit Margin</th>
+                        </tr>
+                    </thead>
+                    <tbody id="profit_table_body">
+                        <tr>
+                            <td colspan="6" class="empty-row">Belum ada booking untuk dihitung.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         </div> <!-- End panel_report_overview -->
 
         <!-- PANEL 1: LAPORAN TIM & GAJI (KINERJA KARYAWAN) -->
-        <div id="panel_report_team" style="display: none;">
+        <div id="panel_report_team" style="display: none; width: 100%; min-width: 0; box-sizing: border-box;">
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-title">TOTAL CREW &amp; TIM</div>
@@ -580,23 +617,25 @@
                         </button>
                     </div>
                 </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Nama Kru</th>
-                            <th>Divisi</th>
-                            <th style="text-align: center;">Beban Sesi (Event)</th>
-                            <th style="text-align: right;">Gaji Pokok</th>
-                            <th style="text-align: right;">Uang Jalan / Makan</th>
-                            <th style="text-align: right;">Uang Lembur</th>
-                            <th style="text-align: right;">Bonus / Fee Proyek</th>
-                            <th style="text-align: right;">Total Gaji Bersih</th>
-                            <th style="text-align: center; width: 120px;">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody_team_crews">
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nama Kru</th>
+                                <th>Divisi</th>
+                                <th style="text-align: center;">Beban Sesi (Event)</th>
+                                <th style="text-align: right;">Gaji Pokok</th>
+                                <th style="text-align: right;">Uang Jalan / Makan</th>
+                                <th style="text-align: right;">Uang Lembur</th>
+                                <th style="text-align: right;">Bonus / Fee Proyek</th>
+                                <th style="text-align: right;">Total Gaji Bersih</th>
+                                <th style="text-align: center; width: 120px;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody_team_crews">
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Kecepatan & Ketepatan Kerja Tim Editor & Cetak -->
@@ -611,25 +650,27 @@
                         <a href="/api/office-evaluations/export/csv" class="btn btn-outline" style="font-size: 12px;"><i class="fa-solid fa-download"></i> Unduh CSV Evaluasi</a>
                     </div>
                 </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Editor</th>
-                            <th>Staff Cetak</th>
-                            <th>Layanan</th>
-                            <th>Durasi Selesai</th>
-                            <th>Ketepatan Waktu</th>
-                            <th>Status Cetak &amp; Ambil</th>
-                            <th style="text-align: right;">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody_office_evals">
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Editor</th>
+                                <th>Staff Cetak</th>
+                                <th>Layanan</th>
+                                <th>Durasi Selesai</th>
+                                <th>Ketepatan Waktu</th>
+                                <th>Status Cetak &amp; Ambil</th>
+                                <th style="text-align: right;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody_office_evals">
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Kepuasan Klien Lapangan & Feedback Form -->
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 24px;">
+            <div class="grid-two-col" style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 24px;">
                 <div class="content-section" style="margin-bottom: 0;">
                     <div class="section-title" style="margin-bottom: 16px;">
                         <h3>Penilaian Kepuasan Klien Lapangan</h3>
@@ -665,19 +706,21 @@
                             <a href="/api/reviews/export/csv" class="btn btn-outline" style="font-size: 12px; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-download"></i> Unduh CSV Review</a>
                         </div>
                     </div>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Klien</th>
-                                <th>Kru Bertugas</th>
-                                <th>Rating</th>
-                                <th>Komentar Klien</th>
-                                <th style="text-align: right;">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody_client_reviews">
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Klien</th>
+                                    <th>Kru Bertugas</th>
+                                    <th>Rating</th>
+                                    <th>Komentar Klien</th>
+                                    <th style="text-align: right;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_client_reviews">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -689,25 +732,27 @@
                         <p>Pencapaian konversi leads prospek menjadi booking aktif</p>
                     </div>
                 </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Marketer / Channel</th>
-                            <th>Total Leads Masuk</th>
-                            <th>Booking Closing</th>
-                            <th>Conversion Rate</th>
-                            <th>Total Omset Dihasilkan</th>
-                            <th>Fee / Komisi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody_team_marketing">
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Marketer / Channel</th>
+                                <th>Total Leads Masuk</th>
+                                <th>Booking Closing</th>
+                                <th>Conversion Rate</th>
+                                <th>Total Omset Dihasilkan</th>
+                                <th>Fee / Komisi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody_team_marketing">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- PANEL 2: LAPORAN PAKET FOTO & PENJUALAN (PERFORMA PRODUK) -->
-        <div id="panel_report_packages" style="display: none;">
+        <div id="panel_report_packages" style="display: none; width: 100%; min-width: 0; box-sizing: border-box;">
             <div class="stats-grid">
                 <div class="stat-card green">
                     <div class="stat-title">PAKET PALING LAKU</div>
@@ -743,68 +788,72 @@
                         <p>Evaluasi paket terlaris, paling menguntungkan, dan paket yang butuh perbaikan harga</p>
                     </div>
                 </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Nama Paket Foto</th>
-                            <th>Kategori</th>
-                            <th>Harga Jual</th>
-                            <th style="text-align: center;">Jumlah Terjual</th>
-                            <th>Total Omset</th>
-                            <th>Rata-rata HPP</th>
-                            <th>Profit Bersih</th>
-                            <th>Margin %</th>
-                            <th>Evaluasi &amp; Rekomendasi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody_packages_list">
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nama Paket Foto</th>
+                                <th>Kategori</th>
+                                <th>Harga Jual</th>
+                                <th style="text-align: center;">Jumlah Terjual</th>
+                                <th>Total Omset</th>
+                                <th>Rata-rata HPP</th>
+                                <th>Profit Bersih</th>
+                                <th>Margin %</th>
+                                <th>Evaluasi &amp; Rekomendasi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody_packages_list">
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Produk Tambahan & Tren Musiman -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="grid-two-equal" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div class="content-section" style="margin-bottom: 0;">
                     <div class="section-title" style="margin-bottom: 16px;">
                         <h3>Produk Tambahan (Add-On) Terlaris</h3>
                         <p>Penghasil keuntungan tambahan di luar paket dasar</p>
                     </div>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Item Add-On</th>
-                                <th>Harga Satuan</th>
-                                <th style="text-align: center;">Terjual</th>
-                                <th>Total Revenue</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody_addons_list">
-                            <tr>
-                                <td><strong>Drone Aerial 4K</strong></td>
-                                <td>Rp 1.200.000</td>
-                                <td style="text-align: center;"><strong>24x</strong></td>
-                                <td style="color:#10b981; font-weight:700;">Rp 28.800.000</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Cetak Canvas Jumbo 60x90</strong></td>
-                                <td>Rp 750.000</td>
-                                <td style="text-align: center;"><strong>19x</strong></td>
-                                <td style="color:#10b981; font-weight:700;">Rp 14.250.000</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Extra Kru Fotografer</strong></td>
-                                <td>Rp 800.000</td>
-                                <td style="text-align: center;"><strong>14x</strong></td>
-                                <td style="color:#10b981; font-weight:700;">Rp 11.200.000</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Photobooth Unlimited 3 Jam</strong></td>
-                                <td>Rp 2.500.000</td>
-                                <td style="text-align: center;"><strong>8x</strong></td>
-                                <td style="color:#10b981; font-weight:700;">Rp 20.000.000</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Item Add-On</th>
+                                    <th>Harga Satuan</th>
+                                    <th style="text-align: center;">Terjual</th>
+                                    <th>Total Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_addons_list">
+                                <tr>
+                                    <td><strong>Drone Aerial 4K</strong></td>
+                                    <td>Rp 1.200.000</td>
+                                    <td style="text-align: center;"><strong>24x</strong></td>
+                                    <td style="color:#10b981; font-weight:700;">Rp 28.800.000</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Cetak Canvas Jumbo 60x90</strong></td>
+                                    <td>Rp 750.000</td>
+                                    <td style="text-align: center;"><strong>19x</strong></td>
+                                    <td style="color:#10b981; font-weight:700;">Rp 14.250.000</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Extra Kru Fotografer</strong></td>
+                                    <td>Rp 800.000</td>
+                                    <td style="text-align: center;"><strong>14x</strong></td>
+                                    <td style="color:#10b981; font-weight:700;">Rp 11.200.000</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Photobooth Unlimited 3 Jam</strong></td>
+                                    <td>Rp 2.500.000</td>
+                                    <td style="text-align: center;"><strong>8x</strong></td>
+                                    <td style="color:#10b981; font-weight:700;">Rp 20.000.000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div class="content-section" style="margin-bottom: 0;">
@@ -831,7 +880,7 @@
         </div>
 
         <!-- PANEL 3: LAPORAN KEUANGAN & OPERASIONAL STUDIO -->
-        <div id="panel_report_operations" style="display: none;">
+        <div id="panel_report_operations" style="display: none; width: 100%; min-width: 0; box-sizing: border-box;">
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-title">UTILISASI JADWAL STUDIO</div>
@@ -860,7 +909,7 @@
             </div>
 
             <!-- Jam Operasional & Utilisasi Studio -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+            <div class="grid-two-equal" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
                 <div class="content-section" style="margin-bottom: 0;">
                     <div class="section-title" style="margin-bottom: 16px;">
                         <h3>Jam &amp; Hari Teramai Studio</h3>
@@ -913,18 +962,20 @@
                         <h3>Asal Kedatangan Klien (Lead Sources)</h3>
                         <p>Dari mana calon pengantin &amp; klien mengetahui studio Anda</p>
                     </div>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Sumber Channel</th>
-                                <th style="text-align: center;">Jumlah Leads</th>
-                                <th style="text-align: center;">Closing %</th>
-                                <th>Kontribusi Omset</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody_lead_sources">
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Sumber Channel</th>
+                                    <th style="text-align: center;">Jumlah Leads</th>
+                                    <th style="text-align: center;">Closing %</th>
+                                    <th>Kontribusi Omset</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_lead_sources">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -936,24 +987,27 @@
                         <p>Monitoring tagihan aktif dan sisa pelunasan sebelum acara berlangsung</p>
                     </div>
                 </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Klien</th>
-                            <th>Tanggal Acara</th>
-                            <th>Paket Booking</th>
-                            <th>Total Nilai Paket</th>
-                            <th>Sudah Dibayar</th>
-                            <th>Sisa Tagihan (Piutang)</th>
-                            <th>Jatuh Tempo</th>
-                            <th>Tindakan Reminder</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody_unpaid_clients">
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Klien</th>
+                                <th>Tanggal Acara</th>
+                                <th>Paket Booking</th>
+                                <th>Total Nilai Paket</th>
+                                <th>Sudah Dibayar</th>
+                                <th>Sisa Tagihan (Piutang)</th>
+                                <th>Jatuh Tempo</th>
+                                <th>Tindakan Reminder</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody_unpaid_clients">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+    </div> <!-- End main-content -->
 
     <!-- Catat Pengeluaran Baru Modal -->
     <div class="modal-overlay" id="expenseModal">
