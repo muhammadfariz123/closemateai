@@ -24,19 +24,14 @@
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 
 @php
-    $appTheme = $settings->theme_color ?? (auth()->check() ? auth()->user()->getThemeColor() : '#4472c4');
+    $appTheme = '#006847';
 @endphp
     <style>
         :root {
-            --primary: {{ $appTheme }};
-            --primary-dark: #1e3a8a;
-            --primary-light: {{ $appTheme }}1a;
-            --primary-border: {{ $appTheme }}33;
-            --emerald-500: {{ $appTheme }};
-            --emerald-600: {{ $appTheme }};
-            --emerald-700: {{ $appTheme }};
-            --emerald-900: #1e3a8a;
-            --bg-page: #F3F4F6;
+            --primary: #006847;
+            --primary-dark: #005238;
+            --primary-light: #E6F7F0;
+            --bg-page: #F0F4F2;
             --surface: #FFFFFF;
             --text-main: #111827;
             --text-muted: #6B7280;
@@ -53,56 +48,598 @@
         }
 
         html, body {
-            background: #0B131A;
+            background: #F0F4F2;
             color: var(--text-main);
             min-height: 100vh;
             width: 100%;
-            height: 100%;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
         }
 
-        /* Pure Mobile App Container */
+        /* App Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+        .loading-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid #E5E7EB;
+            border-top-color: #006847;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .loading-text {
+            font-size: 13px;
+            color: #4B5563;
+            font-weight: 500;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* App Root Container */
         .app-root {
             width: 100%;
-            max-width: 460px;
-            height: 100%;
-            max-height: 940px;
-            background: #F9FAFB;
+            min-height: 100vh;
+            background: #F0F4F2;
             display: flex;
             flex-direction: column;
             position: relative;
-            overflow: hidden;
-            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5);
-            border-radius: 36px;
-            border: 8px solid #1F2937;
         }
 
-        @media (max-width: 600px) {
-            body { background: #F9FAFB; }
-            .app-root {
-                max-width: 100%;
-                height: 100vh;
-                max-height: 100vh;
-                border-radius: 0;
-                border: none;
-            }
-        }
-
-        /* Top Mobile App Header */
+        /* Top Header */
         .app-header {
-            background: linear-gradient(135deg, #064E3B 0%, #047857 50%, #059669 100%);
+            background: #006847;
             color: #FFFFFF;
-            padding: 20px 18px 16px;
-            flex-shrink: 0;
-            position: relative;
+            padding: 16px 24px;
             border-bottom-left-radius: 24px;
             border-bottom-right-radius: 24px;
-            box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.3);
-            z-index: 20;
+            box-shadow: 0 4px 20px rgba(0, 104, 71, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 90;
         }
+
+        .header-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-shield-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            color: #006847;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.85);
+            object-fit: cover;
+            background: #10B981;
+            flex-shrink: 0;
+        }
+
+        .header-title-box h3 {
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #FFFFFF;
+            margin: 0 0 2px 0;
+        }
+
+        .header-subtitle-text {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.85);
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .role-switch-pill {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            color: #FFFFFF;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+        .role-switch-pill:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .header-logout-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            color: #FFFFFF;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .header-logout-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* App Body Container */
+        .app-body {
+            flex: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 20px 24px 90px;
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 640px) {
+            .app-header { padding: 14px 16px; }
+            .app-body { padding: 16px 16px 85px; }
+        }
+
+        /* Bottom Tab Navigation Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: #FFFFFF;
+            border-top: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: center;
+            z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+        }
+
+        .bottom-nav-inner {
+            max-width: 1100px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .nav-tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #6B7280;
+            font-size: 11px;
+            font-weight: 600;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            text-decoration: none;
+            gap: 3px;
+        }
+
+        .nav-tab-item ion-icon {
+            font-size: 20px;
+        }
+
+        .nav-tab-item.active {
+            color: #006847;
+            font-weight: 700;
+        }
+
+        /* Monitoring Bar (Image 2) */
+        .monitoring-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 4px 2px;
+        }
+        .monitoring-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            color: #1F2937;
+        }
+        .monitoring-left .calendar-icon {
+            font-size: 18px;
+            color: #006847;
+        }
+        .btn-refresh {
+            background: none;
+            border: none;
+            color: #006847;
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+        .btn-refresh:hover { opacity: 0.8; }
+
+        /* 2x2 Stat Cards (Image 2) */
+        .stats-2x2-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .stat-box {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #E5E7EB;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .stat-icon-wrapper {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+        .stat-icon-wrapper.green-light {
+            background: #E6F7F0;
+            color: #006847;
+        }
+        .stat-icon-wrapper.yellow-light {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+        .stat-icon-wrapper.red-light {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: #111827;
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #4B5563;
+            font-weight: 500;
+        }
+
+        /* Pending Action Rows (Image 2) */
+        .pending-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 640px) {
+            .pending-actions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .pending-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 16px 20px;
+            border: 1px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .pending-card:hover {
+            border-color: #006847;
+            transform: translateY(-1px);
+        }
+        .pending-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .pending-badge {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+        }
+        .pending-badge.yellow {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+        .pending-badge.blue {
+            background: #E0F2FE;
+            color: #0284C7;
+        }
+        .pending-title {
+            font-weight: 700;
+            font-size: 13px;
+            color: #111827;
+        }
+        .pending-subtitle {
+            font-size: 11px;
+            color: #6B7280;
+            margin-top: 1px;
+        }
+        .pending-chevron {
+            color: #9CA3AF;
+            font-size: 16px;
+        }
+
+        /* Activity Card (Image 2) */
+        .activity-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            margin-bottom: 24px;
+        }
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .activity-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+        }
+        .btn-link-pdf {
+            background: none;
+            border: none;
+            color: #006847;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-link-pdf:hover { text-decoration: underline; }
+        .empty-activity-msg {
+            text-align: center;
+            color: #6B7280;
+            font-size: 13px;
+            padding: 35px 0;
+        }
+
+        /* Segmented Capsule Tabs (Images 3, 4, 5) */
+        .segmented-capsule {
+            background: #F1F5F9;
+            border-radius: 14px;
+            padding: 5px;
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            border: 1px solid #E2E8F0;
+        }
+        .segmented-tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: #4B5563;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .segmented-tab-btn.active {
+            background: #FFFFFF;
+            color: #006847;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+
+        /* Search and Add Bar (Image 4) */
+        .search-add-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+        .search-input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 0 14px;
+            gap: 10px;
+            color: #9CA3AF;
+        }
+        .search-input-wrapper input {
+            width: 100%;
+            border: none;
+            outline: none;
+            padding: 12px 0;
+            font-size: 13px;
+            color: #111827;
+            background: transparent;
+        }
+        .btn-add-emp {
+            background: #006847;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .btn-add-emp:hover { background: #047857; }
+
+        /* Employee Card (Image 4) */
+        .employee-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 18px 20px;
+            border: 1px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .emp-card-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 3px;
+        }
+        .emp-card-sub, .emp-card-email {
+            font-size: 12px;
+            color: #6B7280;
+            margin-bottom: 2px;
+        }
+        .emp-card-badge {
+            font-size: 11px;
+            font-weight: 700;
+            color: #006847;
+            margin-top: 4px;
+        }
+        .btn-edit-emp {
+            background: #F0FDF4;
+            border: 1px solid #BBF7D0;
+            color: #006847;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-edit-emp:hover {
+            background: #006847;
+            color: #FFFFFF;
+        }
+
+        /* Studio Geofence Card (Image 5) */
+        .studio-settings-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .settings-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 6px;
+        }
+        .settings-card-desc {
+            font-size: 12px;
+            color: #6B7280;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .btn-gps-current {
+            width: 100%;
+            background: #E6F7F0;
+            color: #006847;
+            border: 1px solid #BBF7D0;
+            border-radius: 12px;
+            padding: 13px;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+        }
+        .btn-gps-current:hover { background: #D1FAE5; }
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 640px) {
+            .form-grid-2 { grid-template-columns: 1fr; }
+        }
+        .btn-save-studio {
+            width: 100%;
+            background: #006847;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 14px;
+            padding: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+        .btn-save-studio:hover { background: #047857; }
 
         .header-top {
             display: flex;
@@ -160,63 +697,7 @@
         }
         .role-switch-pill:active { transform: scale(0.96); background: rgba(255,255,255,0.28); }
 
-        /* Main Scrollable View Area */
-        .app-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px 16px 85px;
-            position: relative;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Bottom Tab Navigation Bar */
-        .bottom-nav {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 68px;
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(14px);
-            border-top: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            padding-bottom: calc(var(--safe-bottom) - 8px);
-            z-index: 50;
-        }
-
-        .nav-tab-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            font-size: 10px;
-            font-weight: 600;
-            text-decoration: none;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px 10px;
-            border-radius: 12px;
-            transition: all 0.2s;
-        }
-
-        .nav-tab-item ion-icon {
-            font-size: 22px;
-            margin-bottom: 2px;
-            transition: transform 0.2s;
-        }
-
-        .nav-tab-item.active {
-            color: var(--primary);
-            font-weight: 800;
-        }
-
-        .nav-tab-item.active ion-icon {
-            transform: translateY(-2px);
-        }
+        /* Common Cards & Components */
 
         /* Cards & Components */
         .card {
@@ -597,6 +1078,12 @@
 </head>
 <body>
 
+<!-- App Loading Screen (Matching Image 1) -->
+<div id="appLoadingScreen" class="loading-screen">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Memuat sesi aplikasi...</p>
+</div>
+
 <div class="app-root">
 
     <!-- ============================================== -->
@@ -677,21 +1164,27 @@
     <!-- ============================================== -->
     <div id="screen-main" style="display: flex; flex-direction: column; height: 100%;">
         
-        <!-- App Top Header -->
+        <!-- App Top Header (Matching Image 2) -->
         <header class="app-header">
-            <div class="header-top">
-                <div class="user-badge-container">
+            <div class="header-inner">
+                <div class="header-left">
+                    <div class="header-shield-circle" id="headerIconShield" style="display: none;">
+                        <ion-icon name="shield-checkmark"></ion-icon>
+                    </div>
                     <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Avatar" class="user-avatar" id="appHeaderAvatar">
                     <div class="header-title-box">
-                        <h3 id="appHeaderName">Memuat...</h3>
-                        <span class="header-division-tag" id="appHeaderDivisionTag">Fotografer</span>
+                        <h3 id="appHeaderName">Administrator / Owner</h3>
+                        <p id="appHeaderSubtitle" class="header-subtitle-text">Panel Admin &amp; HR Studio</p>
                     </div>
                 </div>
 
-                <div id="appRoleSwitchContainer">
-                    <button class="role-switch-pill" onclick="toggleAppRoleView()">
-                        <ion-icon name="repeat-outline"></ion-icon>
-                        <span id="roleViewLabel">Mode Admin</span>
+                <div class="header-right">
+                    <button class="role-switch-pill" id="appRoleSwitchContainer" onclick="toggleAppRoleView()">
+                        <ion-icon name="swap-horizontal-outline"></ion-icon>
+                        <span id="roleViewLabel">SISI KARYAWAN</span>
+                    </button>
+                    <button class="header-logout-btn" onclick="handleAuthLogout()" title="Keluar">
+                        <ion-icon name="log-out-outline"></ion-icon>
                     </button>
                 </div>
             </div>
@@ -974,153 +1467,178 @@
             </div>
 
             <!-- ============================================== -->
-            <!-- ADMIN TAB 1: DASHBOARD                         -->
+            <!-- ADMIN TAB 1: DASHBOARD (Matching Image 2)      -->
             <!-- ============================================== -->
             <div id="tab-adm-dash" class="tab-pane" style="display: none;">
-                <div class="card-header-flex" style="margin-bottom: 10px;">
-                    <h3 style="font-size: 16px; font-weight: 800; color: #064E3B;">Panel Admin & HR Studio</h3>
-                    <span class="badge badge-info" id="adminDateHeader">Hari Ini</span>
+                <!-- Monitoring Header Bar -->
+                <div class="monitoring-bar">
+                    <div class="monitoring-left">
+                        <ion-icon name="calendar-outline" class="calendar-icon"></ion-icon>
+                        <span class="monitoring-title">Monitoring Hari Ini · <span id="adminDateHeader">{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</span></span>
+                    </div>
+                    <button class="btn-refresh" onclick="loadInitialData()">
+                        <ion-icon name="sync-outline"></ion-icon>
+                        <span>Segarkan</span>
+                    </button>
                 </div>
 
-                <!-- 4 Metrics -->
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px;">
-                    <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 14px; padding: 10px 4px; text-align: center;">
-                        <div style="font-size: 18px; font-weight: 800; color: #16A34A;" id="adStatPresent">0</div>
-                        <div style="font-size: 10px; font-weight: 700; color: #15803D; margin-top: 2px;">Sudah Hadir</div>
-                    </div>
-                    <div style="background: #FFFBEB; border: 1px solid #FEF3C7; border-radius: 14px; padding: 10px 4px; text-align: center;">
-                        <div style="font-size: 18px; font-weight: 800; color: #D97706;" id="adStatLate">0</div>
-                        <div style="font-size: 10px; font-weight: 700; color: #B45309; margin-top: 2px;">Terlambat</div>
-                    </div>
-                    <div style="background: #EFF6FF; border: 1px solid #DBEAFE; border-radius: 14px; padding: 10px 4px; text-align: center;">
-                        <div style="font-size: 18px; font-weight: 800; color: #2563EB;" id="adStatLeave">0</div>
-                        <div style="font-size: 10px; font-weight: 700; color: #1D4ED8; margin-top: 2px;">Izin/Cuti</div>
-                    </div>
-                    <div style="background: #FEF2F2; border: 1px solid #FEE2E2; border-radius: 14px; padding: 10px 4px; text-align: center;">
-                        <div style="font-size: 18px; font-weight: 800; color: #DC2626;" id="adStatAbsent">0</div>
-                        <div style="font-size: 10px; font-weight: 700; color: #B91C1C; margin-top: 2px;">Belum Absen</div>
-                    </div>
-                </div>
-
-                <!-- 2 Pending Cards (Clickable) -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
-                    <div onclick="switchAdminTab('approval'); setApprovalSub('leave');" style="background: #FEF3C7; border: 1px solid #FDE68A; border-radius: 14px; padding: 12px; cursor: pointer;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 11px; font-weight: 700; color: #92400E;">Pending Cuti</span>
-                            <ion-icon name="chevron-forward" style="color: #92400E;"></ion-icon>
+                <!-- 4 Stat Cards in 2x2 Grid (Image 2) -->
+                <div class="stats-2x2-grid">
+                    <div class="stat-box">
+                        <div class="stat-icon-wrapper green-light">
+                            <ion-icon name="people"></ion-icon>
                         </div>
-                        <div style="font-size: 20px; font-weight: 800; color: #B45309; margin-top: 4px;" id="adPendingLeavesCount">0</div>
-                        <div style="font-size: 10px; color: #B45309;">Ketuk untuk setujui</div>
+                        <div class="stat-number" id="adStatTotalEmp">1</div>
+                        <div class="stat-label">Karyawan Aktif</div>
                     </div>
-
-                    <div onclick="switchAdminTab('approval'); setApprovalSub('overtime');" style="background: #E0F2FE; border: 1px solid #BAE6FD; border-radius: 14px; padding: 12px; cursor: pointer;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 11px; font-weight: 700; color: #075985;">Pending Lembur</span>
-                            <ion-icon name="chevron-forward" style="color: #075985;"></ion-icon>
+                    <div class="stat-box">
+                        <div class="stat-icon-wrapper green-light">
+                            <ion-icon name="checkmark-circle"></ion-icon>
                         </div>
-                        <div style="font-size: 20px; font-weight: 800; color: #0284C7; margin-top: 4px;" id="adPendingOvertimesCount">0</div>
-                        <div style="font-size: 10px; color: #0284C7;">Ketuk untuk setujui</div>
+                        <div class="stat-number" id="adStatPresent">0</div>
+                        <div class="stat-label">Sudah Hadir</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon-wrapper yellow-light">
+                            <ion-icon name="alert-circle"></ion-icon>
+                        </div>
+                        <div class="stat-number" id="adStatLate">0</div>
+                        <div class="stat-label">Terlambat</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon-wrapper red-light">
+                            <ion-icon name="hourglass"></ion-icon>
+                        </div>
+                        <div class="stat-number" id="adStatAbsent">1</div>
+                        <div class="stat-label">Belum Absen</div>
                     </div>
                 </div>
 
-                <!-- Aktivitas Kehadiran Hari Ini -->
-                <div class="card">
-                    <div class="card-header-flex">
-                        <div class="card-title"><ion-icon name="camera-outline" style="color: #059669; font-size: 18px;"></ion-icon> Aktivitas Kehadiran Hari Ini</div>
+                <!-- 2 Pending Action Rows (Image 2) -->
+                <div class="pending-actions-grid">
+                    <div class="pending-card" onclick="switchAdminTab('approval'); setApprovalSub('leave');">
+                        <div class="pending-left">
+                            <span class="pending-badge yellow" id="adPendingLeavesCount">0</span>
+                            <div class="pending-text">
+                                <div class="pending-title">Pending Cuti</div>
+                                <div class="pending-subtitle">Ketuk untuk setujui</div>
+                            </div>
+                        </div>
+                        <ion-icon name="chevron-forward-outline" class="pending-chevron"></ion-icon>
                     </div>
-                    <div id="adLiveAttendancesList">
-                        <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 15px;">Memuat presensi tim...</div>
+
+                    <div class="pending-card" onclick="switchAdminTab('approval'); setApprovalSub('overtime');">
+                        <div class="pending-left">
+                            <span class="pending-badge blue" id="adPendingOvertimesCount">0</span>
+                            <div class="pending-text">
+                                <div class="pending-title">Pending Lembur</div>
+                                <div class="pending-subtitle">Ketuk untuk setujui</div>
+                            </div>
+                        </div>
+                        <ion-icon name="chevron-forward-outline" class="pending-chevron"></ion-icon>
+                    </div>
+                </div>
+
+                <!-- Aktivitas Kehadiran Hari Ini (Image 2) -->
+                <div class="activity-card">
+                    <div class="activity-header">
+                        <h4 class="activity-title">Aktivitas Kehadiran Hari Ini</h4>
+                        <button class="btn-link-pdf" onclick="switchAdminTab('rekap')">Cetak Rekap PDF →</button>
+                    </div>
+                    <div class="activity-content" id="adLiveAttendancesList">
+                        <div class="empty-activity-msg">Belum ada karyawan yang melakukan Clock In hari ini.</div>
                     </div>
                 </div>
             </div>
 
             <!-- ============================================== -->
-            <!-- ADMIN TAB 2: APPROVAL                          -->
+            <!-- ADMIN TAB 2: APPROVAL (Matching Image 3)       -->
             <!-- ============================================== -->
             <div id="tab-adm-approval" class="tab-pane" style="display: none;">
-                <div class="card-title" style="margin-bottom: 12px;"><ion-icon name="checkmark-done-circle-outline" style="color: #059669; font-size: 20px;"></ion-icon> Persetujuan Cuti & Lembur</div>
-                
-                <div class="segmented-row">
-                    <button class="segment-tab-btn active" id="btnAppSubLeave" onclick="setApprovalSub('leave')">Pengajuan Cuti</button>
-                    <button class="segment-tab-btn" id="btnAppSubOt" onclick="setApprovalSub('overtime')">Pengajuan Lembur</button>
+                <div class="segmented-capsule">
+                    <button class="segmented-tab-btn active" id="btnAppSubLeave" onclick="setApprovalSub('leave')">
+                        Pengajuan Cuti (<span id="countAppSubLeave">0</span>)
+                    </button>
+                    <button class="segmented-tab-btn" id="btnAppSubOt" onclick="setApprovalSub('overtime')">
+                        Pengajuan Lembur (<span id="countAppSubOt">0</span>)
+                    </button>
                 </div>
 
                 <div id="adminApprovalItemsList">
-                    <!-- Rendered by JS -->
+                    <div class="empty-activity-msg">Belum ada pengajuan cuti dari karyawan.</div>
                 </div>
             </div>
 
             <!-- ============================================== -->
-            <!-- ADMIN TAB 3: KARYAWAN & LOKASI STUDIO          -->
+            <!-- ADMIN TAB 3: KARYAWAN & GEOFENCE (Images 4 & 5)-->
             <!-- ============================================== -->
             <div id="tab-adm-karyawan" class="tab-pane" style="display: none;">
-                <div class="segmented-row">
-                    <button class="segment-tab-btn active" id="btnEmpSubList" onclick="setEmployeeSub('list')">Data Karyawan</button>
-                    <button class="segment-tab-btn" id="btnEmpSubStudio" onclick="setEmployeeSub('studio')">Lokasi Studio</button>
+                <div class="segmented-capsule">
+                    <button class="segmented-tab-btn active" id="btnEmpSubList" onclick="setEmployeeSub('list')">
+                        Data Karyawan (<span id="countEmpSubList">1</span>)
+                    </button>
+                    <button class="segmented-tab-btn" id="btnEmpSubStudio" onclick="setEmployeeSub('studio')">
+                        Lokasi Studio (<span id="labelStudioRadius">100m</span>)
+                    </button>
                 </div>
 
-                <!-- Subtab 1: Data Karyawan -->
+                <!-- Subtab 1: Data Karyawan (Image 4) -->
                 <div id="adminSubEmployeeList">
-                    <div class="card-header-flex" style="margin-bottom: 10px;">
-                        <span style="font-size: 13px; font-weight: 700; color: var(--text-muted);" id="adminEmpCountLabel">Karyawan</span>
-                        <button onclick="openEmployeeModal()" class="badge badge-success" style="cursor: pointer; padding: 6px 12px; border: none; font-size: 11px;">
-                            + Tambah Karyawan
+                    <div class="search-add-bar">
+                        <div class="search-input-wrapper">
+                            <ion-icon name="search-outline"></ion-icon>
+                            <input type="text" id="adminEmpSearchInput" placeholder="Cari nama, ID, email, atau divisi..." oninput="filterAdminEmployees()">
+                        </div>
+                        <button class="btn-add-emp" onclick="openEmployeeModal()">
+                            <ion-icon name="person-add-outline"></ion-icon>
+                            <span>Tambah</span>
                         </button>
                     </div>
+
                     <div id="adminEmployeesContainer">
                         <!-- Rendered by JS -->
                     </div>
                 </div>
 
-                <!-- Subtab 2: Lokasi Studio & Geofence -->
+                <!-- Subtab 2: Lokasi Studio & Geofence (Image 5) -->
                 <div id="adminSubStudioSettings" style="display: none;">
-                    <div class="card">
-                        <div class="card-title" style="margin-bottom: 12px;"><ion-icon name="business-outline" style="color: #059669; font-size: 18px;"></ion-icon> Pengaturan Lokasi Studio & Shift</div>
+                    <div class="studio-settings-card">
+                        <h4 class="settings-card-title">Pengaturan Geofence Studio Fotografi</h4>
+                        <p class="settings-card-desc">Karyawan biasa wajib berada di dalam radius meter yang ditentukan untuk Clock In &amp; Clock Out. Divisi Marketing otomatis dikecualikan (bebas lokasi).</p>
+                        
+                        <button type="button" class="btn-gps-current" onclick="setStudioCoordsCurrentGps()">
+                            <ion-icon name="locate-outline"></ion-icon>
+                            <span>Gunakan Titik Lokasi GPS Saya Saat Ini</span>
+                        </button>
+
                         <form onsubmit="saveStudioSettings(event)">
                             <div class="form-group">
-                                <label class="form-label">Nama Studio</label>
-                                <input type="text" class="form-control" id="studioNameInput" required>
+                                <label class="form-label">Nama Lokasi Studio</label>
+                                <input type="text" class="form-control" id="studioNameInput" value="Studio Utama" required>
                             </div>
+
                             <div class="form-group">
-                                <label class="form-label">Alamat Studio</label>
-                                <input type="text" class="form-control" id="studioAddressInput">
+                                <label class="form-label">Alamat Lengkap Studio</label>
+                                <input type="text" class="form-control" id="studioAddressInput" value="Jl. Studio Fotografi No. 1 (Ubah titik GPS asli langsung dari menu Admin di HP)">
                             </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+                            <div class="form-grid-2">
                                 <div class="form-group">
-                                    <label class="form-label">Latitude Studio</label>
-                                    <input type="number" step="any" class="form-control" id="studioLatInput" required>
+                                    <label class="form-label">Latitude (-90 s/d 90)</label>
+                                    <input type="number" step="any" class="form-control" id="studioLatInput" value="-7.672585" required>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Longitude Studio</label>
-                                    <input type="number" step="any" class="form-control" id="studioLngInput" required>
-                                </div>
-                            </div>
-                            <button type="button" onclick="setStudioCoordsCurrentGps()" style="width: 100%; margin-bottom: 12px; background: #ECFDF5; border: 1px dashed #10B981; color: #047857; padding: 8px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer;">
-                                <ion-icon name="locate-outline"></ion-icon> Gunakan Koordinat GPS Saya Saat Ini
-                            </button>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                <div class="form-group">
-                                    <label class="form-label">Radius Geofence (Meter)</label>
-                                    <input type="number" class="form-control" id="studioRadiusInput" value="100" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Toleransi Keterlambatan (Menit)</label>
-                                    <input type="number" class="form-control" id="studioLateTolInput" value="15" required>
+                                    <label class="form-label">Longitude (-180 s/d 180)</label>
+                                    <input type="number" step="any" class="form-control" id="studioLngInput" value="109.649065" required>
                                 </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                <div class="form-group">
-                                    <label class="form-label">Jam Masuk</label>
-                                    <input type="time" class="form-control" id="studioStartTimeInput" value="08:00" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Jam Pulang</label>
-                                    <input type="time" class="form-control" id="studioEndTimeInput" value="17:00" required>
-                                </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Radius Maksimal Absensi (Meter - Hanya Angka)</label>
+                                <input type="number" class="form-control" id="studioRadiusInput" value="100" required>
                             </div>
-                            <button type="submit" class="btn-clock-in" style="padding: 12px;">
-                                <ion-icon name="save-outline"></ion-icon> Simpan Lokasi Studio
-                            </button>
+
+                            <button type="submit" class="btn-save-studio">Simpan Pengaturan Studio</button>
                         </form>
                     </div>
                 </div>
@@ -1421,18 +1939,27 @@
                 if (data.is_logged_in && state.employee) {
                     state.isLoggedIn = true;
                     showScreen('main');
-                    renderAppHeader();
-                    renderEmployeeAttendanceScreen();
-                    renderBottomNav();
-                    loadHistory();
-                    loadLeaves();
-                    loadOvertimes();
-                    loadEmployeeSlipDetails();
 
                     const isManager = ['owner', 'admin', 'hr', 'supervisor'].includes((state.employee.role || '').toLowerCase());
                     if (isManager) {
+                        state.activeRoleView = 'admin';
+                        state.activeTab = 'dash';
+                        renderAppHeader();
+                        renderBottomNav();
+                        switchAdminTab('dash');
                         loadAdminStats();
                         loadAdminEmployeesList();
+                    } else {
+                        state.activeRoleView = 'employee';
+                        state.activeTab = 'absen';
+                        renderAppHeader();
+                        renderBottomNav();
+                        switchEmployeeTab('absen');
+                        renderEmployeeAttendanceScreen();
+                        loadHistory();
+                        loadLeaves();
+                        loadOvertimes();
+                        loadEmployeeSlipDetails();
                     }
                 } else {
                     state.isLoggedIn = false;
@@ -1441,6 +1968,13 @@
             }
         } catch (e) {
             console.error('Failed to load initial HRIS data:', e);
+        } finally {
+            // Dismiss Loading Screen smoothly
+            const loader = document.getElementById('appLoadingScreen');
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => { loader.style.display = 'none'; }, 250);
+            }
         }
     }
 
@@ -1525,35 +2059,61 @@
         state.isLoggedIn = false;
         showScreen('login');
     }
+    const handleAuthLogout = handleLogout;
 
     // 4. Header & Navigation Rendering
     function renderAppHeader() {
         const emp = state.employee;
         if (!emp) return;
 
-        document.getElementById('appHeaderName').innerText = emp.name;
-        document.getElementById('appHeaderDivisionTag').innerText = `${emp.division} • ${emp.position}`;
-        if (emp.avatar_url) document.getElementById('appHeaderAvatar').src = emp.avatar_url;
-
-        // Profile tab fields
-        if (document.getElementById('profileNameText')) document.getElementById('profileNameText').innerText = emp.name;
-        if (document.getElementById('profileCodeDivText')) document.getElementById('profileCodeDivText').innerText = `${emp.employee_code} • ${emp.division}`;
-        if (document.getElementById('profileRoleBadge')) document.getElementById('profileRoleBadge').innerText = (emp.role || 'karyawan').toUpperCase();
-        if (document.getElementById('profNameInput')) document.getElementById('profNameInput').value = emp.name;
-        if (document.getElementById('profPhoneInput')) document.getElementById('profPhoneInput').value = emp.phone || '';
-
-        // Role switcher button
         const canManage = ['owner', 'admin', 'hr', 'supervisor'].includes((emp.role || '').toLowerCase());
         const switchBtn = document.getElementById('appRoleSwitchContainer');
         if (switchBtn) {
-            switchBtn.style.display = canManage ? 'block' : 'none';
-            document.getElementById('roleViewLabel').innerText = state.activeRoleView === 'admin' ? 'Mode Karyawan' : 'Mode Admin';
+            switchBtn.style.display = canManage ? 'inline-flex' : 'none';
         }
+
+        const shield = document.getElementById('headerIconShield');
+        const avatar = document.getElementById('appHeaderAvatar');
+        const headerName = document.getElementById('appHeaderName');
+        const headerSub = document.getElementById('appHeaderSubtitle');
+        const roleLabel = document.getElementById('roleViewLabel');
+
+        if (state.activeRoleView === 'admin') {
+            if (shield) shield.style.display = 'flex';
+            if (avatar) avatar.style.display = 'none';
+            if (headerName) headerName.innerText = 'Administrator / Owner';
+            if (roleLabel) roleLabel.innerText = 'SISI KARYAWAN';
+
+            // Subtitle reflects current admin tab (matching reference images)
+            if (headerSub) {
+                if (state.activeTab === 'dash') headerSub.innerText = 'Panel Admin & HR Studio';
+                else if (state.activeTab === 'approval') headerSub.innerText = 'Persetujuan Cuti & Lembur';
+                else if (state.activeTab === 'karyawan') headerSub.innerText = 'Data Karyawan & Lokasi Studio';
+                else if (state.activeTab === 'payroll') headerSub.innerText = 'Manajemen Gaji & Slip';
+                else if (state.activeTab === 'rekap') headerSub.innerText = 'Rekapitulasi Kehadiran Karyawan';
+            }
+        } else {
+            if (shield) shield.style.display = 'none';
+            if (avatar) {
+                avatar.style.display = 'block';
+                if (emp.avatar_url) avatar.src = emp.avatar_url;
+            }
+            if (headerName) headerName.innerText = emp.name;
+            if (headerSub) headerSub.innerText = `${emp.division || 'Studio'} • ${emp.position || 'Staff'}`;
+            if (roleLabel) roleLabel.innerText = 'MODE ADMIN';
+        }
+
+        // Profile tab fields
+        if (document.getElementById('profileNameText')) document.getElementById('profileNameText').innerText = emp.name;
+        if (document.getElementById('profileCodeDivText')) document.getElementById('profileCodeDivText').innerText = `${emp.employee_code || 'EMP-001'} • ${emp.division || 'Studio'}`;
+        if (document.getElementById('profileRoleBadge')) document.getElementById('profileRoleBadge').innerText = (emp.role || 'karyawan').toUpperCase();
+        if (document.getElementById('profNameInput')) document.getElementById('profNameInput').value = emp.name;
+        if (document.getElementById('profPhoneInput')) document.getElementById('profPhoneInput').value = emp.phone || '';
     }
 
     function toggleAppRoleView() {
         state.activeRoleView = state.activeRoleView === 'admin' ? 'employee' : 'admin';
-        document.getElementById('roleViewLabel').innerText = state.activeRoleView === 'admin' ? 'Mode Karyawan' : 'Mode Admin';
+        renderAppHeader();
         renderBottomNav();
 
         if (state.activeRoleView === 'admin') {
@@ -1561,6 +2121,7 @@
             loadAdminStats();
         } else {
             switchEmployeeTab('absen');
+            renderEmployeeAttendanceScreen();
         }
     }
 
@@ -1570,49 +2131,53 @@
 
         if (state.activeRoleView === 'employee') {
             container.innerHTML = `
-                <button class="nav-tab-item active" id="nav-btn-absen" onclick="switchEmployeeTab('absen')">
-                    <ion-icon name="finger-print-outline"></ion-icon>
-                    <span>Absensi</span>
-                </button>
-                <button class="nav-tab-item" id="nav-btn-cuti" onclick="switchEmployeeTab('cuti')">
-                    <ion-icon name="calendar-outline"></ion-icon>
-                    <span>Cuti</span>
-                </button>
-                <button class="nav-tab-item" id="nav-btn-lembur" onclick="switchEmployeeTab('lembur')">
-                    <ion-icon name="time-outline"></ion-icon>
-                    <span>Lembur</span>
-                </button>
-                <button class="nav-tab-item" id="nav-btn-slip" onclick="switchEmployeeTab('slip')">
-                    <ion-icon name="document-text-outline"></ion-icon>
-                    <span>Slip Gaji</span>
-                </button>
-                <button class="nav-tab-item" id="nav-btn-profil" onclick="switchEmployeeTab('profil')">
-                    <ion-icon name="person-circle-outline"></ion-icon>
-                    <span>Profil</span>
-                </button>
+                <div class="bottom-nav-inner">
+                    <button class="nav-tab-item ${state.activeTab === 'absen' ? 'active' : ''}" id="nav-btn-absen" onclick="switchEmployeeTab('absen')">
+                        <ion-icon name="finger-print-outline"></ion-icon>
+                        <span>Absensi</span>
+                    </button>
+                    <button class="nav-tab-item ${state.activeTab === 'cuti' ? 'active' : ''}" id="nav-btn-cuti" onclick="switchEmployeeTab('cuti')">
+                        <ion-icon name="calendar-outline"></ion-icon>
+                        <span>Cuti</span>
+                    </button>
+                    <button class="nav-tab-item ${state.activeTab === 'lembur' ? 'active' : ''}" id="nav-btn-lembur" onclick="switchEmployeeTab('lembur')">
+                        <ion-icon name="time-outline"></ion-icon>
+                        <span>Lembur</span>
+                    </button>
+                    <button class="nav-tab-item ${state.activeTab === 'slip' ? 'active' : ''}" id="nav-btn-slip" onclick="switchEmployeeTab('slip')">
+                        <ion-icon name="document-text-outline"></ion-icon>
+                        <span>Slip Gaji</span>
+                    </button>
+                    <button class="nav-tab-item ${state.activeTab === 'profil' ? 'active' : ''}" id="nav-btn-profil" onclick="switchEmployeeTab('profil')">
+                        <ion-icon name="person-circle-outline"></ion-icon>
+                        <span>Profil</span>
+                    </button>
+                </div>
             `;
         } else {
             container.innerHTML = `
-                <button class="nav-tab-item active" id="nav-btn-ad-dash" onclick="switchAdminTab('dash')">
-                    <ion-icon name="grid-outline"></ion-icon>
-                    <span>Dashboard</span>
-                </button>
-                <button class="nav-tab-item" id="nav-btn-ad-approval" onclick="switchAdminTab('approval')">
-                    <ion-icon name="checkmark-done-circle-outline"></ion-icon>
-                    <span>Approval</span>
-                </button>
-                <button class="nav-tab-item" id="nav-btn-ad-karyawan" onclick="switchAdminTab('karyawan')">
-                    <ion-icon name="people-outline"></ion-icon>
-                    <span>Karyawan</span>
-                </button>
-                <button class="nav-tab-item" id="nav-btn-ad-payroll" onclick="switchAdminTab('payroll')">
-                    <ion-icon name="cash-outline"></ion-icon>
-                    <span>Payroll</span>
-                </button>
-                <button class="nav-tab-item" id="nav-btn-ad-rekap" onclick="switchAdminTab('rekap')">
-                    <ion-icon name="print-outline"></ion-icon>
-                    <span>Rekap PDF</span>
-                </button>
+                <div class="bottom-nav-inner">
+                    <button class="nav-tab-item ${state.activeTab === 'dash' ? 'active' : ''}" id="nav-btn-ad-dash" onclick="switchAdminTab('dash')">
+                        <ion-icon name="grid-outline"></ion-icon>
+                        <span>Dashboard</span>
+                    </button>
+                    <button class="nav-tab-item ${state.activeTab === 'approval' ? 'active' : ''}" id="nav-btn-ad-approval" onclick="switchAdminTab('approval')">
+                        <ion-icon name="checkmark-done-circle-outline"></ion-icon>
+                        <span>Approval</span>
+                    </button>
+                    <button class="nav-tab-item ${state.activeTab === 'karyawan' ? 'active' : ''}" id="nav-btn-ad-karyawan" onclick="switchAdminTab('karyawan')">
+                        <ion-icon name="people-outline"></ion-icon>
+                        <span>Karyawan</span>
+                    </button>
+                    <button class="nav-tab-item ${state.activeTab === 'payroll' ? 'active' : ''}" id="nav-btn-ad-payroll" onclick="switchAdminTab('payroll')">
+                        <ion-icon name="cash-outline"></ion-icon>
+                        <span>Payroll</span>
+                    </button>
+                    <button class="nav-tab-item ${state.activeTab === 'rekap' ? 'active' : ''}" id="nav-btn-ad-rekap" onclick="switchAdminTab('rekap')">
+                        <ion-icon name="print-outline"></ion-icon>
+                        <span>Rekap PDF</span>
+                    </button>
+                </div>
             `;
         }
     }
@@ -1626,6 +2191,8 @@
         const nav = document.getElementById(`nav-btn-${tab}`);
         if (target) target.style.display = 'block';
         if (nav) nav.classList.add('active');
+
+        renderAppHeader();
     }
 
     function switchAdminTab(tab) {
@@ -1637,6 +2204,19 @@
         const nav = document.getElementById(`nav-btn-ad-${tab}`);
         if (target) target.style.display = 'block';
         if (nav) nav.classList.add('active');
+
+        renderAppHeader();
+
+        if (tab === 'dash') {
+            loadAdminStats();
+        } else if (tab === 'approval') {
+            setApprovalSub('leave');
+        } else if (tab === 'karyawan') {
+            setEmployeeSub('list');
+            loadAdminEmployeesList();
+        } else if (tab === 'payroll') {
+            loadAdminPayrollForEmployee();
+        }
     }
 
     // 5. GPS & Geofence
@@ -2061,18 +2641,22 @@
             const json = await res.json();
             if (json.success) {
                 const s = json.stats;
-                document.getElementById('adStatPresent').innerText = s.present_today || 0;
-                document.getElementById('adStatLate').innerText = s.late_today || 0;
-                document.getElementById('adStatLeave').innerText = s.leave_today || 0;
-                document.getElementById('adStatAbsent').innerText = s.absent_today || 0;
-                document.getElementById('adPendingLeavesCount').innerText = s.pending_leaves || 0;
-                document.getElementById('adPendingOvertimesCount').innerText = s.pending_overtimes || 0;
+                const empTotal = s.total_employees !== undefined ? s.total_employees : (state.employees ? state.employees.length : 1);
+                
+                if (document.getElementById('adStatTotalEmp')) document.getElementById('adStatTotalEmp').innerText = empTotal;
+                if (document.getElementById('adStatPresent')) document.getElementById('adStatPresent').innerText = s.present_today || 0;
+                if (document.getElementById('adStatLate')) document.getElementById('adStatLate').innerText = s.late_today || 0;
+                if (document.getElementById('adStatAbsent')) document.getElementById('adStatAbsent').innerText = s.absent_today !== undefined ? s.absent_today : Math.max(0, empTotal - (s.present_today || 0));
+                
+                if (document.getElementById('adPendingLeavesCount')) document.getElementById('adPendingLeavesCount').innerText = s.pending_leaves || 0;
+                if (document.getElementById('adPendingOvertimesCount')) document.getElementById('adPendingOvertimesCount').innerText = s.pending_overtimes || 0;
+                if (document.getElementById('countAppSubLeave')) document.getElementById('countAppSubLeave').innerText = s.pending_leaves || 0;
+                if (document.getElementById('countAppSubOt')) document.getElementById('countAppSubOt').innerText = s.pending_overtimes || 0;
 
                 renderAdminLiveAttendances(json.today_attendances || []);
-                loadAdminApprovalList('leave');
             }
         } catch (e) {
-            console.error(e);
+            console.error('loadAdminStats error:', e);
         }
     }
 
@@ -2081,17 +2665,17 @@
         if (!list) return;
 
         if (items.length === 0) {
-            list.innerHTML = '<div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 15px;">Belum ada karyawan yang melakukan Clock In hari ini.</div>';
+            list.innerHTML = '<div class="empty-activity-msg">Belum ada karyawan yang melakukan Clock In hari ini.</div>';
             return;
         }
 
         list.innerHTML = items.map(a => `
-            <div class="list-item-row">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <img src="${a.clock_in_photo || (a.employee && a.employee.avatar_url) || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}" style="width: 38px; height: 38px; border-radius: 10px; object-fit: cover;">
+            <div class="list-item-row" style="padding: 12px 14px; background: #FFFFFF; border-radius: 12px; margin-bottom: 8px; border: 1px solid #E5E7EB; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <img src="${a.clock_in_photo || (a.employee && a.employee.avatar_url) || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}" style="width: 40px; height: 40px; border-radius: 10px; object-fit: cover;">
                     <div>
-                        <div style="font-size: 13px; font-weight: 800; color: #111827;">${a.employee ? a.employee.name : 'Karyawan'}</div>
-                        <div style="font-size: 11px; color: var(--text-muted);">
+                        <div style="font-size: 14px; font-weight: 700; color: #111827;">${a.employee ? a.employee.name : 'Karyawan'}</div>
+                        <div style="font-size: 12px; color: #6B7280;">
                             ${a.employee ? a.employee.division : 'Studio'} • Masuk: <b>${a.clock_in ? new Date(a.clock_in).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) : '-'}</b>
                         </div>
                     </div>
@@ -2102,8 +2686,10 @@
     }
 
     function setApprovalSub(type) {
-        document.getElementById('btnAppSubLeave').classList.toggle('active', type === 'leave');
-        document.getElementById('btnAppSubOt').classList.toggle('active', type === 'overtime');
+        const btnLeave = document.getElementById('btnAppSubLeave');
+        const btnOt = document.getElementById('btnAppSubOt');
+        if (btnLeave) btnLeave.classList.toggle('active', type === 'leave');
+        if (btnOt) btnOt.classList.toggle('active', type === 'overtime');
         loadAdminApprovalList(type);
     }
 
@@ -2111,37 +2697,41 @@
         const list = document.getElementById('adminApprovalItemsList');
         if (!list) return;
 
-        const endpoint = type === 'leave' ? '/api/hris/leaves?all=1' : '/api/hris/overtimes?all=1';
-        const res = await fetch(endpoint);
-        const json = await res.json();
-        const items = type === 'leave' ? (json.leaves || []) : (json.overtimes || []);
-        const pending = items.filter(i => i.status === 'pending');
+        try {
+            const endpoint = type === 'leave' ? '/api/hris/leaves?all=1' : '/api/hris/overtimes?all=1';
+            const res = await fetch(endpoint);
+            const json = await res.json();
+            const items = type === 'leave' ? (json.leaves || []) : (json.overtimes || []);
+            const pending = items.filter(i => i.status === 'pending');
 
-        if (pending.length === 0) {
-            list.innerHTML = `<div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px;">Belum ada pengajuan ${type === 'leave' ? 'cuti' : 'lembur'} pending dari karyawan.</div>`;
-            return;
+            if (pending.length === 0) {
+                list.innerHTML = `<div class="empty-activity-msg" style="padding: 48px 16px; text-align: center; color: #6B7280; font-size: 13px;">Belum ada pengajuan ${type === 'leave' ? 'cuti' : 'lembur'} dari karyawan.</div>`;
+                return;
+            }
+
+            list.innerHTML = pending.map(item => `
+                <div class="card" style="margin-bottom: 12px; background: #FFFFFF; border-radius: 16px; padding: 16px; border: 1px solid #E5E7EB;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <b style="font-size: 14px; color: #006847;">${item.employee ? item.employee.name : 'Karyawan'}</b>
+                        <span class="badge badge-warning" style="background: #FEF3C7; color: #92400E; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px;">PENDING</span>
+                    </div>
+                    <div style="font-size: 13px; color: #374151;">
+                        ${type === 'leave' ? `<b>${item.type}</b> (${item.total_days} hari) · ${item.start_date}` : `<b>${item.project_name || 'Lembur'}</b> (${item.duration_hours} Jam) · ${item.date}`}
+                    </div>
+                    <div style="font-size: 12px; color: #6B7280; margin-top: 6px;">Alasan: <i>"${item.reason || item.description || '-'}"</i></div>
+                    <div style="display: flex; gap: 8px; margin-top: 14px;">
+                        <button onclick="processApproval('${type}', ${item.id}, 'approved')" style="flex: 1; background: #006847; color: #FFFFFF; border: none; padding: 10px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer;">
+                            ✓ Setujui
+                        </button>
+                        <button onclick="processApproval('${type}', ${item.id}, 'rejected')" style="flex: 1; background: #DC2626; color: #FFFFFF; border: none; padding: 10px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer;">
+                            ✕ Tolak
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) {
+            console.error('loadAdminApprovalList error:', e);
         }
-
-        list.innerHTML = pending.map(item => `
-            <div class="card" style="margin-bottom: 10px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <b style="font-size: 13px; color: #064E3B;">${item.employee ? item.employee.name : 'Karyawan'}</b>
-                    <span class="badge badge-warning">PENDING</span>
-                </div>
-                <div style="font-size: 12px; color: #374151;">
-                    ${type === 'leave' ? `<b>${item.type}</b> (${item.total_days} hari) · ${item.start_date}` : `<b>${item.project_name || 'Lembur'}</b> (${item.duration_hours} Jam) · ${item.date}`}
-                </div>
-                <div style="font-size: 11px; color: #6B7280; margin-top: 4px;">Alasan: <i>"${item.reason || item.description || '-'}"</i></div>
-                <div style="display: flex; gap: 8px; margin-top: 10px;">
-                    <button onclick="processApproval('${type}', ${item.id}, 'approved')" style="flex: 1; background: #059669; color: #FFFFFF; border: none; padding: 8px; border-radius: 10px; font-weight: 700; font-size: 12px; cursor: pointer;">
-                        ✓ Setujui
-                    </button>
-                    <button onclick="processApproval('${type}', ${item.id}, 'rejected')" style="flex: 1; background: #DC2626; color: #FFFFFF; border: none; padding: 8px; border-radius: 10px; font-weight: 700; font-size: 12px; cursor: pointer;">
-                        ✕ Tolak
-                    </button>
-                </div>
-            </div>
-        `).join('');
     }
 
     async function processApproval(type, id, action) {
@@ -2155,58 +2745,92 @@
         if (json.success) {
             alert(`✅ ${json.message}`);
             loadAdminStats();
+            loadAdminApprovalList(type);
         }
     }
 
     // 13. Karyawan & Lokasi Studio Subtab
     function setEmployeeSub(type) {
-        document.getElementById('btnEmpSubList').classList.toggle('active', type === 'list');
-        document.getElementById('btnEmpSubStudio').classList.toggle('active', type === 'studio');
-        document.getElementById('adminSubEmployeeList').style.display = type === 'list' ? 'block' : 'none';
-        document.getElementById('adminSubStudioSettings').style.display = type === 'studio' ? 'block' : 'none';
+        const btnList = document.getElementById('btnEmpSubList');
+        const btnStudio = document.getElementById('btnEmpSubStudio');
+        const subList = document.getElementById('adminSubEmployeeList');
+        const subStudio = document.getElementById('adminSubStudioSettings');
+
+        if (btnList) btnList.classList.toggle('active', type === 'list');
+        if (btnStudio) btnStudio.classList.toggle('active', type === 'studio');
+        if (subList) subList.style.display = type === 'list' ? 'block' : 'none';
+        if (subStudio) subStudio.style.display = type === 'studio' ? 'block' : 'none';
     }
 
     function loadAdminEmployeesList() {
+        filterAdminEmployees();
+    }
+
+    function filterAdminEmployees() {
         const container = document.getElementById('adminEmployeesContainer');
         const select = document.getElementById('admPayrollEmpSelect');
         if (!container) return;
 
+        const query = (document.getElementById('adminEmpSearchInput')?.value || '').toLowerCase().trim();
         const employees = state.employees || [];
-        document.getElementById('adminEmpCountLabel').innerText = `Data Karyawan (${employees.length} Orang)`;
+
+        const filtered = query 
+            ? employees.filter(e => 
+                (e.name || '').toLowerCase().includes(query) ||
+                (e.employee_code || '').toLowerCase().includes(query) ||
+                (e.email || '').toLowerCase().includes(query) ||
+                (e.division || '').toLowerCase().includes(query) ||
+                (e.position || '').toLowerCase().includes(query)
+              )
+            : employees;
+
+        const badgeCount = document.getElementById('countEmpSubList');
+        if (badgeCount) badgeCount.innerText = employees.length;
+
+        const radiusLabel = document.getElementById('labelStudioRadius');
+        if (radiusLabel) radiusLabel.innerText = `${state.settings.radius_meters || 100}m`;
 
         if (select) {
             select.innerHTML = employees.map(e => `<option value="${e.id}">${e.name} (${e.division} • ${e.employee_code})</option>`).join('');
         }
 
-        container.innerHTML = employees.map(emp => `
-            <div class="card" style="margin-bottom: 8px; padding: 12px;">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <img src="${emp.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                        <div>
-                            <div style="font-size: 13px; font-weight: 800; color: #111827;">${emp.name}</div>
-                            <div style="font-size: 11px; color: var(--text-muted);">${emp.employee_code} · ${emp.division} (${emp.position})</div>
-                            <div style="font-size: 11px; color: #059669; font-weight: 700; margin-top: 2px;">Gaji: Rp ${(emp.base_salary||0).toLocaleString('id-ID')}</div>
-                        </div>
+        if (filtered.length === 0) {
+            container.innerHTML = `<div style="text-align: center; color: #6B7280; padding: 32px 16px; font-size: 13px;">Tidak ada data karyawan yang cocok.</div>`;
+            return;
+        }
+
+        const maxRadius = state.settings.radius_meters || 100;
+        container.innerHTML = filtered.map(emp => {
+            const empCode = emp.employee_code || 'EMP-001';
+            const empPos = emp.position || 'Owner Studio';
+            const empDiv = emp.division || 'HR & Admin';
+            const empEmail = emp.email || 'warungkombas@gmail.com';
+            const empRole = (emp.role || 'owner').toUpperCase();
+            const serialized = JSON.stringify(emp).replace(/'/g, "&#39;");
+
+            return `
+                <div class="employee-card">
+                    <div class="employee-card-left">
+                        <h4 class="emp-card-name">${emp.name}</h4>
+                        <div class="emp-card-sub">${empCode} · ${empPos} · ${empDiv}</div>
+                        <div class="emp-card-email">${empEmail}</div>
+                        <div class="emp-card-badge">Role: ${empRole} · Wajib &lt;= ${maxRadius}m</div>
                     </div>
-                    <div style="display: flex; gap: 4px;">
-                        <button onclick='editAdminEmployee(${JSON.stringify(emp)})' style="background: #ECFDF5; color: #047857; border: none; width: 30px; height: 30px; border-radius: 8px; cursor: pointer;">
+                    <div class="employee-card-right">
+                        <button class="btn-edit-emp" onclick='editAdminEmployee(${serialized})' title="Edit Karyawan">
                             <ion-icon name="create-outline"></ion-icon>
-                        </button>
-                        <button onclick="deleteAdminEmployee(${emp.id})" style="background: #FEE2E2; color: #DC2626; border: none; width: 30px; height: 30px; border-radius: 8px; cursor: pointer;">
-                            <ion-icon name="trash-outline"></ion-icon>
                         </button>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
-        // Also populate studio settings form
+        // Populate studio settings form
         const s = state.settings || {};
-        if (document.getElementById('studioNameInput')) document.getElementById('studioNameInput').value = s.studio_name || 'Studio Foto Utama';
-        if (document.getElementById('studioAddressInput')) document.getElementById('studioAddressInput').value = s.studio_address || 'Jakarta Pusat';
-        if (document.getElementById('studioLatInput')) document.getElementById('studioLatInput').value = s.studio_lat || -6.175392;
-        if (document.getElementById('studioLngInput')) document.getElementById('studioLngInput').value = s.studio_lng || 106.827153;
+        if (document.getElementById('studioNameInput')) document.getElementById('studioNameInput').value = s.studio_name || 'Studio Utama';
+        if (document.getElementById('studioAddressInput')) document.getElementById('studioAddressInput').value = s.studio_address || 'Jl. Studio Fotografi No. 1 (Ubah titik GPS asli langsung dari menu Admin di HP)';
+        if (document.getElementById('studioLatInput')) document.getElementById('studioLatInput').value = s.studio_lat || -7.672585;
+        if (document.getElementById('studioLngInput')) document.getElementById('studioLngInput').value = s.studio_lng || 109.649065;
         if (document.getElementById('studioRadiusInput')) document.getElementById('studioRadiusInput').value = s.radius_meters || 100;
         if (document.getElementById('studioLateTolInput')) document.getElementById('studioLateTolInput').value = s.late_tolerance_minutes || 15;
     }
