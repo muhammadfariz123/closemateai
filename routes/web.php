@@ -166,6 +166,36 @@ Route::middleware('auth')->group(function () {
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
+// ========================================================
+// HRIS Mobile App (Photography Studio Attendance & HRIS)
+// ========================================================
+Route::get('/hris', [\App\Http\Controllers\HrisController::class, 'index'])->name('hris');
+Route::get('/hris/payslip/{id}/print', [\App\Http\Controllers\HrisController::class, 'showPayslip']);
+Route::get('/hris/recap/print', [\App\Http\Controllers\HrisController::class, 'printRecap']);
+
+// HRIS APIs
+Route::get('/api/hris/initial-data', [\App\Http\Controllers\HrisController::class, 'getInitialData']);
+Route::post('/api/hris/switch-employee', [\App\Http\Controllers\HrisController::class, 'switchEmployee']);
+Route::post('/api/hris/attendance/clock-in', [\App\Http\Controllers\HrisController::class, 'clockIn']);
+Route::post('/api/hris/attendance/clock-out', [\App\Http\Controllers\HrisController::class, 'clockOut']);
+Route::get('/api/hris/attendance/history', [\App\Http\Controllers\HrisController::class, 'getAttendanceHistory']);
+Route::get('/api/hris/leaves', [\App\Http\Controllers\HrisController::class, 'getLeaves']);
+Route::post('/api/hris/leaves', [\App\Http\Controllers\HrisController::class, 'submitLeave']);
+Route::get('/api/hris/overtimes', [\App\Http\Controllers\HrisController::class, 'getOvertimes']);
+Route::post('/api/hris/overtimes', [\App\Http\Controllers\HrisController::class, 'submitOvertime']);
+Route::get('/api/hris/payrolls', [\App\Http\Controllers\HrisController::class, 'getPayrolls']);
+
+// HRIS Admin APIs
+Route::get('/api/hris/admin/stats', [\App\Http\Controllers\HrisController::class, 'getAdminStats']);
+Route::post('/api/hris/admin/leaves/{id}/action', [\App\Http\Controllers\HrisController::class, 'actionLeave']);
+Route::post('/api/hris/admin/overtimes/{id}/action', [\App\Http\Controllers\HrisController::class, 'actionOvertime']);
+Route::post('/api/hris/admin/employees', [\App\Http\Controllers\HrisController::class, 'saveEmployee']);
+Route::delete('/api/hris/admin/employees/{id}', [\App\Http\Controllers\HrisController::class, 'deleteEmployee']);
+Route::post('/api/hris/admin/settings', [\App\Http\Controllers\HrisController::class, 'saveSettings']);
+Route::post('/api/hris/admin/payrolls/generate', [\App\Http\Controllers\HrisController::class, 'generateMonthlyPayroll']);
+Route::post('/api/hris/admin/announcements', [\App\Http\Controllers\HrisController::class, 'saveAnnouncement']);
+Route::delete('/api/hris/admin/announcements/{id}', [\App\Http\Controllers\HrisController::class, 'deleteAnnouncement']);
+
 // Debug Routes
 Route::get('/api/debug/logs', function() {
     $logPath = storage_path('logs/laravel.log');

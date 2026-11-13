@@ -11,6 +11,7 @@
         <a href="/stock?tab=purchases" class="nav-item {{ request()->is('stock*') && request()->get('tab') === 'purchases' ? 'active' : '' }}"><i class="fa-solid fa-receipt"></i> <span>Transaksi Pembelian</span></a>
         <a href="/stock?tab=balance" class="nav-item {{ request()->is('stock*') && request()->get('tab') === 'balance' ? 'active' : '' }}"><i class="fa-solid fa-wallet"></i> <span>Saldo Produksi</span></a>
         <a href="/production" class="nav-item {{ request()->is('production') ? 'active' : '' }}"><i class="fa-solid fa-list-check"></i> <span>Progres Produksi</span></a>
+        <a href="/hris" target="_blank" class="nav-item {{ request()->is('hris*') ? 'active' : '' }}" style="background: linear-gradient(90deg, rgba(79, 70, 229, 0.12), transparent); border-left: 3px solid #4f46e5;"><i class="fa-solid fa-mobile-screen-button" style="color: #4f46e5;"></i> <span style="font-weight: 600;">HRIS Mobile App</span> <span style="margin-left: auto; font-size: 9px; background: #4f46e5; color: #fff; padding: 1px 6px; border-radius: 10px;">APP</span></a>
         <a href="/activity" class="nav-item {{ request()->is('activity') ? 'active' : '' }}"><i class="fa-solid fa-clock-rotate-left"></i> <span>Riwayat Aktivitas</span></a>
     @elseif($isAdminCs)
         <a href="/dashboard" class="nav-item {{ request()->is('dashboard') ? 'active' : '' }}"><i class="fa-solid fa-border-all"></i> <span>Dashboard & WA Status</span></a>
@@ -21,6 +22,7 @@
         <a href="/invoice" class="nav-item {{ request()->is('invoice*') || request()->is('invoices*') ? 'active' : '' }}"><i class="fa-solid fa-file-invoice"></i> <span>Invoice Generator</span></a>
         <a href="/quotations" class="nav-item {{ request()->is('quotation*') ? 'active' : '' }}"><i class="fa-solid fa-file-contract"></i> <span>Quotation Generator</span></a>
         <a href="/production" class="nav-item {{ request()->is('production') ? 'active' : '' }}"><i class="fa-solid fa-list-check"></i> <span>Progres Produksi</span></a>
+        <a href="/hris" target="_blank" class="nav-item {{ request()->is('hris*') ? 'active' : '' }}" style="background: linear-gradient(90deg, rgba(79, 70, 229, 0.12), transparent); border-left: 3px solid #4f46e5;"><i class="fa-solid fa-mobile-screen-button" style="color: #4f46e5;"></i> <span style="font-weight: 600;">HRIS Mobile App</span> <span style="margin-left: auto; font-size: 9px; background: #4f46e5; color: #fff; padding: 1px 6px; border-radius: 10px;">APP</span></a>
         <a href="/activity" class="nav-item {{ request()->is('activity') ? 'active' : '' }}"><i class="fa-solid fa-clock-rotate-left"></i> <span>Riwayat Aktivitas</span></a>
     @else
         <a href="/dashboard" class="nav-item {{ request()->is('dashboard') ? 'active' : '' }}"><i class="fa-solid fa-border-all"></i> <span>Dashboard & WA Status</span></a>
@@ -35,6 +37,7 @@
         <a href="/production" class="nav-item {{ request()->is('production') ? 'active' : '' }}"><i class="fa-solid fa-list-check"></i> <span>Progres Produksi</span></a>
         <a href="/stock" class="nav-item {{ request()->is('stock*') ? 'active' : '' }}"><i class="fa-solid fa-clipboard-check"></i> <span>Stock Opname & Inventaris</span></a>
         <a href="/team" class="nav-item {{ request()->is('team*') ? 'active' : '' }}"><i class="fa-solid fa-user-group"></i> <span>Manajemen Tim</span></a>
+        <a href="/hris" target="_blank" class="nav-item {{ request()->is('hris*') ? 'active' : '' }}" style="background: linear-gradient(90deg, rgba(79, 70, 229, 0.12), transparent); border-left: 3px solid #4f46e5;"><i class="fa-solid fa-mobile-screen-button" style="color: #4f46e5;"></i> <span style="font-weight: 600;">HRIS Mobile App</span> <span style="margin-left: auto; font-size: 9px; background: #4f46e5; color: #fff; padding: 1px 6px; border-radius: 10px;">APP</span></a>
         <a href="/activity" class="nav-item {{ request()->is('activity') ? 'active' : '' }}"><i class="fa-solid fa-clock-rotate-left"></i> <span>Riwayat Aktivitas</span></a>
         
         <div style="margin-top: 30px;"></div>
