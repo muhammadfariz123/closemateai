@@ -159,4 +159,21 @@ class SettingsController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Business profile tersimpan']);
     }
+
+    public function saveThemeColor(Request $request)
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found']);
+        }
+
+        $color = $request->input('theme_color', '#4472c4');
+        $owner = $user->getEffectiveOwner();
+        $owner->theme_color = $color;
+        $owner->save();
+
+        \App\Models\HrisSetting::where('user_id', $owner->id)->update(['theme_color' => $color]);
+
+        return response()->json(['success' => true, 'theme_color' => $color, 'message' => 'Warna tema aplikasi berhasil diperbarui!']);
+    }
 }

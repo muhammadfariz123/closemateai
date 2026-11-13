@@ -32,6 +32,17 @@ Route::get('/inv/{id}', [\App\Http\Controllers\InvoiceController::class, 'showPu
 Route::get('/i/{id}', [\App\Http\Controllers\InvoiceController::class, 'showPublic']);
 Route::match(['get', 'post'], '/api/public/wa/{secret}', [WebhookController::class, 'handle']);
 Route::get('/progress/{uuid}', [App\Http\Controllers\ProgressController::class, 'showPublic']);
+
+// Public Client Review (Rating Bintang Kru Lapangan ala Grab)
+Route::get('/review/{uuid}', [\App\Http\Controllers\ClientReviewController::class, 'showPublic']);
+Route::post('/review/{uuid}', [\App\Http\Controllers\ClientReviewController::class, 'submitReview']);
+
+// Public Client Booking Form
+Route::get('/book', [\App\Http\Controllers\PublicBookingController::class, 'showForm']);
+Route::get('/book/{token}', [\App\Http\Controllers\PublicBookingController::class, 'showForm']);
+Route::post('/book', [\App\Http\Controllers\PublicBookingController::class, 'submitForm']);
+Route::post('/book/{token}', [\App\Http\Controllers\PublicBookingController::class, 'submitForm']);
+
 Route::get('/invite/accept/{token}', [\App\Http\Controllers\TeamController::class, 'showAcceptInvite']);
 Route::post('/invite/accept/{token}', [\App\Http\Controllers\TeamController::class, 'processAcceptInvite']);
 Route::get('/reset-password/{token}', [\App\Http\Controllers\TeamController::class, 'showAcceptInvite']);
@@ -46,6 +57,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/bookings', [BookingController::class, 'getBookings']);
     Route::post('/api/bookings', [BookingController::class, 'addBooking']);
     Route::delete('/api/bookings/{id}', [BookingController::class, 'deleteBooking']);
+
+    // Client Reviews & Office Evaluations APIs
+    Route::get('/api/reviews', [\App\Http\Controllers\ClientReviewController::class, 'getReviews']);
+    Route::get('/api/reviews/export/csv', [\App\Http\Controllers\ClientReviewController::class, 'exportCsv']);
+    Route::get('/api/office-evaluations', [\App\Http\Controllers\OfficeEvaluationController::class, 'getEvaluations']);
+    Route::post('/api/office-evaluations', [\App\Http\Controllers\OfficeEvaluationController::class, 'storeEvaluation']);
+    Route::get('/api/office-evaluations/export/csv', [\App\Http\Controllers\OfficeEvaluationController::class, 'exportCsv']);
 
     Route::get('/api/activities', [SystemActivityController::class, 'getActivities']);
     Route::post('/api/activities', [SystemActivityController::class, 'addActivity']);
@@ -161,6 +179,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/settings/disconnect', [SettingsController::class, 'disconnect']);
         Route::post('/settings/notifications', [SettingsController::class, 'saveNotifications']);
         Route::post('/settings/business-profile', [SettingsController::class, 'saveBusinessProfile']);
+        Route::post('/settings/theme-color', [SettingsController::class, 'saveThemeColor']);
     });
 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');

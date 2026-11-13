@@ -331,7 +331,6 @@
                         </div>
                         <div class="user-info">
                             <h4>{{ auth()->check() ? auth()->user()->name : 'Vendor' }} <i class="fa-solid fa-chevron-down" style="font-size: 10px; color: #a1a5b7; margin-left: 4px;"></i></h4>
-                            <p>Starter</p>
                         </div>
                     </div>
                 </div>
@@ -358,7 +357,23 @@
             Menampilkan data: <strong id="report_period">27 September 2026 - 28 September 2026</strong>
         </div>
 
-        <div class="stats-grid">
+        <!-- Analytical Report Modules Navigation -->
+        <div style="display: flex; gap: 10px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 4px;">
+            <button class="report-view-tab" id="tab_btn_overview" onclick="switchReportTab('overview')" style="padding: 10px 18px; border-radius: 10px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; background: var(--primary); color: white; white-space: nowrap;">
+                <i class="fa-solid fa-chart-pie"></i> Arus Kas &amp; Finansial
+            </button>
+            <button class="report-view-tab" id="tab_btn_team" onclick="switchReportTab('team')" style="padding: 10px 18px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; background: white; color: var(--text-dark); white-space: nowrap;">
+                <i class="fa-solid fa-users-gear"></i> 1. Tim &amp; Gaji (Kinerja Karyawan)
+            </button>
+            <button class="report-view-tab" id="tab_btn_packages" onclick="switchReportTab('packages')" style="padding: 10px 18px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; background: white; color: var(--text-dark); white-space: nowrap;">
+                <i class="fa-solid fa-camera"></i> 2. Paket &amp; Penjualan (Performa Produk)
+            </button>
+            <button class="report-view-tab" id="tab_btn_operations" onclick="switchReportTab('operations')" style="padding: 10px 18px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; background: white; color: var(--text-dark); white-space: nowrap;">
+                <i class="fa-solid fa-store"></i> 3. Keuangan &amp; Operasional Studio
+            </button>
+        </div>
+
+        <div id="panel_report_overview">
             <div class="stat-card">
                 <div class="stat-title">TOTAL OMSET</div>
                 <div class="stat-value" id="val_omset">Rp 0</div>
@@ -517,7 +532,620 @@
             </table>
         </div>
 
-    </div>
+        </div> <!-- End panel_report_overview -->
+
+        <!-- PANEL 1: LAPORAN TIM & GAJI (KINERJA KARYAWAN) -->
+        <div id="panel_report_team" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">TOTAL CREW &amp; TIM</div>
+                    <div class="stat-value">18 Orang</div>
+                    <div class="stat-desc">FG, VG, Editor, Cetak, Admin &amp; Marketing</div>
+                    <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-title">TOTAL GAJI &amp; KOMISI</div>
+                    <div class="stat-value">Rp 48.750.000</div>
+                    <div class="stat-desc">Gaji Pokok + Uang Jalan + Lembur + Bonus</div>
+                    <div class="stat-icon"><i class="fa-solid fa-money-check-dollar"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">RATA-RATA RATING KRU</div>
+                    <div class="stat-value" style="color: #f59e0b;"><i class="fa-solid fa-star"></i> 4.9 <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">/ 5.0</span></div>
+                    <div class="stat-desc">Dari 64 ulasan kepuasan klien lapangan</div>
+                    <div class="stat-icon"><i class="fa-regular fa-star"></i></div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-title">CLOSING MARKETING</div>
+                    <div class="stat-value">84 Leads</div>
+                    <div class="stat-desc">Dari 112 prospek (Konversi 75%)</div>
+                    <div class="stat-icon"><i class="fa-solid fa-bullseye"></i></div>
+                </div>
+            </div>
+
+            <!-- Rincian Pendapatan & Beban Kerja Kru -->
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h3>1. Rincian Pendapatan &amp; Beban Kerja Kru</h3>
+                        <p>Pemisahan gaji pokok, operasional jalan, lembur, bonus proyek, dan total sesi foto sebulan</p>
+                    </div>
+                    <button class="btn btn-outline" onclick="exportTeamLaporanCsv()" style="font-size: 12px;"><i class="fa-solid fa-download"></i> Export Data Kru</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nama Kru</th>
+                            <th>Divisi</th>
+                            <th style="text-align: center;">Beban Sesi (Event)</th>
+                            <th style="text-align: right;">Gaji Pokok</th>
+                            <th style="text-align: right;">Uang Jalan / Makan</th>
+                            <th style="text-align: right;">Uang Lembur</th>
+                            <th style="text-align: right;">Bonus / Fee Proyek</th>
+                            <th style="text-align: right;">Total Gaji Bersih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Danu</strong></td>
+                            <td><span class="badge" style="background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600;">Marketing &amp; FG</span></td>
+                            <td style="text-align: center;"><strong>14 Sesi</strong></td>
+                            <td style="text-align: right;">Rp 2.500.000</td>
+                            <td style="text-align: right;">Rp 700.000</td>
+                            <td style="text-align: right;">Rp 300.000</td>
+                            <td style="text-align: right; color:#10b981; font-weight:600;">Rp 2.100.000</td>
+                            <td style="text-align: right; font-weight:700;">Rp 5.600.000</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dika</strong></td>
+                            <td><span class="badge" style="background:#fef3c7; color:#b45309; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600;">Lead Photographer</span></td>
+                            <td style="text-align: center;"><strong>18 Sesi</strong></td>
+                            <td style="text-align: right;">Rp 2.800.000</td>
+                            <td style="text-align: right;">Rp 900.000</td>
+                            <td style="text-align: right;">Rp 450.000</td>
+                            <td style="text-align: right; color:#10b981; font-weight:600;">Rp 1.800.000</td>
+                            <td style="text-align: right; font-weight:700;">Rp 5.950.000</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Arya</strong></td>
+                            <td><span class="badge" style="background:#f3e8ff; color:#7e22ce; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600;">Videografer</span></td>
+                            <td style="text-align: center;"><strong>16 Sesi</strong></td>
+                            <td style="text-align: right;">Rp 2.700.000</td>
+                            <td style="text-align: right;">Rp 800.000</td>
+                            <td style="text-align: right;">Rp 350.000</td>
+                            <td style="text-align: right; color:#10b981; font-weight:600;">Rp 1.600.000</td>
+                            <td style="text-align: right; font-weight:700;">Rp 5.450.000</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Faris</strong></td>
+                            <td><span class="badge" style="background:#dcfce7; color:#15803d; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600;">Senior Editor</span></td>
+                            <td style="text-align: center;"><strong>22 Proyek</strong></td>
+                            <td style="text-align: right;">Rp 3.000.000</td>
+                            <td style="text-align: right;">Rp 500.000</td>
+                            <td style="text-align: right;">Rp 600.000</td>
+                            <td style="text-align: right; color:#10b981; font-weight:600;">Rp 1.100.000</td>
+                            <td style="text-align: right; font-weight:700;">Rp 5.200.000</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Angga</strong></td>
+                            <td><span class="badge" style="background:#fee2e2; color:#b91c1c; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600;">Divisi Cetak &amp; Lab</span></td>
+                            <td style="text-align: center;"><strong>30 Album</strong></td>
+                            <td style="text-align: right;">Rp 2.400.000</td>
+                            <td style="text-align: right;">Rp 400.000</td>
+                            <td style="text-align: right;">Rp 200.000</td>
+                            <td style="text-align: right; color:#10b981; font-weight:600;">Rp 750.000</td>
+                            <td style="text-align: right; font-weight:700;">Rp 3.750.000</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Kecepatan & Ketepatan Kerja Tim Editor & Cetak -->
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h3>2. Kecepatan &amp; Kualitas Kerja Tim Editor &amp; Cetak</h3>
+                        <p>Pemantauan Same Day Edit, Fast Edit, Deadline Cetak, dan Waktu Siap Diambil Klien</p>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Proyek / Klien</th>
+                            <th>Editor / PIC</th>
+                            <th>Jenis Layanan</th>
+                            <th>Target Deadline</th>
+                            <th>Waktu Aktual Selesai</th>
+                            <th>Ketepatan Waktu</th>
+                            <th>Status Cetak &amp; Pengambilan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Wedding Sarah &amp; Dimas</strong></td>
+                            <td>Faris (Editor)</td>
+                            <td><span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700; padding:3px 8px; border-radius:6px; font-size:11px;">Same Day Edit (SDE)</span></td>
+                            <td>Hari H, Pk 19:00</td>
+                            <td>Hari H, Pk 18:25</td>
+                            <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:600; padding:3px 8px; border-radius:6px; font-size:11px;"><i class="fa-solid fa-check"></i> 35 Menit Lebih Cepat</span></td>
+                            <td><span class="badge" style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:6px; font-size:11px;">Drive Siap &amp; Ditayangkan</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Prewedding Bella &amp; Rendy</strong></td>
+                            <td>Bagus (Editor)</td>
+                            <td><span class="badge" style="background:#fef3c7; color:#b45309; font-weight:700; padding:3px 8px; border-radius:6px; font-size:11px;">Fast Edit 3 Hari</span></td>
+                            <td>3 Hari kerja</td>
+                            <td>2 Hari kerja</td>
+                            <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:600; padding:3px 8px; border-radius:6px; font-size:11px;"><i class="fa-solid fa-check"></i> On-Time</span></td>
+                            <td><span class="badge" style="background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:6px; font-size:11px;">Album Siap Diambil Klien</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Graduation Annisa</strong></td>
+                            <td>Fauzan (Editor)</td>
+                            <td><span class="badge" style="background:#f1f5f9; color:#475569; font-weight:700; padding:3px 8px; border-radius:6px; font-size:11px;">Reguler Edit</span></td>
+                            <td>7 Hari kerja</td>
+                            <td>6 Hari kerja</td>
+                            <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:600; padding:3px 8px; border-radius:6px; font-size:11px;"><i class="fa-solid fa-check"></i> On-Time</span></td>
+                            <td><span class="badge" style="background:#fef3c7; color:#b45309; padding:3px 8px; border-radius:6px; font-size:11px;">Proses Cetak Box &amp; Flashdisk</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Kepuasan Klien Lapangan & Feedback Form -->
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 24px;">
+                <div class="content-section" style="margin-bottom: 0;">
+                    <div class="section-title" style="margin-bottom: 16px;">
+                        <h3>Penilaian Kepuasan Klien Lapangan</h3>
+                        <p>Feedback langsung lewat Form Review 5-Bintang</p>
+                    </div>
+                    <div style="text-align: center; padding: 20px 0; border-bottom: 1px solid var(--border-color);">
+                        <div style="font-size: 48px; font-weight: 800; color: #181c32;">4.9</div>
+                        <div style="color: #f59e0b; font-size: 20px; margin: 4px 0;">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-muted);">98% Klien Sangat Puas</div>
+                    </div>
+                    <div style="padding-top: 16px;">
+                        <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">TAG PUJIAN POPULER:</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                            <span class="badge" style="background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; padding:4px 8px; font-size:11px;">Ramah &amp; Sabar (48)</span>
+                            <span class="badge" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:4px 8px; font-size:11px;">Hasil Foto Keren (52)</span>
+                            <span class="badge" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a; padding:4px 8px; font-size:11px;">Arahan Gaya Bagus (39)</span>
+                            <span class="badge" style="background:#f3e8ff; color:#7e22ce; border:1px solid #e9d5ff; padding:4px 8px; font-size:11px;">Tepat Waktu (44)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-section" style="margin-bottom: 0;">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <h3>Ulasan Klien Terbaru untuk Kru</h3>
+                            <p>Ulasan masuk dari form review publik</p>
+                        </div>
+                        <a href="/api/reviews/export/csv" class="btn btn-outline" style="font-size: 12px;"><i class="fa-solid fa-download"></i> Unduh CSV Review</a>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Klien</th>
+                                <th>Kru Bertugas</th>
+                                <th>Rating</th>
+                                <th>Komentar Klien</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Nadia Putri</strong></td>
+                                <td>Dika &amp; Arya</td>
+                                <td><span style="color:#f59e0b; font-weight:700;"><i class="fa-solid fa-star"></i> 5.0</span></td>
+                                <td style="font-size: 12px; color: #475569;">"Mas Dika sabar banget ngarahin gaya keluarga besar. Hasil videonya Mas Arya waktu akad haru banget!"</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Rizal Mahendra</strong></td>
+                                <td>Danu</td>
+                                <td><span style="color:#f59e0b; font-weight:700;"><i class="fa-solid fa-star"></i> 5.0</span></td>
+                                <td style="font-size: 12px; color: #475569;">"Pelayanan sangat ramah, komunikasi cepat dari awal konsultasi sampai hari H memuaskan."</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Clara Oktaviani</strong></td>
+                                <td>Bagus</td>
+                                <td><span style="color:#f59e0b; font-weight:700;"><i class="fa-solid fa-star"></i> 4.8</span></td>
+                                <td style="font-size: 12px; color: #475569;">"Editing fotonya clean dan tone warnanya aesthetic sesuai request. Mantap!"</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Hasil Kerja Marketing -->
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h3>3. Hasil Kerja Tim Marketing</h3>
+                        <p>Pencapaian konversi leads prospek menjadi booking aktif</p>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Marketer / Channel</th>
+                            <th>Total Leads Masuk</th>
+                            <th>Booking Closing</th>
+                            <th>Conversion Rate</th>
+                            <th>Total Omset Dihasilkan</th>
+                            <th>Fee / Komisi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Danu (Sales &amp; Partnership)</strong></td>
+                            <td>68 Leads</td>
+                            <td><strong>54 Booking</strong></td>
+                            <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700; padding:4px 8px; border-radius:6px;">79.4%</span></td>
+                            <td>Rp 135.000.000</td>
+                            <td style="color:#10b981; font-weight:700;">Rp 2.700.000</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Admin CS WhatsApp</strong></td>
+                            <td>44 Leads</td>
+                            <td><strong>30 Booking</strong></td>
+                            <td><span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:4px 8px; border-radius:6px;">68.2%</span></td>
+                            <td>Rp 72.500.000</td>
+                            <td style="color:#10b981; font-weight:700;">Rp 1.450.000</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PANEL 2: LAPORAN PAKET FOTO & PENJUALAN (PERFORMA PRODUK) -->
+        <div id="panel_report_packages" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card green">
+                    <div class="stat-title">PAKET PALING LAKU</div>
+                    <div class="stat-value" style="font-size: 18px;">Wedding Premium All-In</div>
+                    <div class="stat-desc">34 Booking terjual (40% total omset)</div>
+                    <div class="stat-icon"><i class="fa-solid fa-trophy"></i></div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-title">PAKET PALING UNTUNG</div>
+                    <div class="stat-value" style="font-size: 18px;">Prewedding Cinematic</div>
+                    <div class="stat-desc">Margin Keuntungan 68.5% (Rp 4.2jt / event)</div>
+                    <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-title">PAKET KURANG LAKU</div>
+                    <div class="stat-value" style="font-size: 18px;">Mini Studio Pasfoto</div>
+                    <div class="stat-desc">Hanya 3 booking (Saran: evaluasi harga/bundle)</div>
+                    <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">ADD-ON TERLARIS</div>
+                    <div class="stat-value" style="font-size: 18px;">Drone Aerial 4K</div>
+                    <div class="stat-desc">24 Klien memilih add-on ini (+Rp 28.8jt)</div>
+                    <div class="stat-icon"><i class="fa-solid fa-helicopter"></i></div>
+                </div>
+            </div>
+
+            <!-- Tabel Analisis Performa Paket -->
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h3>Analisis Penjualan &amp; Margin Keuntungan Tiap Paket</h3>
+                        <p>Evaluasi paket terlaris, paling menguntungkan, dan paket yang butuh perbaikan harga</p>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nama Paket Foto</th>
+                            <th>Kategori</th>
+                            <th>Harga Jual</th>
+                            <th style="text-align: center;">Jumlah Terjual</th>
+                            <th>Total Omset</th>
+                            <th>Rata-rata HPP</th>
+                            <th>Profit Bersih</th>
+                            <th>Margin %</th>
+                            <th>Evaluasi &amp; Rekomendasi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Wedding Premium All-In</strong></td>
+                            <td>Wedding</td>
+                            <td>Rp 8.500.000</td>
+                            <td style="text-align: center;"><strong>34</strong></td>
+                            <td>Rp 289.000.000</td>
+                            <td>Rp 3.200.000</td>
+                            <td style="color:#10b981; font-weight:700;">Rp 180.200.000</td>
+                            <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">62.3%</span></td>
+                            <td><span style="font-size: 11px; color:#15803d;"><i class="fa-solid fa-check-double"></i> Produk Bintang (Star) - Pertahankan</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Prewedding Cinematic</strong></td>
+                            <td>Prewedding</td>
+                            <td>Rp 5.500.000</td>
+                            <td style="text-align: center;"><strong>26</strong></td>
+                            <td>Rp 143.000.000</td>
+                            <td>Rp 1.730.000</td>
+                            <td style="color:#10b981; font-weight:700;">Rp 98.020.000</td>
+                            <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">68.5%</span></td>
+                            <td><span style="font-size: 11px; color:#15803d;"><i class="fa-solid fa-arrow-trend-up"></i> Margin Tertinggi - Dorong Promo Iklan</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Lamaran / Engagement</strong></td>
+                            <td>Engagement</td>
+                            <td>Rp 3.200.000</td>
+                            <td style="text-align: center;"><strong>18</strong></td>
+                            <td>Rp 57.600.000</td>
+                            <td>Rp 1.100.000</td>
+                            <td style="color:#10b981; font-weight:700;">Rp 37.800.000</td>
+                            <td><span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:700;">65.6%</span></td>
+                            <td><span style="font-size: 11px; color:#0369a1;">Stabil &amp; Pintu masuk ke paket Wedding</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Wisuda &amp; Family Studio</strong></td>
+                            <td>Studio</td>
+                            <td>Rp 1.500.000</td>
+                            <td style="text-align: center;"><strong>12</strong></td>
+                            <td>Rp 18.000.000</td>
+                            <td>Rp 550.000</td>
+                            <td style="color:#10b981; font-weight:700;">Rp 11.400.000</td>
+                            <td><span class="badge" style="background:#fef3c7; color:#b45309; font-weight:700;">63.3%</span></td>
+                            <td><span style="font-size: 11px; color:#b45309;">Musiman (Ramai di musim wisuda)</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Mini Studio Pasfoto</strong></td>
+                            <td>Studio</td>
+                            <td>Rp 250.000</td>
+                            <td style="text-align: center;"><strong>3</strong></td>
+                            <td>Rp 750.000</td>
+                            <td>Rp 180.000</td>
+                            <td style="color:#64748b; font-weight:700;">Rp 210.000</td>
+                            <td><span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700;">28.0%</span></td>
+                            <td><span style="font-size: 11px; color:#b91c1c;"><i class="fa-solid fa-triangle-exclamation"></i> Sepi Peminat - Hapus atau jadikan bonus</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Produk Tambahan & Tren Musiman -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="content-section" style="margin-bottom: 0;">
+                    <div class="section-title" style="margin-bottom: 16px;">
+                        <h3>Produk Tambahan (Add-On) Terlaris</h3>
+                        <p>Penghasil keuntungan tambahan di luar paket dasar</p>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Item Add-On</th>
+                                <th>Harga Satuan</th>
+                                <th style="text-align: center;">Terjual</th>
+                                <th>Total Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Drone Aerial 4K</strong></td>
+                                <td>Rp 1.200.000</td>
+                                <td style="text-align: center;"><strong>24x</strong></td>
+                                <td style="color:#10b981; font-weight:700;">Rp 28.800.000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cetak Canvas Jumbo 60x90</strong></td>
+                                <td>Rp 750.000</td>
+                                <td style="text-align: center;"><strong>19x</strong></td>
+                                <td style="color:#10b981; font-weight:700;">Rp 14.250.000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Extra Kru Fotografer</strong></td>
+                                <td>Rp 800.000</td>
+                                <td style="text-align: center;"><strong>14x</strong></td>
+                                <td style="color:#10b981; font-weight:700;">Rp 11.200.000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Photobooth Unlimited 3 Jam</strong></td>
+                                <td>Rp 2.500.000</td>
+                                <td style="text-align: center;"><strong>8x</strong></td>
+                                <td style="color:#10b981; font-weight:700;">Rp 20.000.000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="content-section" style="margin-bottom: 0;">
+                    <div class="section-title" style="margin-bottom: 16px;">
+                        <h3>Tren Penjualan &amp; Pola Musiman</h3>
+                        <p>Antisipasi periode ramai (peak) vs periode sepi (low)</p>
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <strong style="color: #15803d;"><i class="fa-solid fa-fire"></i> PEAK SEASON (Juli, September, Desember)</strong>
+                            <span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">Penuh 95%</span>
+                        </div>
+                        <p style="font-size: 12px; color: #475569; margin: 0;">Musim pernikahan &amp; liburan akhir tahun. Saran: Tambah kru freelance cadangan dan naikkan tarif paket weekend.</p>
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <strong style="color: #b45309;"><i class="fa-solid fa-cloud-sun"></i> LOW SEASON (Februari, Maret / Bulan Puasa)</strong>
+                            <span class="badge" style="background:#fef3c7; color:#b45309; font-weight:700;">Pemanfaatan 40%</span>
+                        </div>
+                        <p style="font-size: 12px; color: #475569; margin: 0;">Pernikahan berkurang. Saran: Luncurkan paket Maternity, Newborn, Family Ramadan, dan promo booking lebih awal (Early Bird).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL 3: LAPORAN KEUANGAN & OPERASIONAL STUDIO -->
+        <div id="panel_report_operations" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">UTILISASI JADWAL STUDIO</div>
+                    <div class="stat-value">78.5%</div>
+                    <div class="stat-desc">Rata-rata 220 jam terisi dari 280 jam aktif</div>
+                    <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-title">HARI TERAMAI</div>
+                    <div class="stat-value" style="font-size: 20px;">Sabtu &amp; Minggu</div>
+                    <div class="stat-desc">Okupansi 96% jadwal studio &amp; kru lapangan</div>
+                    <div class="stat-icon"><i class="fa-solid fa-calendar-week"></i></div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-title">SISA PIUTANG TERTUNDA</div>
+                    <div class="stat-value">Rp 18.450.000</div>
+                    <div class="stat-desc">Klien yang belum melunasi sisa tagihan</div>
+                    <div class="stat-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">LEAD SOURCE TERBESAR</div>
+                    <div class="stat-value" style="font-size: 20px;">Instagram Ads</div>
+                    <div class="stat-desc">Menyumbang 48% dari seluruh booking masuk</div>
+                    <div class="stat-icon"><i class="fa-brands fa-instagram"></i></div>
+                </div>
+            </div>
+
+            <!-- Jam Operasional & Utilisasi Studio -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+                <div class="content-section" style="margin-bottom: 0;">
+                    <div class="section-title" style="margin-bottom: 16px;">
+                        <h3>Jam &amp; Hari Teramai Studio</h3>
+                        <p>Optimalkan penempatan staf dan promo di jam sepi</p>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+                            <span>Sabtu &amp; Minggu (Weekend)</span>
+                            <strong>96% (Penuh)</strong>
+                        </div>
+                        <div style="height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden;">
+                            <div style="width: 96%; height: 100%; background: #10b981;"></div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+                            <span>Jumat Sore &amp; Malam</span>
+                            <strong>82% (Ramai)</strong>
+                        </div>
+                        <div style="height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden;">
+                            <div style="width: 82%; height: 100%; background: #3b82f6;"></div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+                            <span>Senin - Kamis (Siang - Sore)</span>
+                            <strong>54% (Normal)</strong>
+                        </div>
+                        <div style="height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden;">
+                            <div style="width: 54%; height: 100%; background: #f59e0b;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+                            <span>Selasa - Rabu Pagi (08:00 - 11:00)</span>
+                            <strong>28% (Sepi)</strong>
+                        </div>
+                        <div style="height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden;">
+                            <div style="width: 28%; height: 100%; background: #ef4444;"></div>
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+                            <i class="fa-solid fa-lightbulb" style="color: #f59e0b;"></i> Tips: Berikan diskon khusus 20% untuk sesi foto studio di hari Selasa &amp; Rabu pagi.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Asal Kedatangan Klien (Lead Sources) -->
+                <div class="content-section" style="margin-bottom: 0;">
+                    <div class="section-title" style="margin-bottom: 16px;">
+                        <h3>Asal Kedatangan Klien (Lead Sources)</h3>
+                        <p>Dari mana calon pengantin &amp; klien mengetahui studio Anda</p>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Sumber Channel</th>
+                                <th style="text-align: center;">Jumlah Leads</th>
+                                <th style="text-align: center;">Closing %</th>
+                                <th>Kontribusi Omset</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><i class="fa-brands fa-instagram" style="color: #e1306c;"></i> <strong>Instagram Ads &amp; Feed</strong></td>
+                                <td style="text-align: center;">54</td>
+                                <td style="text-align: center;"><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">72%</span></td>
+                                <td style="color:#10b981; font-weight:700;">Rp 162.000.000</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fa-solid fa-comments" style="color: #10b981;"></i> <strong>Rekomendasi Teman / Klien Lama</strong></td>
+                                <td style="text-align: center;">32</td>
+                                <td style="text-align: center;"><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">88%</span></td>
+                                <td style="color:#10b981; font-weight:700;">Rp 118.500.000</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fa-brands fa-tiktok" style="color: #000;"></i> <strong>TikTok Viral Video</strong></td>
+                                <td style="text-align: center;">22</td>
+                                <td style="text-align: center;"><span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:700;">58%</span></td>
+                                <td style="color:#10b981; font-weight:700;">Rp 54.000.000</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fa-brands fa-google" style="color: #ea4335;"></i> <strong>Google Maps / Search</strong></td>
+                                <td style="text-align: center;">16</td>
+                                <td style="text-align: center;"><span class="badge" style="background:#fef3c7; color:#b45309; font-weight:700;">62%</span></td>
+                                <td style="color:#10b981; font-weight:700;">Rp 38.000.000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Arus Kas & Sisa Tagihan Piutang -->
+            <div class="content-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h3>Kesehatan Arus Kas &amp; Piutang Klien</h3>
+                        <p>Monitoring tagihan aktif dan sisa pelunasan sebelum acara berlangsung</p>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Klien</th>
+                            <th>Tanggal Acara</th>
+                            <th>Paket Booking</th>
+                            <th>Total Nilai Paket</th>
+                            <th>Sudah Dibayar</th>
+                            <th>Sisa Tagihan (Piutang)</th>
+                            <th>Jatuh Tempo Pelunasan</th>
+                            <th>Tindakan Reminder</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Jessica &amp; Kevin</strong></td>
+                            <td>28 November 2026</td>
+                            <td>Wedding Premium All-In</td>
+                            <td>Rp 8.500.000</td>
+                            <td>Rp 4.000.000 (DP 1)</td>
+                            <td style="color: #ef4444; font-weight: 700;">Rp 4.500.000</td>
+                            <td>H-3 Acara (25 Nov)</td>
+                            <td><button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="showToast('Reminder WA Pelunasan terkirim ke klien!')"><i class="fa-brands fa-whatsapp" style="color: #10b981;"></i> Kirim Tagihan WA</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bram &amp; Fiona</strong></td>
+                            <td>05 Desember 2026</td>
+                            <td>Prewedding Cinematic</td>
+                            <td>Rp 5.500.000</td>
+                            <td>Rp 2.000.000 (DP 1)</td>
+                            <td style="color: #ef4444; font-weight: 700;">Rp 3.500.000</td>
+                            <td>H-1 Acara (04 Des)</td>
+                            <td><button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="showToast('Reminder WA Pelunasan terkirim ke klien!')"><i class="fa-brands fa-whatsapp" style="color: #10b981;"></i> Kirim Tagihan WA</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
     <!-- Catat Pengeluaran Baru Modal -->
     <div class="modal-overlay" id="expenseModal">
@@ -1351,6 +1979,33 @@
             
             closeExpenseModal();
             calculateFinance();
+        }
+
+        function switchReportTab(tab) {
+            const tabs = ['overview', 'team', 'packages', 'operations'];
+            tabs.forEach(t => {
+                const btn = document.getElementById('tab_btn_' + t);
+                const panel = document.getElementById('panel_report_' + t);
+                if (t === tab) {
+                    if (btn) {
+                        btn.style.background = 'var(--primary)';
+                        btn.style.color = '#ffffff';
+                        btn.style.border = 'none';
+                    }
+                    if (panel) panel.style.display = 'block';
+                } else {
+                    if (btn) {
+                        btn.style.background = '#ffffff';
+                        btn.style.color = 'var(--text-dark)';
+                        btn.style.border = '1px solid #e2e8f0';
+                    }
+                    if (panel) panel.style.display = 'none';
+                }
+            });
+        }
+
+        function exportTeamLaporanCsv() {
+            window.location.href = '/api/finance/export/excel';
         }
 
         function calculateFinance() {

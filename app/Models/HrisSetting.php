@@ -14,6 +14,7 @@ class HrisSetting extends Model
     protected $fillable = [
         'user_id',
         'studio_name',
+        'theme_color',
         'studio_address',
         'studio_lat',
         'studio_lng',

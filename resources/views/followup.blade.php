@@ -313,7 +313,6 @@
                         <div class="avatar">{{ auth()->check() ? substr(auth()->user()->name, 0, 1) : 'P' }}</div>
                         <div class="user-info">
                             <h4>{{ auth()->check() ? auth()->user()->name : 'Penapict' }} <i class="fa-solid fa-chevron-down"></i></h4>
-                            <p>Starter</p>
                         </div>
                     </div>
 

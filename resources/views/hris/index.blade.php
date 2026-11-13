@@ -23,16 +23,19 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 
+@php
+    $appTheme = $settings->theme_color ?? (auth()->check() ? auth()->user()->getThemeColor() : '#4472c4');
+@endphp
     <style>
         :root {
-            --primary: #059669;
-            --primary-dark: #064E3B;
-            --primary-light: #ECFDF5;
-            --primary-border: #D1FAE5;
-            --emerald-500: #10B981;
-            --emerald-600: #059669;
-            --emerald-700: #047857;
-            --emerald-900: #064E3B;
+            --primary: {{ $appTheme }};
+            --primary-dark: #1e3a8a;
+            --primary-light: #eff6ff;
+            --primary-border: #bfdbfe;
+            --emerald-500: {{ $appTheme }};
+            --emerald-600: {{ $appTheme }};
+            --emerald-700: {{ $appTheme }};
+            --emerald-900: #1e3a8a;
             --bg-page: #F3F4F6;
             --surface: #FFFFFF;
             --text-main: #111827;

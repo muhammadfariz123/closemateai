@@ -62,6 +62,8 @@ class User extends Authenticatable
         'fu_2_template',
         'fu_3_days',
         'fu_3_template',
+        'theme_color',
+        'public_booking_token',
     ];
 
     public function getEffectiveOwner()
@@ -90,6 +92,20 @@ class User extends Authenticatable
     public function isOwner()
     {
         return empty($this->owner_id) && ($this->role === 'owner' || empty($this->role));
+    }
+
+    public function getPublicBookingToken(): string
+    {
+        if (empty($this->public_booking_token)) {
+            $this->public_booking_token = bin2hex(random_bytes(16));
+            $this->save();
+        }
+        return $this->public_booking_token;
+    }
+
+    public function getThemeColor(): string
+    {
+        return $this->theme_color ?: '#4472c4';
     }
 
     public function getAttribute($key)

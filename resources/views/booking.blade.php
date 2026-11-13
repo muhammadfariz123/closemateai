@@ -316,7 +316,6 @@
                         <div class="avatar">{{ auth()->check() ? auth()->user()->name[0] ?? 'P' : 'P' }}</div>
                         <div class="user-info">
                             <h4>{{ auth()->check() ? auth()->user()->name : 'Penapict' }} <i class="fa-solid fa-chevron-down"></i></h4>
-                            <p>Starter</p>
                         </div>
                     </div>
 
@@ -344,13 +343,12 @@
                     <button class="btn active" id="btn_calendar_view" onclick="switchView('calendar')"><i class="fa-regular fa-calendar-days"></i> Calendar View</button>
                     <button class="btn" id="btn_table_view" onclick="switchView('table')"><i class="fa-solid fa-table-list"></i> Table View</button>
                 </div>
-                <select id="b_month_filter" class="form-control" style="border-radius: 20px; width: 140px;" onchange="filterBookings()">
+                <select id="b_month_filter" class="form-control" style="border-radius: 20px; width: 160px;" onchange="filterBookings()">
                     <option value="all">Semua Bulan</option>
-                    <option value="2026-09">September 2026</option>
-                    <option value="2026-10">Oktober 2026</option>
-                    <option value="2026-11">November 2026</option>
-                    <option value="2026-12">Desember 2026</option>
                 </select>
+                <button onclick="copyPublicBookingLink()" class="btn" style="border: 1px solid var(--primary); color: var(--primary); background: transparent; border-radius: 8px; font-weight: 500;" title="Salin link publik agar klien bisa booking langsung">
+                    <i class="fa-solid fa-link"></i> Link Form Booking
+                </button>
                 <button onclick="openBookingModal()" class="btn btn-primary" style="border-radius: 8px;"><i class="fa-solid fa-plus"></i> Tambah Booking</button>
             </div>
         </div>
@@ -1485,6 +1483,7 @@
         
         // Initialize dropdowns on load
         document.addEventListener('DOMContentLoaded', () => {
+            initMonthFilter();
             refreshHppTemplateDropdown();
             loadBookings();
         });
@@ -1537,8 +1536,62 @@
             renderCalendar();
         }
 
-        let currentCalYear = 2026;
-        let currentCalMonth = 9; // October is 9 (0-indexed)
+        const _initialDate = new Date();
+        let currentCalYear = _initialDate.getFullYear();
+        let currentCalMonth = _initialDate.getMonth();
+
+        function initMonthFilter() {
+            const select = document.getElementById('b_month_filter');
+            if (!select) return;
+            const now = new Date();
+            const currYear = now.getFullYear();
+            const currMonth = now.getMonth();
+            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+            select.innerHTML = '<option value="all">Semua Bulan</option>';
+            for (let offset = -6; offset <= 12; offset++) {
+                const d = new Date(currYear, currMonth + offset, 1);
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const val = `${y}-${m}`;
+                const label = `${monthNames[d.getMonth()]} ${y}`;
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = label;
+                if (offset === 0) {
+                    opt.selected = true;
+                }
+                select.appendChild(opt);
+            }
+        }
+
+        function copyPublicBookingLink() {
+            const token = '{{ auth()->check() ? auth()->user()->getPublicBookingToken() : "" }}';
+            const url = window.location.origin + '/book' + (token ? '/' + token : '');
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('Link Form Booking Publik berhasil disalin!', 'success');
+                }).catch(() => {
+                    prompt('Salin link form booking publik:', url);
+                });
+            } else {
+                prompt('Salin link form booking publik:', url);
+            }
+        }
+
+        function copyReviewLink(uuid) {
+            if (!uuid) return alert('UUID booking belum tersedia.');
+            const url = window.location.origin + '/review/' + uuid;
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('Link Form Review Klien berhasil disalin!', 'success');
+                }).catch(() => {
+                    prompt('Salin link review klien:', url);
+                });
+            } else {
+                prompt('Salin link review klien:', url);
+            }
+        }
 
         function changeCalendarMonth(offset) {
             currentCalMonth += offset;
@@ -1686,6 +1739,7 @@
                     <td>${resultLinkHtml}</td>
                     <td>
                         <div class="action-icons">
+                            <i class="fa-solid fa-star" title="Salin Link Review Klien (Bintang & Feedback Kru)" onclick="copyReviewLink('${b.uuid}')" style="cursor: pointer; color: #f59e0b;"></i>
                             <i class="fa-regular fa-folder" title="Buka event workspace" onclick="openWorkspace('${b.id}')"></i>
                             <i class="fa-regular fa-calendar-check" title="Tambah ke google calender" onclick="addToGoogleCalendar('${b.id}')"></i>
                             <i class="fa-solid fa-pen" onclick="openBookingModal('${b.id}')"></i>

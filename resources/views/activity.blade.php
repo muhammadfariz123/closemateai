@@ -259,7 +259,6 @@
                         </div>
                         <div class="user-info">
                             <h4>{{ auth()->check() ? auth()->user()->name : 'Vendor' }} <i class="fa-solid fa-chevron-down" style="font-size: 10px; color: #a1a5b7; margin-left: 4px;"></i></h4>
-                            <p>Starter</p>
                         </div>
                     </div>
                 </div>

@@ -8,8 +8,8 @@
   "display": "standalone",
   "display_override": ["standalone", "fullscreen", "minimal-ui"],
   "orientation": "portrait",
-  "theme_color": "#059669",
-  "background_color": "#064E3B",
+  "theme_color": "#4472c4",
+  "background_color": "#1e3a8a",
   "icons": [
     {
       "src": "/hris-icon-192.png",
@@ -31,3 +31,4 @@
     }
   ]
 }
+

@@ -10,11 +10,11 @@
     <style>
         :root {
             --sidebar-bg: #1e1e2d;
-            --sidebar-text: #a1a5b7;
-            --sidebar-active-bg: #6c5ce7;
-            --sidebar-active-text: #ffffff;
-            --primary: #6c5ce7;
-            --primary-hover: #5a4ad1;
+            --sidebar-text: #cbd5e1;
+            --sidebar-active-bg: rgba(68, 114, 196, 0.2);
+            --sidebar-active-text: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
+            --primary: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
+            --primary-hover: #365b9e;
             --bg-light: #f8f9fa;
             --card-bg: #ffffff;
             --border-color: #f1f1f4;
@@ -37,12 +37,12 @@
         .sidebar-title h2 { color: white; font-size: 16px; font-weight: 600; margin-bottom: 2px; }
         .sidebar-title p { color: var(--sidebar-text); font-size: 12px; }
         
-        .nav-menu { flex: 1; overflow-y: auto; padding: 12px 16px; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; color: var(--sidebar-text); text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 500; margin-bottom: 4px; transition: 0.2s; white-space: nowrap; cursor: pointer; }
+        .nav-menu { flex: 1; overflow-y: auto; padding: 12px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--sidebar-text); text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; margin-bottom: 4px; transition: 0.2s; white-space: nowrap; cursor: pointer; }
         .nav-item:hover { color: white; background-color: rgba(255,255,255,0.05); }
         .nav-item.active { background-color: var(--sidebar-active-bg); color: var(--sidebar-active-text) !important; font-weight: 600; }
-        .nav-item.active i { color: white !important; }
-        .nav-item i { font-size: 15px; width: 20px; text-align: center; color: #727586; }
+        .nav-item.active i { color: var(--sidebar-active-text) !important; }
+        .nav-item i { font-size: 16px; width: 20px; text-align: center; color: #727586; }
 
         /* Sidebar Collapsed State */
         body.sidebar-collapsed .sidebar { width: 80px; }
@@ -53,7 +53,7 @@
         body.sidebar-collapsed .nav-item { justify-content: center; padding-left: 0; padding-right: 0; }
 
         /* Main Content */
-        .main-content { flex: 1; margin-left: 260px; padding: 28px 36px; transition: margin-left 0.3s ease; max-width: 1600px; }
+        .main-content { margin-left: 260px; flex: 1; padding: 30px; display: flex; flex-direction: column; transition: margin-left 0.3s ease; }
         
         .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         .page-title h1 { font-size: 24px; font-weight: 700; color: var(--text-dark); }
@@ -155,14 +155,6 @@
         .sim-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; }
         .sim-row:last-child { margin-bottom: 0; padding-top: 8px; border-top: 1px solid #e2e8f0; }
 
-        /* Responsive */
-        @media (max-width: 900px) {
-            .sidebar { width: 80px; }
-            .sidebar .sidebar-title, .sidebar .nav-item span { display: none; }
-            .sidebar-header { justify-content: center; padding: 24px 0; }
-            .nav-item { justify-content: center; padding: 10px 0; }
-            .main-content { margin-left: 80px; padding: 20px; }
-        }
     </style>
     <link rel="stylesheet" href="/css/responsive.css">
 </head>

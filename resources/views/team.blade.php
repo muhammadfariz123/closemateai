@@ -10,11 +10,11 @@
     <style>
         :root {
             --sidebar-bg: #1e1e2d;
-            --sidebar-text: #a1a5b7;
-            --sidebar-active-bg: #6c5ce7;
-            --sidebar-active-text: #ffffff;
-            --primary: #6c5ce7;
-            --primary-hover: #5a4ad1;
+            --sidebar-text: #cbd5e1;
+            --sidebar-active-bg: rgba(68, 114, 196, 0.2);
+            --sidebar-active-text: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
+            --primary: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
+            --primary-hover: #365b9e;
             --bg-light: #f8f9fa;
             --card-bg: #ffffff;
             --border-color: #f1f1f4;
@@ -29,17 +29,17 @@
         /* Sidebar */
         .sidebar { width: 260px; background-color: var(--sidebar-bg); display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; transition: width 0.3s ease; overflow-x: hidden; z-index: 100; }
         .sidebar-header { padding: 24px; display: flex; align-items: center; gap: 12px; transition: 0.3s ease; }
-        .sidebar-logo-icon { min-width: 40px; width: 40px; height: 40px; background-color: rgba(108, 92, 231, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #a29bfe; font-size: 18px; }
+        .sidebar-logo-icon { min-width: 40px; width: 40px; height: 40px; background-color: rgba(68, 114, 196, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 18px; }
         .sidebar-title { white-space: nowrap; }
         .sidebar-title h2 { color: white; font-size: 16px; font-weight: 600; margin-bottom: 2px; }
         .sidebar-title p { color: var(--sidebar-text); font-size: 12px; }
         
-        .nav-menu { flex: 1; overflow-y: auto; padding: 12px 16px; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; color: var(--sidebar-text); text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 500; margin-bottom: 4px; transition: 0.2s; white-space: nowrap; cursor: pointer; }
+        .nav-menu { flex: 1; overflow-y: auto; padding: 12px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--sidebar-text); text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; margin-bottom: 4px; transition: 0.2s; white-space: nowrap; cursor: pointer; }
         .nav-item:hover { color: white; background-color: rgba(255,255,255,0.05); }
         .nav-item.active { background-color: var(--sidebar-active-bg); color: var(--sidebar-active-text) !important; font-weight: 600; }
-        .nav-item.active i { color: white !important; }
-        .nav-item i { font-size: 15px; width: 20px; text-align: center; color: #727586; }
+        .nav-item.active i { color: var(--sidebar-active-text) !important; }
+        .nav-item i { font-size: 16px; width: 20px; text-align: center; color: #727586; }
 
         /* Sidebar Collapsed State */
         body.sidebar-collapsed .sidebar { width: 80px; }

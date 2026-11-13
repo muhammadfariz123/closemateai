@@ -314,7 +314,6 @@
                         </div>
                         <div class="user-info">
                             <h4>{{ auth()->check() ? auth()->user()->name : 'Vendor' }} <i class="fa-solid fa-chevron-down" style="font-size: 10px; color: #a1a5b7; margin-left: 4px;"></i></h4>
-                            <p>Starter</p>
                         </div>
                     </div>
                 </div>
@@ -582,6 +581,41 @@
                     <button id="btn-save-notifications" class="btn btn-primary" style="width: 100%;"><i class="fa-regular fa-floppy-disk"></i> Simpan Notifikasi</button>
                 </div>
 
+                <!-- Theme Color Card -->
+                <div class="card">
+                    <div class="card-header" style="margin-bottom: 20px;">
+                        <div class="card-header-left">
+                            <div class="header-icon" style="background: rgba(68, 114, 196, 0.15); color: var(--primary);"><i class="fa-solid fa-palette"></i></div>
+                            <div class="header-title">
+                                <h3>Warna Aplikasi & Branding</h3>
+                                <p>Ubah warna tema website & aplikasi absensi PWA mobile</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Pilih Warna Utama (Default: #4472c4)</label>
+                        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 14px;">
+                            <input type="color" id="theme_color_picker" value="{{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }}" style="width: 48px; height: 42px; border: none; border-radius: 8px; cursor: pointer; padding: 0; background: none;">
+                            <input type="text" id="theme_color_text" class="form-control" value="{{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }}" placeholder="#4472c4" style="font-family: monospace; font-weight: 600;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 12px; color: var(--text-muted);">Pilihan Cepat Warna:</label>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button type="button" onclick="setPresetColor('#4472c4')" style="background: #4472c4; width: 34px; height: 34px; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer;" title="Default Studio Blue (#4472c4)"></button>
+                            <button type="button" onclick="setPresetColor('#1d4ed8')" style="background: #1d4ed8; width: 34px; height: 34px; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer;" title="Royal Blue (#1d4ed8)"></button>
+                            <button type="button" onclick="setPresetColor('#059669')" style="background: #059669; width: 34px; height: 34px; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer;" title="Emerald Green (#059669)"></button>
+                            <button type="button" onclick="setPresetColor('#4f46e5')" style="background: #4f46e5; width: 34px; height: 34px; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer;" title="Indigo (#4f46e5)"></button>
+                            <button type="button" onclick="setPresetColor('#6b5cd8')" style="background: #6b5cd8; width: 34px; height: 34px; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer;" title="Soft Violet (#6b5cd8)"></button>
+                            <button type="button" onclick="setPresetColor('#0f172a')" style="background: #0f172a; width: 34px; height: 34px; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer;" title="Dark Slate (#0f172a)"></button>
+                        </div>
+                    </div>
+
+                    <button id="btn-save-theme-color" onclick="saveThemeColor()" class="btn btn-primary" style="width: 100%;"><i class="fa-solid fa-check"></i> Terapkan Warna Aplikasi</button>
+                </div>
+
                 <!-- Billing Card -->
                 <div class="card">
                     <div class="card-header" style="margin-bottom: 24px;">
@@ -777,6 +811,45 @@
                     alert('Gagal menyimpan profil bisnis.');
                 });
             });
+
+            window.setPresetColor = function(hex) {
+                $('#theme_color_picker').val(hex);
+                $('#theme_color_text').val(hex);
+                document.documentElement.style.setProperty('--primary', hex);
+            };
+
+            $('#theme_color_picker').on('input', function() {
+                let hex = $(this).val();
+                $('#theme_color_text').val(hex);
+                document.documentElement.style.setProperty('--primary', hex);
+            });
+
+            $('#theme_color_text').on('input', function() {
+                let hex = $(this).val();
+                if (hex.startsWith('#') && (hex.length === 4 || hex.length === 7)) {
+                    $('#theme_color_picker').val(hex);
+                    document.documentElement.style.setProperty('--primary', hex);
+                }
+            });
+
+            window.saveThemeColor = function() {
+                let color = $('#theme_color_text').val();
+                let btn = $('#btn-save-theme-color');
+                let orig = btn.html();
+                btn.html('<i class="fa-solid fa-spinner fa-spin"></i> Menerapkan...').prop('disabled', true);
+                
+                $.post('/settings/theme-color', { theme_color: color }, function(res) {
+                    btn.html(orig).prop('disabled', false);
+                    if (res.success) {
+                        document.documentElement.style.setProperty('--primary', color);
+                        $('#toast-message').html('<i class="fa-solid fa-check-circle" style="color:var(--success);"></i> Warna tema berhasil disimpan!');
+                        $('#toast-box').css('display', 'flex').hide().fadeIn().delay(3000).fadeOut();
+                    }
+                }).fail(function() {
+                    btn.html(orig).prop('disabled', false);
+                    alert('Gagal menyimpan warna tema.');
+                });
+            };
 
         });
     </script>
