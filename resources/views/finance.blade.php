@@ -539,26 +539,26 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-title">TOTAL CREW &amp; TIM</div>
-                    <div class="stat-value">18 Orang</div>
+                    <div class="stat-value" id="stat_team_crew">9 Orang</div>
                     <div class="stat-desc">FG, VG, Editor, Cetak, Admin &amp; Marketing</div>
                     <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
                 </div>
                 <div class="stat-card green">
                     <div class="stat-title">TOTAL GAJI &amp; KOMISI</div>
-                    <div class="stat-value">Rp 48.750.000</div>
+                    <div class="stat-value" id="stat_team_salary">Rp 42.100.000</div>
                     <div class="stat-desc">Gaji Pokok + Uang Jalan + Lembur + Bonus</div>
                     <div class="stat-icon"><i class="fa-solid fa-money-check-dollar"></i></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">RATA-RATA RATING KRU</div>
-                    <div class="stat-value" style="color: #f59e0b;"><i class="fa-solid fa-star"></i> 4.9 <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">/ 5.0</span></div>
-                    <div class="stat-desc">Dari 64 ulasan kepuasan klien lapangan</div>
+                    <div class="stat-value" id="stat_team_rating" style="color: #f59e0b;"><i class="fa-solid fa-star"></i> 4.9 <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">/ 5.0</span></div>
+                    <div class="stat-desc">Dari ulasan kepuasan klien lapangan</div>
                     <div class="stat-icon"><i class="fa-regular fa-star"></i></div>
                 </div>
                 <div class="stat-card green">
                     <div class="stat-title">CLOSING MARKETING</div>
-                    <div class="stat-value">84 Leads</div>
-                    <div class="stat-desc">Dari 112 prospek (Konversi 75%)</div>
+                    <div class="stat-value" id="stat_team_closing">48 Leads</div>
+                    <div class="stat-desc">Closing dari leads WhatsApp &amp; Sales</div>
                     <div class="stat-icon"><i class="fa-solid fa-bullseye"></i></div>
                 </div>
             </div>
@@ -570,7 +570,7 @@
                         <h3>1. Rincian Pendapatan &amp; Beban Kerja Kru</h3>
                         <p>Pemisahan gaji pokok, operasional jalan, lembur, bonus proyek, dan total sesi foto sebulan</p>
                     </div>
-                    <button class="btn btn-outline" onclick="exportTeamLaporanCsv()" style="font-size: 12px;"><i class="fa-solid fa-download"></i> Export Data Kru</button>
+                    <button class="btn btn-outline" onclick="exportTeamLaporanCsv()" style="font-size: 12px;"><i class="fa-solid fa-download"></i> Export Data Kru (Excel)</button>
                 </div>
                 <table class="data-table">
                     <thead>
@@ -585,57 +585,7 @@
                             <th style="text-align: right;">Total Gaji Bersih</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Danu</strong></td>
-                            <td><span class="badge" style="background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600;">Marketing &amp; FG</span></td>
-                            <td style="text-align: center;"><strong>14 Sesi</strong></td>
-                            <td style="text-align: right;">Rp 2.500.000</td>
-                            <td style="text-align: right;">Rp 700.000</td>
-                            <td style="text-align: right;">Rp 300.000</td>
-                            <td style="text-align: right; color:#10b981; font-weight:600;">Rp 2.100.000</td>
-                            <td style="text-align: right; font-weight:700;">Rp 5.600.000</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Dika</strong></td>
-                            <td><span class="badge" style="background:#fef3c7; color:#b45309; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600;">Lead Photographer</span></td>
-                            <td style="text-align: center;"><strong>18 Sesi</strong></td>
-                            <td style="text-align: right;">Rp 2.800.000</td>
-                            <td style="text-align: right;">Rp 900.000</td>
-                            <td style="text-align: right;">Rp 450.000</td>
-                            <td style="text-align: right; color:#10b981; font-weight:600;">Rp 1.800.000</td>
-                            <td style="text-align: right; font-weight:700;">Rp 5.950.000</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Arya</strong></td>
-                            <td><span class="badge" style="background:#f3e8ff; color:#7e22ce; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600;">Videografer</span></td>
-                            <td style="text-align: center;"><strong>16 Sesi</strong></td>
-                            <td style="text-align: right;">Rp 2.700.000</td>
-                            <td style="text-align: right;">Rp 800.000</td>
-                            <td style="text-align: right;">Rp 350.000</td>
-                            <td style="text-align: right; color:#10b981; font-weight:600;">Rp 1.600.000</td>
-                            <td style="text-align: right; font-weight:700;">Rp 5.450.000</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Faris</strong></td>
-                            <td><span class="badge" style="background:#dcfce7; color:#15803d; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600;">Senior Editor</span></td>
-                            <td style="text-align: center;"><strong>22 Proyek</strong></td>
-                            <td style="text-align: right;">Rp 3.000.000</td>
-                            <td style="text-align: right;">Rp 500.000</td>
-                            <td style="text-align: right;">Rp 600.000</td>
-                            <td style="text-align: right; color:#10b981; font-weight:600;">Rp 1.100.000</td>
-                            <td style="text-align: right; font-weight:700;">Rp 5.200.000</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Angga</strong></td>
-                            <td><span class="badge" style="background:#fee2e2; color:#b91c1c; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600;">Divisi Cetak &amp; Lab</span></td>
-                            <td style="text-align: center;"><strong>30 Album</strong></td>
-                            <td style="text-align: right;">Rp 2.400.000</td>
-                            <td style="text-align: right;">Rp 400.000</td>
-                            <td style="text-align: right;">Rp 200.000</td>
-                            <td style="text-align: right; color:#10b981; font-weight:600;">Rp 750.000</td>
-                            <td style="text-align: right; font-weight:700;">Rp 3.750.000</td>
-                        </tr>
+                    <tbody id="tbody_team_crews">
                     </tbody>
                 </table>
             </div>
@@ -647,47 +597,24 @@
                         <h3>2. Kecepatan &amp; Kualitas Kerja Tim Editor &amp; Cetak</h3>
                         <p>Pemantauan Same Day Edit, Fast Edit, Deadline Cetak, dan Waktu Siap Diambil Klien</p>
                     </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-primary" onclick="openOfficeEvalModal()" style="font-size: 12px;"><i class="fa-solid fa-plus"></i> Catat Evaluasi Kantor</button>
+                        <a href="/api/office-evaluations/export/csv" class="btn btn-outline" style="font-size: 12px;"><i class="fa-solid fa-download"></i> Unduh CSV Evaluasi</a>
+                    </div>
                 </div>
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Proyek / Klien</th>
-                            <th>Editor / PIC</th>
-                            <th>Jenis Layanan</th>
-                            <th>Target Deadline</th>
-                            <th>Waktu Aktual Selesai</th>
+                            <th>Editor</th>
+                            <th>Staff Cetak</th>
+                            <th>Layanan</th>
+                            <th>Durasi Selesai</th>
                             <th>Ketepatan Waktu</th>
-                            <th>Status Cetak &amp; Pengambilan</th>
+                            <th>Status Cetak &amp; Ambil</th>
+                            <th style="text-align: right;">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Wedding Sarah &amp; Dimas</strong></td>
-                            <td>Faris (Editor)</td>
-                            <td><span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700; padding:3px 8px; border-radius:6px; font-size:11px;">Same Day Edit (SDE)</span></td>
-                            <td>Hari H, Pk 19:00</td>
-                            <td>Hari H, Pk 18:25</td>
-                            <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:600; padding:3px 8px; border-radius:6px; font-size:11px;"><i class="fa-solid fa-check"></i> 35 Menit Lebih Cepat</span></td>
-                            <td><span class="badge" style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:6px; font-size:11px;">Drive Siap &amp; Ditayangkan</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Prewedding Bella &amp; Rendy</strong></td>
-                            <td>Bagus (Editor)</td>
-                            <td><span class="badge" style="background:#fef3c7; color:#b45309; font-weight:700; padding:3px 8px; border-radius:6px; font-size:11px;">Fast Edit 3 Hari</span></td>
-                            <td>3 Hari kerja</td>
-                            <td>2 Hari kerja</td>
-                            <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:600; padding:3px 8px; border-radius:6px; font-size:11px;"><i class="fa-solid fa-check"></i> On-Time</span></td>
-                            <td><span class="badge" style="background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:6px; font-size:11px;">Album Siap Diambil Klien</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Graduation Annisa</strong></td>
-                            <td>Fauzan (Editor)</td>
-                            <td><span class="badge" style="background:#f1f5f9; color:#475569; font-weight:700; padding:3px 8px; border-radius:6px; font-size:11px;">Reguler Edit</span></td>
-                            <td>7 Hari kerja</td>
-                            <td>6 Hari kerja</td>
-                            <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:600; padding:3px 8px; border-radius:6px; font-size:11px;"><i class="fa-solid fa-check"></i> On-Time</span></td>
-                            <td><span class="badge" style="background:#fef3c7; color:#b45309; padding:3px 8px; border-radius:6px; font-size:11px;">Proses Cetak Box &amp; Flashdisk</span></td>
-                        </tr>
+                    <tbody id="tbody_office_evals">
                     </tbody>
                 </table>
             </div>
@@ -700,19 +627,19 @@
                         <p>Feedback langsung lewat Form Review 5-Bintang</p>
                     </div>
                     <div style="text-align: center; padding: 20px 0; border-bottom: 1px solid var(--border-color);">
-                        <div style="font-size: 48px; font-weight: 800; color: #181c32;">4.9</div>
+                        <div style="font-size: 48px; font-weight: 800; color: #181c32;" id="score_client_reviews">4.9</div>
                         <div style="color: #f59e0b; font-size: 20px; margin: 4px 0;">
                             <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
                         </div>
-                        <div style="font-size: 13px; color: var(--text-muted);">98% Klien Sangat Puas</div>
+                        <div style="font-size: 13px; color: var(--text-muted);">98% Klien Puas dengan Pelayanan</div>
                     </div>
                     <div style="padding-top: 16px;">
                         <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">TAG PUJIAN POPULER:</div>
                         <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                            <span class="badge" style="background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; padding:4px 8px; font-size:11px;">Ramah &amp; Sabar (48)</span>
-                            <span class="badge" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:4px 8px; font-size:11px;">Hasil Foto Keren (52)</span>
-                            <span class="badge" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a; padding:4px 8px; font-size:11px;">Arahan Gaya Bagus (39)</span>
-                            <span class="badge" style="background:#f3e8ff; color:#7e22ce; border:1px solid #e9d5ff; padding:4px 8px; font-size:11px;">Tepat Waktu (44)</span>
+                            <span class="badge" style="background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; padding:4px 8px; font-size:11px;">Ramah &amp; Sabar</span>
+                            <span class="badge" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:4px 8px; font-size:11px;">Hasil Foto Keren</span>
+                            <span class="badge" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a; padding:4px 8px; font-size:11px;">Arahan Gaya Bagus</span>
+                            <span class="badge" style="background:#f3e8ff; color:#7e22ce; border:1px solid #e9d5ff; padding:4px 8px; font-size:11px;">Tepat Waktu</span>
                         </div>
                     </div>
                 </div>
@@ -732,27 +659,10 @@
                                 <th>Kru Bertugas</th>
                                 <th>Rating</th>
                                 <th>Komentar Klien</th>
+                                <th style="text-align: right;">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Nadia Putri</strong></td>
-                                <td>Dika &amp; Arya</td>
-                                <td><span style="color:#f59e0b; font-weight:700;"><i class="fa-solid fa-star"></i> 5.0</span></td>
-                                <td style="font-size: 12px; color: #475569;">"Mas Dika sabar banget ngarahin gaya keluarga besar. Hasil videonya Mas Arya waktu akad haru banget!"</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Rizal Mahendra</strong></td>
-                                <td>Danu</td>
-                                <td><span style="color:#f59e0b; font-weight:700;"><i class="fa-solid fa-star"></i> 5.0</span></td>
-                                <td style="font-size: 12px; color: #475569;">"Pelayanan sangat ramah, komunikasi cepat dari awal konsultasi sampai hari H memuaskan."</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Clara Oktaviani</strong></td>
-                                <td>Bagus</td>
-                                <td><span style="color:#f59e0b; font-weight:700;"><i class="fa-solid fa-star"></i> 4.8</span></td>
-                                <td style="font-size: 12px; color: #475569;">"Editing fotonya clean dan tone warnanya aesthetic sesuai request. Mantap!"</td>
-                            </tr>
+                        <tbody id="tbody_client_reviews">
                         </tbody>
                     </table>
                 </div>
@@ -777,23 +687,7 @@
                             <th>Fee / Komisi</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Danu (Sales &amp; Partnership)</strong></td>
-                            <td>68 Leads</td>
-                            <td><strong>54 Booking</strong></td>
-                            <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700; padding:4px 8px; border-radius:6px;">79.4%</span></td>
-                            <td>Rp 135.000.000</td>
-                            <td style="color:#10b981; font-weight:700;">Rp 2.700.000</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Admin CS WhatsApp</strong></td>
-                            <td>44 Leads</td>
-                            <td><strong>30 Booking</strong></td>
-                            <td><span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:4px 8px; border-radius:6px;">68.2%</span></td>
-                            <td>Rp 72.500.000</td>
-                            <td style="color:#10b981; font-weight:700;">Rp 1.450.000</td>
-                        </tr>
+                    <tbody id="tbody_team_marketing">
                     </tbody>
                 </table>
             </div>
@@ -804,25 +698,25 @@
             <div class="stats-grid">
                 <div class="stat-card green">
                     <div class="stat-title">PAKET PALING LAKU</div>
-                    <div class="stat-value" style="font-size: 18px;">Wedding Premium All-In</div>
-                    <div class="stat-desc">34 Booking terjual (40% total omset)</div>
+                    <div class="stat-value" id="stat_pkg_most_popular" style="font-size: 18px;">-</div>
+                    <div class="stat-desc">Volume booking tertinggi dalam sistem</div>
                     <div class="stat-icon"><i class="fa-solid fa-trophy"></i></div>
                 </div>
                 <div class="stat-card green">
                     <div class="stat-title">PAKET PALING UNTUNG</div>
-                    <div class="stat-value" style="font-size: 18px;">Prewedding Cinematic</div>
-                    <div class="stat-desc">Margin Keuntungan 68.5% (Rp 4.2jt / event)</div>
+                    <div class="stat-value" id="stat_pkg_most_profitable" style="font-size: 18px;">-</div>
+                    <div class="stat-desc">Margin keuntungan &amp; laba bersih tertinggi</div>
                     <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
                 </div>
                 <div class="stat-card red">
                     <div class="stat-title">PAKET KURANG LAKU</div>
-                    <div class="stat-value" style="font-size: 18px;">Mini Studio Pasfoto</div>
-                    <div class="stat-desc">Hanya 3 booking (Saran: evaluasi harga/bundle)</div>
+                    <div class="stat-value" id="stat_pkg_least_popular" style="font-size: 18px;">-</div>
+                    <div class="stat-desc">Peminat rendah (Evaluasi harga / jadikan bonus)</div>
                     <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">ADD-ON TERLARIS</div>
-                    <div class="stat-value" style="font-size: 18px;">Drone Aerial 4K</div>
+                    <div class="stat-value" id="stat_pkg_top_addon" style="font-size: 18px;">Drone Aerial 4K</div>
                     <div class="stat-desc">24 Klien memilih add-on ini (+Rp 28.8jt)</div>
                     <div class="stat-icon"><i class="fa-solid fa-helicopter"></i></div>
                 </div>
@@ -850,62 +744,7 @@
                             <th>Evaluasi &amp; Rekomendasi</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Wedding Premium All-In</strong></td>
-                            <td>Wedding</td>
-                            <td>Rp 8.500.000</td>
-                            <td style="text-align: center;"><strong>34</strong></td>
-                            <td>Rp 289.000.000</td>
-                            <td>Rp 3.200.000</td>
-                            <td style="color:#10b981; font-weight:700;">Rp 180.200.000</td>
-                            <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">62.3%</span></td>
-                            <td><span style="font-size: 11px; color:#15803d;"><i class="fa-solid fa-check-double"></i> Produk Bintang (Star) - Pertahankan</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Prewedding Cinematic</strong></td>
-                            <td>Prewedding</td>
-                            <td>Rp 5.500.000</td>
-                            <td style="text-align: center;"><strong>26</strong></td>
-                            <td>Rp 143.000.000</td>
-                            <td>Rp 1.730.000</td>
-                            <td style="color:#10b981; font-weight:700;">Rp 98.020.000</td>
-                            <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">68.5%</span></td>
-                            <td><span style="font-size: 11px; color:#15803d;"><i class="fa-solid fa-arrow-trend-up"></i> Margin Tertinggi - Dorong Promo Iklan</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Lamaran / Engagement</strong></td>
-                            <td>Engagement</td>
-                            <td>Rp 3.200.000</td>
-                            <td style="text-align: center;"><strong>18</strong></td>
-                            <td>Rp 57.600.000</td>
-                            <td>Rp 1.100.000</td>
-                            <td style="color:#10b981; font-weight:700;">Rp 37.800.000</td>
-                            <td><span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:700;">65.6%</span></td>
-                            <td><span style="font-size: 11px; color:#0369a1;">Stabil &amp; Pintu masuk ke paket Wedding</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Wisuda &amp; Family Studio</strong></td>
-                            <td>Studio</td>
-                            <td>Rp 1.500.000</td>
-                            <td style="text-align: center;"><strong>12</strong></td>
-                            <td>Rp 18.000.000</td>
-                            <td>Rp 550.000</td>
-                            <td style="color:#10b981; font-weight:700;">Rp 11.400.000</td>
-                            <td><span class="badge" style="background:#fef3c7; color:#b45309; font-weight:700;">63.3%</span></td>
-                            <td><span style="font-size: 11px; color:#b45309;">Musiman (Ramai di musim wisuda)</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Mini Studio Pasfoto</strong></td>
-                            <td>Studio</td>
-                            <td>Rp 250.000</td>
-                            <td style="text-align: center;"><strong>3</strong></td>
-                            <td>Rp 750.000</td>
-                            <td>Rp 180.000</td>
-                            <td style="color:#64748b; font-weight:700;">Rp 210.000</td>
-                            <td><span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700;">28.0%</span></td>
-                            <td><span style="font-size: 11px; color:#b91c1c;"><i class="fa-solid fa-triangle-exclamation"></i> Sepi Peminat - Hapus atau jadikan bonus</span></td>
-                        </tr>
+                    <tbody id="tbody_packages_list">
                     </tbody>
                 </table>
             </div>
@@ -926,7 +765,7 @@
                                 <th>Total Revenue</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tbody_addons_list">
                             <tr>
                                 <td><strong>Drone Aerial 4K</strong></td>
                                 <td>Rp 1.200.000</td>
@@ -983,7 +822,7 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-title">UTILISASI JADWAL STUDIO</div>
-                    <div class="stat-value">78.5%</div>
+                    <div class="stat-value" id="stat_ops_utilization">78.5%</div>
                     <div class="stat-desc">Rata-rata 220 jam terisi dari 280 jam aktif</div>
                     <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
                 </div>
@@ -995,7 +834,7 @@
                 </div>
                 <div class="stat-card red">
                     <div class="stat-title">SISA PIUTANG TERTUNDA</div>
-                    <div class="stat-value">Rp 18.450.000</div>
+                    <div class="stat-value" id="stat_unpaid_receivables">Rp 18.450.000</div>
                     <div class="stat-desc">Klien yang belum melunasi sisa tagihan</div>
                     <div class="stat-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
                 </div>
@@ -1070,31 +909,7 @@
                                 <th>Kontribusi Omset</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td><i class="fa-brands fa-instagram" style="color: #e1306c;"></i> <strong>Instagram Ads &amp; Feed</strong></td>
-                                <td style="text-align: center;">54</td>
-                                <td style="text-align: center;"><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">72%</span></td>
-                                <td style="color:#10b981; font-weight:700;">Rp 162.000.000</td>
-                            </tr>
-                            <tr>
-                                <td><i class="fa-solid fa-comments" style="color: #10b981;"></i> <strong>Rekomendasi Teman / Klien Lama</strong></td>
-                                <td style="text-align: center;">32</td>
-                                <td style="text-align: center;"><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">88%</span></td>
-                                <td style="color:#10b981; font-weight:700;">Rp 118.500.000</td>
-                            </tr>
-                            <tr>
-                                <td><i class="fa-brands fa-tiktok" style="color: #000;"></i> <strong>TikTok Viral Video</strong></td>
-                                <td style="text-align: center;">22</td>
-                                <td style="text-align: center;"><span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:700;">58%</span></td>
-                                <td style="color:#10b981; font-weight:700;">Rp 54.000.000</td>
-                            </tr>
-                            <tr>
-                                <td><i class="fa-brands fa-google" style="color: #ea4335;"></i> <strong>Google Maps / Search</strong></td>
-                                <td style="text-align: center;">16</td>
-                                <td style="text-align: center;"><span class="badge" style="background:#fef3c7; color:#b45309; font-weight:700;">62%</span></td>
-                                <td style="color:#10b981; font-weight:700;">Rp 38.000.000</td>
-                            </tr>
+                        <tbody id="tbody_lead_sources">
                         </tbody>
                     </table>
                 </div>
@@ -1117,31 +932,11 @@
                             <th>Total Nilai Paket</th>
                             <th>Sudah Dibayar</th>
                             <th>Sisa Tagihan (Piutang)</th>
-                            <th>Jatuh Tempo Pelunasan</th>
+                            <th>Jatuh Tempo</th>
                             <th>Tindakan Reminder</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Jessica &amp; Kevin</strong></td>
-                            <td>28 November 2026</td>
-                            <td>Wedding Premium All-In</td>
-                            <td>Rp 8.500.000</td>
-                            <td>Rp 4.000.000 (DP 1)</td>
-                            <td style="color: #ef4444; font-weight: 700;">Rp 4.500.000</td>
-                            <td>H-3 Acara (25 Nov)</td>
-                            <td><button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="showToast('Reminder WA Pelunasan terkirim ke klien!')"><i class="fa-brands fa-whatsapp" style="color: #10b981;"></i> Kirim Tagihan WA</button></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Bram &amp; Fiona</strong></td>
-                            <td>05 Desember 2026</td>
-                            <td>Prewedding Cinematic</td>
-                            <td>Rp 5.500.000</td>
-                            <td>Rp 2.000.000 (DP 1)</td>
-                            <td style="color: #ef4444; font-weight: 700;">Rp 3.500.000</td>
-                            <td>H-1 Acara (04 Des)</td>
-                            <td><button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="showToast('Reminder WA Pelunasan terkirim ke klien!')"><i class="fa-brands fa-whatsapp" style="color: #10b981;"></i> Kirim Tagihan WA</button></td>
-                        </tr>
+                    <tbody id="tbody_unpaid_clients">
                     </tbody>
                 </table>
             </div>
@@ -1204,6 +999,102 @@
                 <div style="display: flex; justify-content: flex-end; gap: 12px;">
                     <button class="btn btn-outline" onclick="closeExpenseModal()">Batal</button>
                     <button class="btn btn-primary" onclick="saveExpense()">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Evaluasi Kerja Kantor -->
+    <div class="modal-overlay" id="officeEvalModal" style="display: none; align-items: center; justify-content: center; z-index: 1060;">
+        <div class="modal-content" style="max-width: 600px; width: 95%; max-height: 90vh; overflow-y: auto; background: white; border-radius: 12px; padding: 24px;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                <div>
+                    <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">Catat Penilaian Kerja Kantor</h2>
+                    <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Monitoring Same Day Edit, Fast Edit, Deadline Cetak &amp; Ready to Pick Up</p>
+                </div>
+                <button onclick="closeOfficeEvalModal()" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="oe_id" value="">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Nama Editor</label>
+                        <input type="text" id="oe_editor_name" class="form-control" placeholder="Faris, Bagus, Fauzan...">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Staff Produksi / Cetak</label>
+                        <input type="text" id="oe_prod_staff" class="form-control" placeholder="Angga...">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Tipe Layanan Edit</label>
+                        <select id="oe_service_type" class="form-control">
+                            <option>Same Day Edit</option>
+                            <option>Fast Edit 24 Jam</option>
+                            <option>Fast Edit 3 Hari</option>
+                            <option>Normal</option>
+                            <option>Rush</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Status Ketepatan Waktu</label>
+                        <select id="oe_edit_status" class="form-control">
+                            <option>On Time</option>
+                            <option>Ahead of Schedule</option>
+                            <option>Delayed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Durasi Jam Selesai</label>
+                        <input type="number" step="0.5" id="oe_completion_hours" class="form-control" placeholder="Contoh: 3.5">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Skor Kualitas (1 - 5)</label>
+                        <select id="oe_quality_score" class="form-control">
+                            <option value="5">5 Bintang (Sempurna)</option>
+                            <option value="4">4 Bintang (Bagus)</option>
+                            <option value="3">3 Bintang (Cukup)</option>
+                            <option value="2">2 Bintang (Kurang)</option>
+                            <option value="1">1 Bintang (Revisi Banyak)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Deadline Cetak Album/Box</label>
+                        <input type="date" id="oe_print_deadline" class="form-control">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Tanggal Siap Diambil (Ready)</label>
+                        <input type="date" id="oe_ready_pickup" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Status Cetak &amp; Pengambilan</label>
+                    <select id="oe_print_status" class="form-control">
+                        <option>Ready to Pick Up</option>
+                        <option>On Schedule</option>
+                        <option>In Printing Process</option>
+                        <option>Picked Up by Client</option>
+                        <option>Delayed</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label">Catatan / Evaluasi</label>
+                    <textarea id="oe_notes" class="form-control" rows="2" placeholder="Catatan kualitas render, revisi klien, kelengkapan cetak..."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid #e2e8f0; padding-top: 14px;">
+                    <button type="button" class="btn btn-outline" onclick="closeOfficeEvalModal()">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="saveOfficeEvaluation()"><i class="fa-regular fa-floppy-disk"></i> Simpan Penilaian</button>
                 </div>
             </div>
         </div>
@@ -2002,10 +1893,256 @@
                     if (panel) panel.style.display = 'none';
                 }
             });
+            loadAnalyticsData();
         }
 
         function exportTeamLaporanCsv() {
             window.location.href = '/api/finance/export/excel';
+        }
+
+        async function loadAnalyticsData() {
+            try {
+                let url = '/api/finance/analytics';
+                if (currentFilterStart && currentFilterEnd) {
+                    url += `?start=${currentFilterStart}&end=${currentFilterEnd}`;
+                }
+                const res = await fetch(url);
+                const json = await res.json();
+                if (!json.success || !json.data) return;
+
+                const d = json.data;
+
+                // 1. Team Tab
+                if (d.team) {
+                    if (document.getElementById('stat_team_crew')) document.getElementById('stat_team_crew').innerText = d.team.total_crew + ' Orang';
+                    if (document.getElementById('stat_team_salary')) document.getElementById('stat_team_salary').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(d.team.total_salary);
+                    if (document.getElementById('stat_team_rating')) document.getElementById('stat_team_rating').innerHTML = '<i class="fa-solid fa-star"></i> ' + d.team.avg_rating + ' <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">/ 5.0</span>';
+                    if (document.getElementById('score_client_reviews')) document.getElementById('score_client_reviews').innerText = d.team.avg_rating;
+                    
+                    // Render Crew Table
+                    const tbodyCrews = document.getElementById('tbody_team_crews');
+                    if (tbodyCrews && Array.isArray(d.team.crew_list)) {
+                        tbodyCrews.innerHTML = d.team.crew_list.map(c => `
+                            <tr>
+                                <td><strong>${c.name}</strong></td>
+                                <td><span class="badge" style="background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600;">${c.position || c.division}</span></td>
+                                <td style="text-align: center;"><strong>${c.sessions} Sesi</strong></td>
+                                <td style="text-align: right;">Rp ${new Intl.NumberFormat('id-ID').format(c.base_salary)}</td>
+                                <td style="text-align: right;">Rp ${new Intl.NumberFormat('id-ID').format(c.meal_transport)}</td>
+                                <td style="text-align: right;">Rp ${new Intl.NumberFormat('id-ID').format(c.overtime)}</td>
+                                <td style="text-align: right; color:#10b981; font-weight:600;">Rp ${new Intl.NumberFormat('id-ID').format(c.bonus)}</td>
+                                <td style="text-align: right; font-weight:700;">Rp ${new Intl.NumberFormat('id-ID').format(c.net_salary)}</td>
+                            </tr>
+                        `).join('');
+                    }
+
+                    // Render Office Evaluations Table
+                    const tbodyOffice = document.getElementById('tbody_office_evals');
+                    if (tbodyOffice && Array.isArray(d.team.office_evaluations)) {
+                        if (d.team.office_evaluations.length === 0) {
+                            tbodyOffice.innerHTML = `<tr><td colspan="7" class="empty-row" style="text-align: center; color: var(--text-muted); padding: 16px;">Belum ada data evaluasi kantor. Klik "+ Catat Evaluasi Kantor" untuk menambah.</td></tr>`;
+                        } else {
+                            tbodyOffice.innerHTML = d.team.office_evaluations.map(oe => `
+                                <tr>
+                                    <td><strong>${oe.editor_name || '-'}</strong></td>
+                                    <td>${oe.production_staff_name || '-'}</td>
+                                    <td><span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700; padding:3px 8px; border-radius:6px; font-size:11px;">${oe.fast_edit_type}</span></td>
+                                    <td>${oe.edit_completion_hours ? oe.edit_completion_hours + ' Jam' : '-'}</td>
+                                    <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:600; padding:3px 8px; border-radius:6px; font-size:11px;"><i class="fa-solid fa-check"></i> ${oe.edit_status}</span></td>
+                                    <td><span class="badge" style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:6px; font-size:11px;">${oe.print_status}</span></td>
+                                    <td style="text-align: right;">
+                                        <button class="btn btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="deleteOfficeEval(${oe.id})"><i class="fa-solid fa-trash" style="color: #ef4444;"></i></button>
+                                    </td>
+                                </tr>
+                            `).join('');
+                        }
+                    }
+
+                    // Render Reviews Table
+                    const tbodyRev = document.getElementById('tbody_client_reviews');
+                    if (tbodyRev && Array.isArray(d.team.reviews)) {
+                        if (d.team.reviews.length === 0) {
+                            tbodyRev.innerHTML = `<tr><td colspan="5" class="empty-row" style="text-align: center; color: var(--text-muted); padding: 16px;">Belum ada review klien masuk.</td></tr>`;
+                        } else {
+                            tbodyRev.innerHTML = d.team.reviews.map(r => `
+                                <tr>
+                                    <td><strong>${r.client_name}</strong></td>
+                                    <td>${r.field_crew_names || '-'}</td>
+                                    <td><span style="color:#f59e0b; font-weight:700;"><i class="fa-solid fa-star"></i> ${r.rating_overall}.0</span></td>
+                                    <td style="font-size: 12px; color: #475569;">"${r.review_comment || '-'}"</td>
+                                    <td style="text-align: right;">
+                                        <button class="btn btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="deleteClientReview(${r.id})"><i class="fa-solid fa-trash" style="color: #ef4444;"></i></button>
+                                    </td>
+                                </tr>
+                            `).join('');
+                        }
+                    }
+
+                    // Render Marketing Table
+                    const tbodyMkt = document.getElementById('tbody_team_marketing');
+                    if (tbodyMkt && Array.isArray(d.team.marketing)) {
+                        tbodyMkt.innerHTML = d.team.marketing.map(m => `
+                            <tr>
+                                <td><strong>${m.name}</strong></td>
+                                <td>${m.leads} Leads</td>
+                                <td><strong>${m.closing} Booking</strong></td>
+                                <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700; padding:4px 8px; border-radius:6px;">${m.rate}</span></td>
+                                <td>Rp ${new Intl.NumberFormat('id-ID').format(m.omset)}</td>
+                                <td style="color:#10b981; font-weight:700;">Rp ${new Intl.NumberFormat('id-ID').format(m.commission)}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+
+                // 2. Packages Tab
+                if (d.packages) {
+                    if (d.packages.most_popular && document.getElementById('stat_pkg_most_popular')) {
+                        document.getElementById('stat_pkg_most_popular').innerText = d.packages.most_popular.name;
+                    }
+                    if (d.packages.most_profitable && document.getElementById('stat_pkg_most_profitable')) {
+                        document.getElementById('stat_pkg_most_profitable').innerText = d.packages.most_profitable.name;
+                    }
+                    if (d.packages.least_popular && document.getElementById('stat_pkg_least_popular')) {
+                        document.getElementById('stat_pkg_least_popular').innerText = d.packages.least_popular.name;
+                    }
+
+                    // Render Packages List
+                    const tbodyPkgs = document.getElementById('tbody_packages_list');
+                    if (tbodyPkgs && Array.isArray(d.packages.list)) {
+                        tbodyPkgs.innerHTML = d.packages.list.map(p => `
+                            <tr>
+                                <td><strong>${p.name}</strong></td>
+                                <td>${p.category}</td>
+                                <td>Rp ${new Intl.NumberFormat('id-ID').format(p.price)}</td>
+                                <td style="text-align: center;"><strong>${p.sold}</strong></td>
+                                <td>Rp ${new Intl.NumberFormat('id-ID').format(p.omset)}</td>
+                                <td>Rp ${new Intl.NumberFormat('id-ID').format(p.hpp)}</td>
+                                <td style="color:#10b981; font-weight:700;">Rp ${new Intl.NumberFormat('id-ID').format(p.profit)}</td>
+                                <td><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">${p.margin}%</span></td>
+                                <td><span style="font-size: 11px; color:#15803d;"><i class="fa-solid fa-circle-check"></i> ${p.margin > 60 ? 'Margin Sehat' : 'Evaluasi Biaya'}</span></td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+
+                // 3. Operations Tab
+                if (d.operations) {
+                    if (document.getElementById('stat_unpaid_receivables')) {
+                        document.getElementById('stat_unpaid_receivables').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(d.operations.total_receivables);
+                    }
+
+                    // Render Unpaid Clients
+                    const tbodyUnpaid = document.getElementById('tbody_unpaid_clients');
+                    if (tbodyUnpaid && Array.isArray(d.operations.unpaid_clients)) {
+                        tbodyUnpaid.innerHTML = d.operations.unpaid_clients.map(u => `
+                            <tr>
+                                <td><strong>${u.client_name}</strong></td>
+                                <td>${u.event_date}</td>
+                                <td>${u.package_name}</td>
+                                <td>Rp ${new Intl.NumberFormat('id-ID').format(u.package_price)}</td>
+                                <td>Rp ${new Intl.NumberFormat('id-ID').format(u.paid_amount)}</td>
+                                <td style="color: #ef4444; font-weight: 700;">Rp ${new Intl.NumberFormat('id-ID').format(u.remaining)}</td>
+                                <td>H-1 Acara</td>
+                                <td><button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="window.open('https://wa.me/${u.client_phone ? u.client_phone.replace(/[^0-9]/g, '') : ''}?text=Halo%20${encodeURIComponent(u.client_name)}%2C%20ini%20reminder%20pelunasan%20sisa%20tagihan%20booking%20sebesar%20Rp%20${new Intl.NumberFormat('id-ID').format(u.remaining)}%20ya.')"><i class="fa-brands fa-whatsapp" style="color: #10b981;"></i> Kirim Tagihan WA</button></td>
+                            </tr>
+                        `).join('');
+                    }
+
+                    // Render Lead Sources
+                    const tbodyLeads = document.getElementById('tbody_lead_sources');
+                    if (tbodyLeads && Array.isArray(d.operations.lead_sources)) {
+                        tbodyLeads.innerHTML = d.operations.lead_sources.map(ls => `
+                            <tr>
+                                <td><strong>${ls.channel}</strong></td>
+                                <td style="text-align: center;">${ls.leads}</td>
+                                <td style="text-align: center;"><span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">${ls.closing}</span></td>
+                                <td style="color:#10b981; font-weight:700;">Rp ${new Intl.NumberFormat('id-ID').format(ls.revenue)}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+
+            } catch (e) {
+                console.error("Gagal load analytics data:", e);
+            }
+        }
+
+        function openOfficeEvalModal() {
+            document.getElementById('oe_id').value = '';
+            document.getElementById('oe_editor_name').value = '';
+            document.getElementById('oe_prod_staff').value = '';
+            document.getElementById('oe_completion_hours').value = '';
+            document.getElementById('oe_print_deadline').value = '';
+            document.getElementById('oe_ready_pickup').value = '';
+            document.getElementById('oe_notes').value = '';
+            document.getElementById('officeEvalModal').style.display = 'flex';
+        }
+
+        function closeOfficeEvalModal() {
+            document.getElementById('officeEvalModal').style.display = 'none';
+        }
+
+        async function saveOfficeEvaluation() {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const data = {
+                id: document.getElementById('oe_id').value || null,
+                editor_name: document.getElementById('oe_editor_name').value,
+                production_staff_name: document.getElementById('oe_prod_staff').value,
+                fast_edit_type: document.getElementById('oe_service_type').value,
+                edit_status: document.getElementById('oe_edit_status').value,
+                edit_completion_hours: document.getElementById('oe_completion_hours').value,
+                quality_score: document.getElementById('oe_quality_score').value,
+                print_deadline_date: document.getElementById('oe_print_deadline').value,
+                ready_to_pickup_date: document.getElementById('oe_ready_pickup').value,
+                print_status: document.getElementById('oe_print_status').value,
+                office_notes: document.getElementById('oe_notes').value,
+            };
+
+            const res = await fetch('/api/office-evaluations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify(data)
+            });
+
+            const json = await res.json();
+            if (json.success) {
+                showToast('Penilaian kinerja office berhasil disimpan!', 'success');
+                closeOfficeEvalModal();
+                loadAnalyticsData();
+            } else {
+                alert('Gagal menyimpan penilaian');
+            }
+        }
+
+        async function deleteOfficeEval(id) {
+            if (!confirm('Yakin ingin menghapus data evaluasi ini?')) return;
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const res = await fetch('/api/office-evaluations/' + id, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': csrfToken }
+            });
+            const json = await res.json();
+            if (json.success) {
+                showToast('Data evaluasi berhasil dihapus', 'success');
+                loadAnalyticsData();
+            }
+        }
+
+        async function deleteClientReview(id) {
+            if (!confirm('Yakin ingin menghapus ulasan klien ini?')) return;
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const res = await fetch('/api/reviews/' + id, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': csrfToken }
+            });
+            const json = await res.json();
+            if (json.success) {
+                showToast('Ulasan klien berhasil dihapus', 'success');
+                loadAnalyticsData();
+            }
         }
 
         function calculateFinance() {
@@ -2819,6 +2956,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             fetchBookingsFinance();
             fetchExpensesFinance();
+            loadAnalyticsData();
             setFilter('Bulan Ini', document.querySelector('.filter-tab.active'));
             
             fpInstance = flatpickr("#btn_custom_range_wrapper", {

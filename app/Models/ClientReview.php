@@ -40,3 +40,4 @@ class ClientReview extends Model
         return $this->belongsTo(Booking::class, 'booking_id');
     }
 }
+

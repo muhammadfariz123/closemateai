@@ -129,4 +129,24 @@ class ClientReviewController extends Controller
             'Content-Disposition' => 'attachment; filename="laporan-penilaian-klien-' . date('Y-m-d') . '.csv"',
         ]);
     }
+
+    /**
+     * Delete review
+     */
+    public function deleteReview($id)
+    {
+        $user = Auth::user();
+        $ownerId = $user ? $user->getEffectiveOwnerId() : 1;
+
+        $review = ClientReview::where(function($q) use ($ownerId) {
+            $q->where('user_id', $ownerId)->orWhereNull('user_id');
+        })->find($id) ?: ClientReview::findOrFail($id);
+        $review->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ulasan berhasil dihapus',
+        ]);
+    }
 }
+

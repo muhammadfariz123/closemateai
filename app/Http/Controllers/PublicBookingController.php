@@ -103,17 +103,19 @@ class PublicBookingController extends Controller
             'user_id' => $owner ? $owner->id : 1,
             'uuid' => $uuid,
             'client_name' => $validated['client_name'],
-            'client_phone' => $validated['client_phone'],
+            'client_wa_number' => $validated['client_phone'],
             'client_email' => $request->input('client_email'),
-            'location' => $request->input('location', 'Studio Foto Utama'),
+            'client_address' => $request->input('location', 'Studio Foto Utama'),
             'package_name' => $validated['package_name'],
             'package_price' => $pkgPrice,
+            'package_qty' => 1,
             'add_on_items' => is_array($selectedAddons) ? json_encode($selectedAddons) : $selectedAddons,
             'add_on_amount' => $addonTotal,
             'total_income' => $totalPrice,
+            'paid_amount' => 0,
             'event_date' => $validated['event_date'],
-            'event_time' => $request->input('event_time', '10:00'),
-            'status' => 'Pending',
+            'start_time' => $request->input('event_time', '10:00'),
+            'production_status' => 'Pre-Event',
             'payment_status' => 'Belum DP',
             'lead_source' => 'Website Link Form',
             'notes' => $request->input('notes'),
@@ -138,3 +140,4 @@ class PublicBookingController extends Controller
         ]);
     }
 }
+

@@ -60,10 +60,13 @@ Route::middleware('auth')->group(function () {
 
     // Client Reviews & Office Evaluations APIs
     Route::get('/api/reviews', [\App\Http\Controllers\ClientReviewController::class, 'getReviews']);
+    Route::delete('/api/reviews/{id}', [\App\Http\Controllers\ClientReviewController::class, 'deleteReview']);
     Route::get('/api/reviews/export/csv', [\App\Http\Controllers\ClientReviewController::class, 'exportCsv']);
     Route::get('/api/office-evaluations', [\App\Http\Controllers\OfficeEvaluationController::class, 'getEvaluations']);
     Route::post('/api/office-evaluations', [\App\Http\Controllers\OfficeEvaluationController::class, 'storeEvaluation']);
+    Route::delete('/api/office-evaluations/{id}', [\App\Http\Controllers\OfficeEvaluationController::class, 'deleteEvaluation']);
     Route::get('/api/office-evaluations/export/csv', [\App\Http\Controllers\OfficeEvaluationController::class, 'exportCsv']);
+    Route::get('/api/finance/analytics', [\App\Http\Controllers\FinanceController::class, 'getAnalytics']);
 
     Route::get('/api/activities', [SystemActivityController::class, 'getActivities']);
     Route::post('/api/activities', [SystemActivityController::class, 'addActivity']);

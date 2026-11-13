@@ -17,6 +17,10 @@ class FinancialReportSeederService
         self::seedOtherExpenses($userId);
         self::seedAlbums($userId);
         self::seedBookings($userId);
+        self::seedHrisEmployees($userId);
+        self::seedClientReviews($userId);
+        self::seedOfficeEvaluations($userId);
+        self::enrichBookings($userId);
     }
 
     public static function seedMasterSalaries($userId)
@@ -674,6 +678,160 @@ class FinancialReportSeederService
                 'extras_detail' => $b['extras'],
                 'payment_status' => 'Lunas',
                 'production_status' => 'Ready to Pick Up',
+            ]);
+        }
+    }
+
+    public static function seedHrisEmployees($userId)
+    {
+        if (\App\Models\HrisEmployee::where('user_id', $userId)->count() === 0) {
+            $employees = [
+                ['employee_code' => 'EMP-001', 'name' => 'Danu', 'email' => 'danu@penapict.com', 'phone' => '081234567801', 'division' => 'Marketing & Production', 'position' => 'Marketing & Photographer', 'role' => 'marketing', 'base_salary' => 2500000, 'allowance' => 700000, 'status' => 'active'],
+                ['employee_code' => 'EMP-002', 'name' => 'Dika', 'email' => 'dika@penapict.com', 'phone' => '081234567802', 'division' => 'Fotografi', 'position' => 'Lead Photographer', 'role' => 'photographer', 'base_salary' => 2800000, 'allowance' => 900000, 'status' => 'active'],
+                ['employee_code' => 'EMP-003', 'name' => 'Arya', 'email' => 'arya@penapict.com', 'phone' => '081234567803', 'division' => 'Videografi', 'position' => 'Videographer & Cinema', 'role' => 'videographer', 'base_salary' => 2700000, 'allowance' => 800000, 'status' => 'active'],
+                ['employee_code' => 'EMP-004', 'name' => 'Faris', 'email' => 'faris@penapict.com', 'phone' => '081234567804', 'division' => 'Editing', 'position' => 'Senior Editor (SDE & Fast Edit)', 'role' => 'editor', 'base_salary' => 3000000, 'allowance' => 500000, 'status' => 'active'],
+                ['employee_code' => 'EMP-005', 'name' => 'Bagus', 'email' => 'bagus@penapict.com', 'phone' => '081234567805', 'division' => 'Editing', 'position' => 'Photo Editor & Colorist', 'role' => 'editor', 'base_salary' => 2600000, 'allowance' => 450000, 'status' => 'active'],
+                ['employee_code' => 'EMP-006', 'name' => 'Angga', 'email' => 'angga@penapict.com', 'phone' => '081234567806', 'division' => 'Cetak & Lab', 'position' => 'Printing & Album Specialist', 'role' => 'production', 'base_salary' => 2400000, 'allowance' => 400000, 'status' => 'active'],
+                ['employee_code' => 'EMP-007', 'name' => 'Fauzan', 'email' => 'fauzan@penapict.com', 'phone' => '081234567807', 'division' => 'Fotografi', 'position' => 'Photographer', 'role' => 'photographer', 'base_salary' => 2500000, 'allowance' => 600000, 'status' => 'active'],
+                ['employee_code' => 'EMP-008', 'name' => 'Nanang', 'email' => 'nanang@penapict.com', 'phone' => '081234567808', 'division' => 'Operasional', 'position' => 'SPV CS & Operations', 'role' => 'admin_cs', 'base_salary' => 2500000, 'allowance' => 500000, 'status' => 'active'],
+                ['employee_code' => 'EMP-009', 'name' => 'Bella', 'email' => 'bella@penapict.com', 'phone' => '081234567809', 'division' => 'Customer Service', 'position' => 'Admin CS WhatsApp', 'role' => 'admin_cs', 'base_salary' => 2200000, 'allowance' => 400000, 'status' => 'active'],
+            ];
+            foreach ($employees as $emp) {
+                \App\Models\HrisEmployee::create(array_merge($emp, ['user_id' => $userId]));
+            }
+        }
+    }
+
+    public static function seedClientReviews($userId)
+    {
+        if (\App\Models\ClientReview::where('user_id', $userId)->count() === 0) {
+            $sampleReviews = [
+                [
+                    'client_name' => 'Nadia Putri & Dimas',
+                    'client_phone' => '081299887711',
+                    'field_crew_names' => 'Dika & Arya',
+                    'rating_field_crew' => 5,
+                    'rating_punctuality' => 5,
+                    'rating_hospitality' => 5,
+                    'rating_overall' => 5,
+                    'positive_tags' => json_encode(['Ramah & Sabar', 'Hasil Foto Keren', 'Arahan Gaya Bagus', 'Tepat Waktu']),
+                    'review_comment' => 'Mas Dika sabar banget ngarahin gaya keluarga besar. Hasil videonya Mas Arya waktu akad haru banget!',
+                ],
+                [
+                    'client_name' => 'Rizal Mahendra',
+                    'client_phone' => '085712345678',
+                    'field_crew_names' => 'Danu & Fauzan',
+                    'rating_field_crew' => 5,
+                    'rating_punctuality' => 5,
+                    'rating_hospitality' => 5,
+                    'rating_overall' => 5,
+                    'positive_tags' => json_encode(['Ramah & Sabar', 'Komunikasi Cepat', 'Profesional']),
+                    'review_comment' => 'Pelayanan sangat ramah, komunikasi cepat dari awal konsultasi sampai hari H sangat memuaskan.',
+                ],
+                [
+                    'client_name' => 'Clara Oktaviani',
+                    'client_phone' => '087811223344',
+                    'field_crew_names' => 'Faris & Bagus',
+                    'rating_field_crew' => 5,
+                    'rating_punctuality' => 4,
+                    'rating_hospitality' => 5,
+                    'rating_overall' => 5,
+                    'positive_tags' => json_encode(['Hasil Foto Keren', 'Editing Aesthetic', 'Fast Response']),
+                    'review_comment' => 'Editing fotonya clean dan tone warnanya aesthetic sesuai request. Sangat puas dengan hasilnya!',
+                ],
+                [
+                    'client_name' => 'Sarah & Dimas',
+                    'client_phone' => '081344556677',
+                    'field_crew_names' => 'Dika & Arya',
+                    'rating_field_crew' => 5,
+                    'rating_punctuality' => 5,
+                    'rating_hospitality' => 5,
+                    'rating_overall' => 5,
+                    'positive_tags' => json_encode(['Same Day Edit Keren', 'Tepat Waktu', 'Ramah & Sabar']),
+                    'review_comment' => 'Same Day Edit selesai sebelum resepsi selesai, tamu undangan terpukau semua. Mantap tim Penapict!',
+                ],
+            ];
+            foreach ($sampleReviews as $rev) {
+                \App\Models\ClientReview::create(array_merge($rev, ['user_id' => $userId]));
+            }
+        }
+    }
+
+    public static function seedOfficeEvaluations($userId)
+    {
+        if (\App\Models\OfficeWorkEvaluation::where('user_id', $userId)->count() === 0) {
+            $sampleEvals = [
+                [
+                    'editor_name' => 'Faris',
+                    'production_staff_name' => 'Angga',
+                    'fast_edit_type' => 'Same Day Edit',
+                    'edit_status' => 'Ahead of Schedule',
+                    'edit_completion_hours' => 3.5,
+                    'print_deadline_date' => date('Y-m-d', strtotime('+3 days')),
+                    'ready_to_pickup_date' => date('Y-m-d', strtotime('+3 days')),
+                    'print_status' => 'Ready to Pick Up',
+                    'quality_score' => 5,
+                    'office_notes' => 'Selesai 35 menit lebih cepat dari deadline resepsi. Kualitas video 4K jernih.',
+                ],
+                [
+                    'editor_name' => 'Bagus',
+                    'production_staff_name' => 'Angga',
+                    'fast_edit_type' => 'Fast Edit 24 Jam',
+                    'edit_status' => 'On Time',
+                    'edit_completion_hours' => 18.0,
+                    'print_deadline_date' => date('Y-m-d', strtotime('+5 days')),
+                    'ready_to_pickup_date' => date('Y-m-d', strtotime('+5 days')),
+                    'print_status' => 'Ready to Pick Up',
+                    'quality_score' => 5,
+                    'office_notes' => 'Fast edit foto prewedding selesai tepat waktu. Cetak album leatherette 20x30 sudah rapi.',
+                ],
+                [
+                    'editor_name' => 'Fauzan',
+                    'production_staff_name' => 'Angga',
+                    'fast_edit_type' => 'Normal',
+                    'edit_status' => 'On Time',
+                    'edit_completion_hours' => 48.0,
+                    'print_deadline_date' => date('Y-m-d', strtotime('+7 days')),
+                    'ready_to_pickup_date' => null,
+                    'print_status' => 'On Schedule',
+                    'quality_score' => 4,
+                    'office_notes' => 'Dalam proses cetak box kayu dan flashdisk eksklusif.',
+                ],
+            ];
+            foreach ($sampleEvals as $ev) {
+                \App\Models\OfficeWorkEvaluation::create(array_merge($ev, ['user_id' => $userId]));
+            }
+        }
+    }
+
+    public static function enrichBookings($userId)
+    {
+        $sources = ['Instagram Ads', 'TikTok Organic', 'Rekomendasi Teman', 'Google Maps / Search', 'Walk-in Studio'];
+        $addonsPool = [
+            'Drone Aerial 4K (+Rp 1.200.000)',
+            'Cetak Canvas Jumbo 60x90 (+Rp 750.000)',
+            'Extra Kru Fotografer (+Rp 800.000)',
+            'Photobooth Unlimited 3 Jam (+Rp 2.500.000)',
+            'Exclusive Leatherette Album (+Rp 450.000)',
+        ];
+
+        $bookings = \App\Models\Booking::where('user_id', $userId)->whereNull('lead_source')->get();
+        foreach ($bookings as $i => $b) {
+            $src = $sources[$i % count($sources)];
+            $price = (float) $b->package_price;
+            $hpp = (float) ($b->total_operational_cost ?: ($price * 0.35));
+            $profit = max(0, $price - $hpp);
+            
+            $addon = ($i % 3 === 0) ? $addonsPool[$i % count($addonsPool)] : null;
+            $addonAmt = $addon ? 750000 : 0;
+
+            $b->update([
+                'lead_source' => $src,
+                'marketing_name' => $b->marketing_name ?: ($i % 2 === 0 ? 'Danu' : 'Admin CS'),
+                'hpp_amount' => $hpp,
+                'profit_amount' => $profit,
+                'add_on_items' => $addon,
+                'add_on_amount' => $addonAmt,
             ]);
         }
     }

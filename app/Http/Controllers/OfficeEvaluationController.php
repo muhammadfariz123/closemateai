@@ -108,4 +108,24 @@ class OfficeEvaluationController extends Controller
             'Content-Disposition' => 'attachment; filename="laporan-kinerja-office-' . date('Y-m-d') . '.csv"',
         ]);
     }
+
+    /**
+     * Delete evaluation
+     */
+    public function deleteEvaluation($id)
+    {
+        $user = Auth::user();
+        $ownerId = $user ? $user->getEffectiveOwnerId() : 1;
+
+        $eval = OfficeWorkEvaluation::where(function($q) use ($ownerId) {
+            $q->where('user_id', $ownerId)->orWhereNull('user_id');
+        })->find($id) ?: OfficeWorkEvaluation::findOrFail($id);
+        $eval->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data evaluasi kerja kantor berhasil dihapus',
+        ]);
+    }
 }
+
