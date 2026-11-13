@@ -7,6 +7,7 @@
     <title>Manajemen Tim - CloseMateAI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    @include('components.theme-styles')
     <style>
         :root {
             --sidebar-bg: #1e1e2d;
@@ -65,7 +66,7 @@
         .profile-wrapper { position: relative; cursor: pointer; }
         .user-profile { display: flex; align-items: center; gap: 10px; padding: 4px 10px; border-radius: 30px; transition: background-color 0.2s; }
         .user-profile:hover { background-color: rgba(108, 92, 231, 0.06); }
-        .avatar { width: 34px; height: 34px; background-color: #6c5ce7; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
+        .avatar { width: 34px; height: 34px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
         .user-info h4 { font-size: 13px; font-weight: 600; color: #181c32; display: flex; align-items: center; gap: 4px; }
         .user-info p { font-size: 11px; color: #94a3b8; }
 
@@ -108,7 +109,7 @@
             color: #64748b;
         }
         .btn-invite {
-            background-color: #6c5ce7;
+            background-color: var(--primary);
             color: white;
             border: none;
             border-radius: 10px;
@@ -122,18 +123,18 @@
             transition: 0.15s;
         }
         .btn-invite:hover {
-            background-color: #5a4ad1;
+            filter: brightness(0.92);
         }
         .progress-track {
             height: 8px;
-            background: #ede9fe;
+            background: var(--sidebar-active-bg);
             border-radius: 999px;
             overflow: hidden;
             margin-bottom: 8px;
         }
         .progress-fill {
             height: 100%;
-            background: #6c5ce7;
+            background: var(--primary);
             border-radius: 999px;
             transition: width 0.3s ease;
         }
@@ -212,7 +213,7 @@
             flex-shrink: 0;
         }
         .avatar-owner {
-            background: #6c5ce7;
+            background: var(--primary);
             color: white;
         }
         .avatar-admin-cs {
@@ -420,7 +421,7 @@
             transition: border-color 0.15s;
         }
         .form-control:focus {
-            border-color: #6c5ce7;
+            border-color: var(--primary);
         }
 
         /* Toast */
@@ -647,10 +648,10 @@
                                 <span style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
                                     <span>⏳</span> Menunggu Konfirmasi
                                 </span>
-                                <button type="button" onclick="resendInvite({{ $p->id }}, this)" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='#6c5ce7'; this.style.color='#6c5ce7'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
+                                <button type="button" onclick="resendInvite({{ $p->id }}, this)" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
                                     <i class="fa-regular fa-paper-plane" style="font-size: 12px;"></i> Kirim Ulang Email
                                 </button>
-                                <button type="button" onclick="sendResetPassword({{ $p->id }}, this)" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='#6c5ce7'; this.style.color='#6c5ce7'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
+                                <button type="button" onclick="sendResetPassword({{ $p->id }}, this)" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
                                     <i class="fa-solid fa-key" style="font-size: 12px;"></i> Kirim Reset Password
                                 </button>
                                 <button type="button" onclick="deleteTeamMember({{ $p->id }})" style="background: none; border: none; color: #ef4444; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 6px 8px;">
@@ -1193,10 +1194,10 @@
                                     <span style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
                                         <span>⏳</span> Menunggu Konfirmasi
                                     </span>
-                                    <button type="button" onclick="resendInvite(${p.id}, this)" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='#6c5ce7'; this.style.color='#6c5ce7'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
+                                    <button type="button" onclick="resendInvite(${p.id}, this)" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
                                         <i class="fa-regular fa-paper-plane" style="font-size: 12px;"></i> Kirim Ulang Email
                                     </button>
-                                    <button type="button" onclick="sendResetPassword(${p.id}, this)" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='#6c5ce7'; this.style.color='#6c5ce7'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
+                                    <button type="button" onclick="sendResetPassword(${p.id}, this)" style="background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#1e293b'">
                                         <i class="fa-solid fa-key" style="font-size: 12px;"></i> Kirim Reset Password
                                     </button>
                                     <button type="button" onclick="deleteTeamMember(${p.id})" style="background: none; border: none; color: #ef4444; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 6px 8px;">

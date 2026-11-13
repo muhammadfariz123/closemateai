@@ -7,14 +7,15 @@
     <title>Settings & Profile - CloseMateAI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    @include('components.theme-styles')
     <style>
         :root {
             --sidebar-bg: #1e1e2d;
             --sidebar-text: #cbd5e1;
-            --sidebar-active-bg: rgba(107, 92, 216, 0.2);
-            --sidebar-active-text: #6b5cd8;
-            --primary: #6b5cd8;
-            --primary-hover: #5a4bcf;
+            --sidebar-active-bg: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }}26;
+            --sidebar-active-text: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
+            --primary: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
+            --primary-hover: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
             --bg-light: #f8f9fa;
             --card-bg: #ffffff;
             --border-color: #f1f1f4;
@@ -812,23 +813,36 @@
                 });
             });
 
+            function applyLiveTheme(hex) {
+                if (!hex) return;
+                document.documentElement.style.setProperty('--primary', hex);
+                document.documentElement.style.setProperty('--primary-color', hex);
+                document.documentElement.style.setProperty('--primary-hover', hex);
+                document.documentElement.style.setProperty('--sidebar-active-bg', hex + '26');
+                document.documentElement.style.setProperty('--sidebar-active-text', hex);
+                document.documentElement.style.setProperty('--primary-15', hex + '26');
+                document.documentElement.style.setProperty('--primary-10', hex + '1a');
+                document.documentElement.style.setProperty('--primary-light', hex + '14');
+                document.documentElement.style.setProperty('--primary-focus-shadow', hex + '33');
+            }
+
             window.setPresetColor = function(hex) {
                 $('#theme_color_picker').val(hex);
                 $('#theme_color_text').val(hex);
-                document.documentElement.style.setProperty('--primary', hex);
+                applyLiveTheme(hex);
             };
 
             $('#theme_color_picker').on('input', function() {
                 let hex = $(this).val();
                 $('#theme_color_text').val(hex);
-                document.documentElement.style.setProperty('--primary', hex);
+                applyLiveTheme(hex);
             });
 
             $('#theme_color_text').on('input', function() {
                 let hex = $(this).val();
                 if (hex.startsWith('#') && (hex.length === 4 || hex.length === 7)) {
                     $('#theme_color_picker').val(hex);
-                    document.documentElement.style.setProperty('--primary', hex);
+                    applyLiveTheme(hex);
                 }
             });
 
@@ -841,7 +855,7 @@
                 $.post('/settings/theme-color', { theme_color: color }, function(res) {
                     btn.html(orig).prop('disabled', false);
                     if (res.success) {
-                        document.documentElement.style.setProperty('--primary', color);
+                        applyLiveTheme(color);
                         $('#toast-message').html('<i class="fa-solid fa-check-circle" style="color:var(--success);"></i> Warna tema berhasil disimpan!');
                         $('#toast-box').css('display', 'flex').hide().fadeIn().delay(3000).fadeOut();
                     }

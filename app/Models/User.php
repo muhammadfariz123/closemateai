@@ -105,7 +105,14 @@ class User extends Authenticatable
 
     public function getThemeColor(): string
     {
-        return $this->theme_color ?: '#4472c4';
+        if ($this->theme_color) {
+            return $this->theme_color;
+        }
+        $owner = $this->getEffectiveOwner();
+        if ($owner && $owner->id !== $this->id && $owner->theme_color) {
+            return $owner->theme_color;
+        }
+        return '#4472c4';
     }
 
     public function getAttribute($key)

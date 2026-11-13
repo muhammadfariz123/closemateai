@@ -10,13 +10,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    @include('components.theme-styles')
     <style>
         :root {
             --sidebar-bg: #1e1e2d;
             --sidebar-text: #cbd5e1;
-            --sidebar-active-bg: rgba(107, 92, 216, 0.2);
-            --sidebar-active-text: #6b5cd8;
-            --primary: #6b5cd8;
+            --sidebar-active-bg: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }}26;
+            --sidebar-active-text: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
+            --primary: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
             --bg-light: #f8f9fa;
             --card-bg: #ffffff;
             --border-color: #f1f1f4;

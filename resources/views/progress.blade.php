@@ -6,10 +6,11 @@
     <title>Progres Produksi - {{ $booking->client_name }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    @include('components.theme-styles')
     <style>
         :root {
-            --primary: #7C3AED;
-            --primary-light: #DDD6FE;
+            --primary: {{ (isset($booking) && $booking->user) ? $booking->user->getThemeColor() : (auth()->check() ? auth()->user()->getThemeColor() : '#4472c4') }};
+            --primary-light: {{ (isset($booking) && $booking->user) ? $booking->user->getThemeColor() : (auth()->check() ? auth()->user()->getThemeColor() : '#4472c4') }}26;
             --bg-color: #f3f4f6;
             --text-dark: #111827;
             --text-muted: #6b7280;

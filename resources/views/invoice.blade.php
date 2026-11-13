@@ -10,13 +10,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    @include('components.theme-styles')
     <style>
         :root {
             --sidebar-bg: #1e1e2d;
             --sidebar-text: #cbd5e1;
-            --sidebar-active-bg: rgba(107, 92, 216, 0.2);
-            --sidebar-active-text: #6b5cd8;
-            --primary: #6b5cd8;
+            --sidebar-active-bg: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }}26;
+            --sidebar-active-text: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
+            --primary: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
             --bg-light: #f8f9fa;
             --card-bg: #ffffff;
             --border-color: #e1e1e4;
@@ -879,9 +880,9 @@
             border-color: #cbd5e1;
         }
         .date-filter-btn.active {
-            background: #6b5cd8 !important;
+            background: var(--primary) !important;
             color: white !important;
-            border-color: #6b5cd8 !important;
+            border-color: var(--primary) !important;
             font-weight: 600;
         }
         .cal-day-btn {
@@ -906,7 +907,7 @@
             visibility: hidden;
         }
         .cal-day-btn.range-endpoint {
-            background: #6b5cd8 !important;
+            background: var(--primary) !important;
             color: white !important;
             font-weight: 600;
         }
@@ -1214,7 +1215,7 @@
                             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
                                 <h5 style="margin: 0; font-size: 14px; font-weight: 600; color: #181c32;">DP Sebelumnya</h5>
                                 <div style="display: flex; gap: 8px;">
-                                    <button type="button" id="btnPelunasanAuto" onclick="setPelunasanMode('auto')" style="font-size: 12px; padding: 6px 14px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: 0.15s; background: #6c5ce7; color: #fff; border: 1px solid #6c5ce7;">Hitung Ulang Otomatis</button>
+                                    <button type="button" id="btnPelunasanAuto" onclick="setPelunasanMode('auto')" style="font-size: 12px; padding: 6px 14px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: 0.15s; background: var(--primary); color: #fff; border: 1px solid var(--primary);">Hitung Ulang Otomatis</button>
                                     <button type="button" id="btnPelunasanManual" onclick="setPelunasanMode('manual')" style="font-size: 12px; padding: 6px 14px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: 0.15s; background: #fff; color: #555; border: 1px solid #dcdcdc;">Isi Manual</button>
                                 </div>
                             </div>
@@ -1599,7 +1600,7 @@
                                     <div id="customRangeFooterDisplay" style="font-size: 13px; font-weight: 500; color: #475569;">13 September 2026 – 12 Oktober 2026</div>
                                     <div style="display: flex; gap: 10px; align-items: center;">
                                         <button type="button" id="btnCalReset" onclick="resetCustomRangeCalendar()" style="background: none; border: none; color: #64748b; font-size: 13px; font-weight: 500; cursor: pointer; padding: 6px 12px;">Reset</button>
-                                        <button type="button" id="btnCalApply" onclick="applyCustomRangeCalendar()" style="background: #6b5cd8; border: none; color: white; font-size: 13px; font-weight: 600; cursor: pointer; padding: 8px 20px; border-radius: 8px;">Terapkan</button>
+                                        <button type="button" id="btnCalApply" onclick="applyCustomRangeCalendar()" style="background: var(--primary); border: none; color: white; font-size: 13px; font-weight: 600; cursor: pointer; padding: 8px 20px; border-radius: 8px;">Terapkan</button>
                                     </div>
                                 </div>
                             </div>
@@ -1614,7 +1615,7 @@
 
             <!-- Status Filter Pills -->
             <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-                <button type="button" class="status-filter-pill active" onclick="setFilterStatus('all', this)" style="padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; background: #6c5ce7; color: white; transition: 0.2s;">Semua</button>
+                <button type="button" class="status-filter-pill active" onclick="setFilterStatus('all', this)" style="padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; background: var(--primary); color: white; transition: 0.2s;">Semua</button>
                 <button type="button" class="status-filter-pill" onclick="setFilterStatus('Belum Dibayar', this)" style="padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1px solid var(--border-color); cursor: pointer; background: white; color: #555; transition: 0.2s;">Belum Dibayar</button>
                 <button type="button" class="status-filter-pill" onclick="setFilterStatus('Terbayar Sebagian', this)" style="padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1px solid var(--border-color); cursor: pointer; background: white; color: #555; transition: 0.2s;">Terbayar Sebagian</button>
                 <button type="button" class="status-filter-pill" onclick="setFilterStatus('Lunas', this)" style="padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1px solid var(--border-color); cursor: pointer; background: white; color: #555; transition: 0.2s;">Lunas</button>
@@ -2631,15 +2632,16 @@ Terima kasih banyak! 🤍`;
             const autoNote = document.getElementById('pelunasanAutoNote');
 
             if (mode === 'manual') {
+                const dynTheme = window.getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#4472c4';
                 if (btnAuto) {
                     btnAuto.style.background = '#fff';
                     btnAuto.style.color = '#555';
                     btnAuto.style.border = '1px solid #dcdcdc';
                 }
                 if (btnManual) {
-                    btnManual.style.background = '#6c5ce7';
+                    btnManual.style.background = dynTheme;
                     btnManual.style.color = '#fff';
-                    btnManual.style.border = '1px solid #6c5ce7';
+                    btnManual.style.border = `1px solid ${dynTheme}`;
                 }
                 if (manualGroup) manualGroup.style.display = 'block';
                 if (autoNote) autoNote.style.display = 'none';
@@ -2652,10 +2654,11 @@ Terima kasih banyak! 🤍`;
                     manualInput.value = 'Rp ' + formatRupiah(initVal);
                 }
             } else {
+                const dynTheme = window.getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#4472c4';
                 if (btnAuto) {
-                    btnAuto.style.background = '#6c5ce7';
+                    btnAuto.style.background = dynTheme;
                     btnAuto.style.color = '#fff';
-                    btnAuto.style.border = '1px solid #6c5ce7';
+                    btnAuto.style.border = `1px solid ${dynTheme}`;
                 }
                 if (btnManual) {
                     btnManual.style.background = '#fff';
@@ -3312,7 +3315,8 @@ Terima kasih banyak! 🤍`;
                 b.style.fontWeight = '500';
                 b.style.border = '1px solid var(--border-color)';
             });
-            btn.style.background = '#6c5ce7';
+            const dynTheme = window.getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#4472c4';
+            btn.style.background = dynTheme;
             btn.style.color = 'white';
             btn.style.fontWeight = '600';
             btn.style.border = 'none';
@@ -4475,7 +4479,7 @@ Terima kasih banyak! 🤍`;
             list.forEach(b => {
                 const bDateClean = cleanDateOnly(b.event_date);
                 html += `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: 0.15s;" onmouseover="this.style.borderColor='#6c5ce7'" onmouseout="this.style.borderColor='#e2e8f0'" onclick="pilihBooking('${b.id}')">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: 0.15s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#e2e8f0'" onclick="pilihBooking('${b.id}')">
                     <div>
                         <div style="font-weight: 600; font-size: 14px; color: #181c32;">${b.client_name || '-'}</div>
                         <div style="font-size: 12px; color: #888;">${b.booking_code || ''} &bull; ${bDateClean || '-'}</div>

@@ -172,6 +172,11 @@ class SettingsController extends Controller
         $owner->theme_color = $color;
         $owner->save();
 
+        if ($user->id !== $owner->id) {
+            $user->theme_color = $color;
+            $user->save();
+        }
+
         \App\Models\HrisSetting::where('user_id', $owner->id)->update(['theme_color' => $color]);
 
         return response()->json(['success' => true, 'theme_color' => $color, 'message' => 'Warna tema aplikasi berhasil diperbarui!']);

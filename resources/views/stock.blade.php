@@ -7,6 +7,7 @@
     <title>{{ $isProduction ? 'Dashboard Produksi & Stok' : 'Stock Opname & Inventaris' }} - CloseMateAI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    @include('components.theme-styles')
     <style>
         :root {
             --sidebar-bg: #1e1e2d;
@@ -32,7 +33,7 @@
         /* Sidebar */
         .sidebar { width: 260px; background-color: var(--sidebar-bg); display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; transition: width 0.3s ease; overflow-x: hidden; z-index: 100; }
         .sidebar-header { padding: 24px; display: flex; align-items: center; gap: 12px; transition: 0.3s ease; }
-        .sidebar-logo-icon { min-width: 40px; width: 40px; height: 40px; background-color: rgba(108, 92, 231, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #a29bfe; font-size: 18px; }
+        .sidebar-logo-icon { min-width: 40px; width: 40px; height: 40px; background-color: var(--sidebar-active-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 18px; }
         .sidebar-title { white-space: nowrap; }
         .sidebar-title h2 { color: white; font-size: 16px; font-weight: 600; margin-bottom: 2px; }
         .sidebar-title p { color: var(--sidebar-text); font-size: 12px; }
@@ -66,7 +67,7 @@
         .balance-pill { display: flex; align-items: center; gap: 8px; background: #e0f2fe; color: #0284c7; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; border: 1px solid #bae6fd; }
         
         .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; position: relative; }
-        .avatar { width: 38px; height: 38px; background-color: #6c5ce7; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; }
+        .avatar { width: 38px; height: 38px; background-color: var(--primary); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; }
         .user-info h4 { font-size: 13px; font-weight: 600; }
         .user-info p { font-size: 11px; color: var(--text-muted); }
 
@@ -86,8 +87,8 @@
         /* Tabs Nav */
         .tabs-header { display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px; overflow-x: auto; }
         .tab-btn { padding: 12px 20px; background: transparent; border: none; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; white-space: nowrap; }
-        .tab-btn:hover { color: #6c5ce7; }
-        .tab-btn.active { color: #6c5ce7; border-bottom-color: #6c5ce7; }
+        .tab-btn:hover { color: var(--primary); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
         .tab-badge { background: #fee2e2; color: #ef4444; font-size: 11px; padding: 2px 7px; border-radius: 10px; font-weight: 700; }
 
         /* Card Container */
@@ -97,8 +98,8 @@
         .content-card-title p { font-size: 13px; color: #64748b; margin-top: 2px; }
 
         /* Buttons */
-        .btn-primary { background: #6c5ce7; color: white; border: none; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.15s; }
-        .btn-primary:hover { background: #5a4ad1; }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.15s; }
+        .btn-primary:hover { filter: brightness(0.92); }
         .btn-secondary { background: white; color: #181c32; border: 1px solid #e2e8f0; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.15s; }
         .btn-secondary:hover { background: #f8fafc; }
         .btn-success { background: #10b981; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
@@ -132,7 +133,7 @@
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; color: #1e293b; margin-bottom: 6px; }
         .form-control { width: 100%; height: 42px; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0 14px; font-size: 13px; color: #181c32; outline: none; background: #fff; transition: 0.15s; }
-        .form-control:focus { border-color: #6c5ce7; box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.12); }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-focus-shadow); }
         textarea.form-control { height: auto; padding: 12px 14px; min-height: 80px; resize: vertical; }
 
         /* Modals */
@@ -148,7 +149,7 @@
 
         /* Quick Chips */
         .chip-btn { padding: 6px 14px; border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 20px; font-size: 12px; font-weight: 600; color: #475569; cursor: pointer; transition: 0.15s; }
-        .chip-btn:hover { border-color: #6c5ce7; color: #6c5ce7; background: #f5f3ff; }
+        .chip-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--sidebar-active-bg); }
 
         /* Interactive Simulation Box */
         .sim-box { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 16px; margin: 16px 0; }
@@ -265,7 +266,7 @@
             <div class="kpi-card">
                 <div class="kpi-title">
                     <span>Total Jenis Barang</span>
-                    <i class="fa-solid fa-boxes-stacked" style="color: #6c5ce7;"></i>
+                    <i class="fa-solid fa-boxes-stacked" style="color: var(--primary);"></i>
                 </div>
                 <div class="kpi-value">{{ $totalItems }}</div>
                 <div class="kpi-subtitle">Item perlengkapan terdaftar</div>
@@ -540,7 +541,7 @@
                 <div class="content-card">
                     <div class="content-card-header">
                         <div class="content-card-title">
-                            <h3><i class="fa-solid fa-clipboard-check" style="color: #6c5ce7; margin-right: 6px;"></i> Form Stock Opname Fisik</h3>
+                            <h3><i class="fa-solid fa-clipboard-check" style="color: var(--primary); margin-right: 6px;"></i> Form Stock Opname Fisik</h3>
                             <p>Cocokkan stok yang tercatat di sistem dengan jumlah aktual fisik barang.</p>
                         </div>
                     </div>
@@ -687,7 +688,7 @@
                 <div class="content-card">
                     <div class="content-card-header">
                         <div class="content-card-title">
-                            <h3><i class="fa-solid fa-receipt" style="color: #6c5ce7; margin-right: 6px;"></i> Tambah Transaksi Pembelian</h3>
+                            <h3><i class="fa-solid fa-receipt" style="color: var(--primary); margin-right: 6px;"></i> Tambah Transaksi Pembelian</h3>
                             <p>Catat pembelian perlengkapan fotografi, input nota dan harga barang.</p>
                         </div>
                     </div>
@@ -790,7 +791,7 @@
                                     <td><span style="font-size: 12px;">{{ $pc->creator->name ?? 'Tim' }}</span></td>
                                     <td>
                                         @if($pc->receipt_file)
-                                            <a href="{{ $pc->receipt_file }}" target="_blank" style="color: #6c5ce7; font-weight: 600; text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                                            <a href="{{ $pc->receipt_file }}" target="_blank" style="color: var(--primary); font-weight: 600; text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
                                                 <i class="fa-regular fa-image"></i> Lihat Nota
                                             </a>
                                         @else
@@ -836,7 +837,7 @@
                         </div>
                     </div>
 
-                    <div style="background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%); border-radius: 16px; padding: 24px; color: white; margin-bottom: 20px;">
+                    <div style="background: linear-gradient(135deg, var(--primary) 0%, rgba(68, 114, 196, 0.75) 100%); border-radius: 16px; padding: 24px; color: white; margin-bottom: 20px;">
                         <div style="font-size: 13px; opacity: 0.9;">Saldo Tersedia Saat Ini</div>
                         <div style="font-size: 32px; font-weight: 700; margin: 8px 0;" id="mainBalanceDisplay">
                             Rp {{ number_format($currentBalance, 0, ',', '.') }}
@@ -933,9 +934,9 @@
                 @endphp
 
                 <div class="kpi-grid" style="margin-bottom: 24px;">
-                    <div class="kpi-card" style="background: #f5f3ff; border-color: #ddd6fe;">
-                        <div class="kpi-title" style="color: #6c5ce7;">Total Nilai Aset Stok</div>
-                        <div class="kpi-value" style="color: #6c5ce7; font-size: 24px;">Rp {{ number_format($totalAssetVal, 0, ',', '.') }}</div>
+                    <div class="kpi-card" style="background: var(--sidebar-active-bg); border-color: var(--primary);">
+                        <div class="kpi-title" style="color: var(--primary);">Total Nilai Aset Stok</div>
+                        <div class="kpi-value" style="color: var(--primary); font-size: 24px;">Rp {{ number_format($totalAssetVal, 0, ',', '.') }}</div>
                         <div class="kpi-subtitle">Total nilai stok sistem &times; harga standar</div>
                     </div>
                     <div class="kpi-card">
@@ -972,7 +973,7 @@
                             <td>{{ $it->category }}</td>
                             <td><strong>{{ $it->stock_system }}</strong> {{ $it->unit }}</td>
                             <td>Rp {{ number_format($it->price, 0, ',', '.') }}</td>
-                            <td><strong style="color: #6c5ce7;">Rp {{ number_format($it->stock_system * $it->price, 0, ',', '.') }}</strong></td>
+                            <td><strong style="color: var(--primary);">Rp {{ number_format($it->stock_system * $it->price, 0, ',', '.') }}</strong></td>
                             <td>
                                 @if($it->stock_system <= 0)
                                     <span class="badge badge-danger">Habis</span>

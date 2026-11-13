@@ -30,8 +30,8 @@
         :root {
             --primary: {{ $appTheme }};
             --primary-dark: #1e3a8a;
-            --primary-light: #eff6ff;
-            --primary-border: #bfdbfe;
+            --primary-light: {{ $appTheme }}1a;
+            --primary-border: {{ $appTheme }}33;
             --emerald-500: {{ $appTheme }};
             --emerald-600: {{ $appTheme }};
             --emerald-700: {{ $appTheme }};

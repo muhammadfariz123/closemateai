@@ -6,6 +6,7 @@
     <title>Penawaran - {{ $quotation->client }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    @include('components.theme-styles')
     <style>
         body { margin: 0; padding: 40px 20px; background: #f1f1f4; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
@@ -88,7 +89,7 @@
         }
 
         .btn-approve {
-            background: var(--primary, #6b5cd8);
+            background: var(--primary, #4472c4);
             color: white;
             padding: 16px;
             border-radius: 10px;

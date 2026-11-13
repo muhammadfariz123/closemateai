@@ -7,6 +7,7 @@
     <title>Aktivasi Akun Admin CS - CloseMateAI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    @include('components.theme-styles')
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body {
@@ -29,14 +30,14 @@
         .brand-icon {
             width: 48px;
             height: 48px;
-            background-color: #8c7ae6;
+            background-color: var(--primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-size: 20px;
-            box-shadow: 0 4px 14px rgba(140, 122, 230, 0.35);
+            box-shadow: 0 4px 14px var(--primary-focus-shadow);
         }
         .brand-title {
             font-size: 20px;
@@ -96,13 +97,13 @@
             background: #fff;
         }
         .form-control:focus {
-            border-color: #6c5ce7;
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-focus-shadow);
         }
         .btn-submit {
             width: 100%;
             height: 46px;
-            background: #5b4bc4;
+            background: var(--primary);
             color: white;
             border: none;
             border-radius: 10px;
@@ -110,13 +111,13 @@
             font-weight: 600;
             cursor: pointer;
             margin-top: 10px;
-            transition: background 0.15s;
+            transition: filter 0.15s;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         .btn-submit:hover {
-            background: #4d3db2;
+            filter: brightness(0.92);
         }
         .alert-error {
             background: #fef2f2;

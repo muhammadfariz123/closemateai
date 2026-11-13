@@ -7,6 +7,7 @@
     <title>Follow-Up Otomatis - CloseMateAI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    @include('components.theme-styles')
     <style>
         .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
         .toast { background: white; color: var(--text-dark); padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 12px; transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-left: 4px solid var(--success); }
@@ -17,9 +18,9 @@
         :root {
             --sidebar-bg: #1e1e2d;
             --sidebar-text: #cbd5e1;
-            --sidebar-active-bg: rgba(107, 92, 216, 0.2);
-            --sidebar-active-text: #6b5cd8;
-            --primary: #6b5cd8;
+            --sidebar-active-bg: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }}26;
+            --sidebar-active-text: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
+            --primary: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
             --bg-light: #f8f9fa;
             --card-bg: #ffffff;
             --border-color: #f1f1f4;

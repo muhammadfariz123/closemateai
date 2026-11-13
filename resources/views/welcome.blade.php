@@ -8,11 +8,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    @include('components.theme-styles')
     
     <style>
         :root {
-            --primary: #6b5cd8;
-            --primary-hover: #5849c4;
+            --primary: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
+            --primary-hover: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
             --bg-color: #f8f9fc;
             --text-dark: #1e293b;
             --text-muted: #64748b;

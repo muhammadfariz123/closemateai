@@ -7,13 +7,14 @@
     <title>Booking & Operasional - CloseMateAI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    @include('components.theme-styles')
     <style>
         :root {
             --sidebar-bg: #1e1e2d;
             --sidebar-text: #cbd5e1;
-            --sidebar-active-bg: rgba(107, 92, 216, 0.2);
-            --sidebar-active-text: #6b5cd8;
-            --primary: #6b5cd8;
+            --sidebar-active-bg: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }}26;
+            --sidebar-active-text: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
+            --primary: {{ auth()->check() ? auth()->user()->getThemeColor() : '#4472c4' }};
             --bg-light: #f8f9fa;
             --card-bg: #ffffff;
             --border-color: #f1f1f4;
@@ -250,11 +251,11 @@
         }
         .badge-dp1 { background: rgba(255, 199, 0, 0.1); color: #b38b00; border: 1px solid #ffc700; }
         .badge-dp2 { background: rgba(80, 205, 137, 0.1); color: #2d8a57; border: 1px solid #50cd89; }
-        .badge-lunas { background: rgba(107, 92, 216, 0.1); color: #493bb3; border: 1px solid #6b5cd8; }
+        .badge-lunas { background: var(--sidebar-active-bg); color: var(--primary); border: 1px solid var(--primary); }
         .badge-production { background: rgba(243, 244, 246, 1); color: #4b5563; border: 1px solid #d1d5db; }
         .handler-badge {
-            background: rgba(107, 92, 216, 0.1);
-            color: #6b5cd8;
+            background: var(--sidebar-active-bg);
+            color: var(--primary);
             padding: 4px 10px;
             border-radius: 6px;
             font-size: 11px;
@@ -377,7 +378,7 @@
             <div class="calendar-legend">
                 <div class="legend-item"><div class="legend-dot" style="background: #ffc700; border: 1px solid #e0b000;"></div> DP 1</div>
                 <div class="legend-item"><div class="legend-dot" style="background: #50cd89; border: 1px solid #47b679;"></div> DP 2</div>
-                <div class="legend-item"><div class="legend-dot" style="background: #6b5cd8; border: 1px solid #5a4db8;"></div> LUNAS</div>
+                <div class="legend-item"><div class="legend-dot" style="background: var(--primary); border: 1px solid var(--primary);"></div> LUNAS</div>
             </div>
         </div>
 
@@ -1669,9 +1670,10 @@
                         textCol = '#fff';
                         borderCol = '#47b679';
                     } else if (evt.payment_status === 'Lunas') {
-                        bgCol = '#6b5cd8';
+                        let dynamicPrimary = window.getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#4472c4';
+                        bgCol = dynamicPrimary;
                         textCol = '#fff';
-                        borderCol = '#5a4db8';
+                        borderCol = dynamicPrimary;
                     }
                     
                     eventsHtml += `<div class="event-pill" onclick="openBookingModal('${evt.id}')" style="cursor: pointer; margin-top: 4px; padding: 4px 8px; border-radius: 4px; background: ${bgCol}; color: ${textCol}; border: 1px solid ${borderCol}; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${evt.client_name || 'No Name'}</div>`;
@@ -1831,9 +1833,9 @@
             document.getElementById('ws_breakdown_pengeluaran').innerText = `- Rp 0`;
             
             const badgeColorMap = {
-                'DP 1': 'rgba(255, 199, 0, 0.1); color: #b38b00; border: 1px solid #ffc700;',
-                'DP 2': 'rgba(80, 205, 137, 0.1); color: #2d8a57; border: 1px solid #50cd89;',
-                'Lunas': 'rgba(107, 92, 216, 0.1); color: #493bb3; border: 1px solid #6b5cd8;'
+                'DP 1': 'background: rgba(255, 199, 0, 0.1); color: #b38b00; border: 1px solid #ffc700;',
+                'DP 2': 'background: rgba(80, 205, 137, 0.1); color: #2d8a57; border: 1px solid #50cd89;',
+                'Lunas': 'background: var(--sidebar-active-bg); color: var(--primary); border: 1px solid var(--primary);'
             };
             const paymentStatusBadge = `<span class="handler-badge" style="${badgeColorMap[b.payment_status || 'DP 1']}">${b.payment_status || 'DP 1'}</span>`;
             const productionStatusBadge = `<span class="handler-badge" style="background: rgba(243, 244, 246, 1); color: #4b5563; border: 1px solid #d1d5db;">${b.production_status || 'Pre-Event'}</span>`;
