@@ -64,3 +64,4 @@ class HrisEmployee extends Model
         return in_array(strtolower($this->role ?? ''), ['owner', 'admin', 'hr', 'supervisor']);
     }
 }
+

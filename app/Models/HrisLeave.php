@@ -36,3 +36,4 @@ class HrisLeave extends Model
         return $this->belongsTo(HrisEmployee::class, 'employee_id');
     }
 }
+

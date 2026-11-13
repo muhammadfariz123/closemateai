@@ -174,8 +174,12 @@ Route::get('/hris/payslip/{id}/print', [\App\Http\Controllers\HrisController::cl
 Route::get('/hris/recap/print', [\App\Http\Controllers\HrisController::class, 'printRecap']);
 
 // HRIS APIs
+Route::post('/api/hris/auth/login', [\App\Http\Controllers\HrisController::class, 'login']);
+Route::post('/api/hris/auth/register', [\App\Http\Controllers\HrisController::class, 'register']);
+Route::post('/api/hris/auth/logout', [\App\Http\Controllers\HrisController::class, 'logout']);
 Route::get('/api/hris/initial-data', [\App\Http\Controllers\HrisController::class, 'getInitialData']);
 Route::post('/api/hris/switch-employee', [\App\Http\Controllers\HrisController::class, 'switchEmployee']);
+Route::post('/api/hris/profile/update', [\App\Http\Controllers\HrisController::class, 'updateProfile']);
 Route::post('/api/hris/attendance/clock-in', [\App\Http\Controllers\HrisController::class, 'clockIn']);
 Route::post('/api/hris/attendance/clock-out', [\App\Http\Controllers\HrisController::class, 'clockOut']);
 Route::get('/api/hris/attendance/history', [\App\Http\Controllers\HrisController::class, 'getAttendanceHistory']);
@@ -192,6 +196,7 @@ Route::post('/api/hris/admin/overtimes/{id}/action', [\App\Http\Controllers\Hris
 Route::post('/api/hris/admin/employees', [\App\Http\Controllers\HrisController::class, 'saveEmployee']);
 Route::delete('/api/hris/admin/employees/{id}', [\App\Http\Controllers\HrisController::class, 'deleteEmployee']);
 Route::post('/api/hris/admin/settings', [\App\Http\Controllers\HrisController::class, 'saveSettings']);
+Route::post('/api/hris/admin/payroll/save', [\App\Http\Controllers\HrisController::class, 'savePayroll']);
 Route::post('/api/hris/admin/payrolls/generate', [\App\Http\Controllers\HrisController::class, 'generateMonthlyPayroll']);
 Route::post('/api/hris/admin/announcements', [\App\Http\Controllers\HrisController::class, 'saveAnnouncement']);
 Route::delete('/api/hris/admin/announcements/{id}', [\App\Http\Controllers\HrisController::class, 'deleteAnnouncement']);

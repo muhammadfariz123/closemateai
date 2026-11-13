@@ -34,3 +34,4 @@ class HrisSetting extends Model
         'late_penalty_per_hour' => 'float',
     ];
 }
+

@@ -23,3 +23,4 @@ class HrisAnnouncement extends Model
         'is_pinned' => 'boolean',
     ];
 }
+

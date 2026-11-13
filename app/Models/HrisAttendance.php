@@ -48,3 +48,4 @@ class HrisAttendance extends Model
         return $this->belongsTo(HrisEmployee::class, 'employee_id');
     }
 }
+
