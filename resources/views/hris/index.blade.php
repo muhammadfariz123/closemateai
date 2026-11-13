@@ -1671,8 +1671,13 @@
                 const mktBadge = document.getElementById('marketingBypassBadge');
                 if (mktBadge) mktBadge.style.display = isMarketing ? 'inline-flex' : 'none';
             },
-            (err) => console.warn('GPS error:', err),
-            { enableHighAccuracy: true, timeout: 8000 }
+            (err) => {
+                console.warn('GPS notice:', err.message || err);
+                const isMarketing = (state.employee && state.employee.division || '').toLowerCase() === 'marketing';
+                const distEl = document.getElementById('geofenceDistanceText');
+                if (distEl) distEl.innerText = isMarketing ? 'Bebas Radius (Marketing)' : 'Area Studio';
+            },
+            { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
         );
     }
 
@@ -1740,17 +1745,29 @@
         btn.innerHTML = '<ion-icon name="sync-outline" class="spin"></ion-icon> Mengirim ke Database...';
 
         try {
+            const fallbackLat = state.settings && state.settings.studio_lat ? parseFloat(state.settings.studio_lat) : -6.175392;
+            const fallbackLng = state.settings && state.settings.studio_lng ? parseFloat(state.settings.studio_lng) : 106.827153;
             const res = await fetch(endpoint, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}' 
+                },
                 body: JSON.stringify({
                     employee_id: state.employee.id,
                     photo: photoBase64,
-                    lat: state.currentLat || -6.175392,
-                    lng: state.currentLng || 106.827153
+                    lat: (state.currentLat !== null && state.currentLat !== undefined) ? state.currentLat : fallbackLat,
+                    lng: (state.currentLng !== null && state.currentLng !== undefined) ? state.currentLng : fallbackLng
                 })
             });
-            const json = await res.json();
+            let json;
+            try {
+                json = await res.json();
+            } catch (err) {
+                const text = await res.text();
+                throw new Error(text.includes('Page Expired') ? 'Sesi kedaluwarsa, silakan refresh halaman.' : `Server error (${res.status})`);
+            }
             if (json.success) {
                 alert(`✅ ${json.message}`);
                 closeCameraModal();
@@ -1760,7 +1777,7 @@
             }
         } catch (e) {
             console.error(e);
-            alert('Gagal mengirim data presensi.');
+            alert('Gagal mengirim data presensi: ' + (e.message || 'Koneksi error'));
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<ion-icon name="camera"></ion-icon> Ambil Foto & Kirim Presensi';

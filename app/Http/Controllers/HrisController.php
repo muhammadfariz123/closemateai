@@ -466,24 +466,25 @@ class HrisController extends Controller
             ], 422);
         }
 
-        $lat = floatval($request->input('lat'));
-        $lng = floatval($request->input('lng'));
+        $settings = HrisSetting::where('user_id', $ownerId)->first();
+        $studioLat = $settings ? floatval($settings->studio_lat) : -6.175392;
+        $studioLng = $settings ? floatval($settings->studio_lng) : 106.827153;
+        $radiusAllowed = $settings ? intval($settings->radius_meters) : 100;
+
+        $lat = floatval($request->input('lat')) ?: $studioLat;
+        $lng = floatval($request->input('lng')) ?: $studioLng;
         $photo = $request->input('photo');
 
         if (!$photo) {
             return response()->json(['success' => false, 'message' => 'Foto kamera selfie wajah wajib diambil.'], 422);
         }
 
-        $settings = HrisSetting::where('user_id', $ownerId)->first();
-        $studioLat = $settings ? $settings->studio_lat : -6.175392;
-        $studioLng = $settings ? $settings->studio_lng : 106.827153;
-        $radiusAllowed = $settings ? $settings->radius_meters : 100;
-
         $distance = round($this->calculateDistance($lat, $lng, $studioLat, $studioLng), 1);
         $isMarketing = $employee->isMarketing();
+        $isBypass = $isMarketing || $employee->canManage();
 
-        // Check radius for non-marketing staff
-        if (!$isMarketing && $distance > $radiusAllowed) {
+        // Check radius for non-marketing / non-admin staff
+        if (!$isBypass && $radiusAllowed > 0 && $distance > $radiusAllowed) {
             return response()->json([
                 'success' => false,
                 'message' => "Di Luar Radius Studio: Lokasi Anda berjarak {$distance}m dari Studio (Maksimal {$radiusAllowed}m). Silakan masuk ke area studio terlebih dahulu.",
@@ -565,8 +566,12 @@ class HrisController extends Controller
             ], 422);
         }
 
-        $lat = floatval($request->input('lat'));
-        $lng = floatval($request->input('lng'));
+        $settings = HrisSetting::where('user_id', $ownerId)->first();
+        $studioLat = $settings ? floatval($settings->studio_lat) : -6.175392;
+        $studioLng = $settings ? floatval($settings->studio_lng) : 106.827153;
+
+        $lat = floatval($request->input('lat')) ?: $studioLat;
+        $lng = floatval($request->input('lng')) ?: $studioLng;
         $photo = $request->input('photo');
 
         $now = Carbon::now();

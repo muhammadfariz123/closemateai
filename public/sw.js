@@ -1,4 +1,4 @@
-const CACHE_NAME = 'studio-hris-v1';
+const CACHE_NAME = 'studio-hris-v2';
 const ASSETS = [
   '/hris',
   '/manifest.json',
@@ -25,8 +25,22 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+  
+  // Do not intercept API requests or non-http requests
+  if (url.pathname.startsWith('/api/') || !url.protocol.startsWith('http')) return;
+
   e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+    fetch(e.request)
+      .catch(async () => {
+        const cached = await caches.match(e.request);
+        if (cached) return cached;
+        if (e.request.mode === 'navigate' && url.pathname.startsWith('/hris')) {
+          const fallback = await caches.match('/hris');
+          if (fallback) return fallback;
+        }
+        return new Response('Network offline', { status: 503, statusText: 'Service Unavailable' });
+      })
   );
 });
 

@@ -18,7 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/public/wa/*',
             'api/simulator/chat',
             'api/invoices',
-            'api/invoices/*'
+            'api/invoices/*',
+            'api/hris/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
