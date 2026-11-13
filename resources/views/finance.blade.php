@@ -571,7 +571,14 @@
                         <h3>1. Rincian Pendapatan &amp; Beban Kerja Kru</h3>
                         <p>Pemisahan gaji pokok, operasional jalan, lembur, bonus proyek, dan total sesi foto sebulan</p>
                     </div>
-                    <button class="btn btn-outline" onclick="exportTeamLaporanCsv()" style="font-size: 12px;"><i class="fa-solid fa-download"></i> Export Data Kru (Excel)</button>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="btn btn-outline" onclick="exportTeamLaporanCsv()" style="font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Ekspor Payroll CSV
+                        </button>
+                        <button class="btn btn-outline" onclick="printAllCrewRecap()" style="font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-print"></i> Cetak Rekap Gaji Bulanan
+                        </button>
+                    </div>
                 </div>
                 <table class="data-table">
                     <thead>
@@ -584,6 +591,7 @@
                             <th style="text-align: right;">Uang Lembur</th>
                             <th style="text-align: right;">Bonus / Fee Proyek</th>
                             <th style="text-align: right;">Total Gaji Bersih</th>
+                            <th style="text-align: center; width: 120px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tbody_team_crews">
@@ -1097,6 +1105,75 @@
                     <button type="button" class="btn btn-outline" onclick="closeOfficeEvalModal()">Batal</button>
                     <button type="button" class="btn btn-primary" onclick="saveOfficeEvaluation()"><i class="fa-regular fa-floppy-disk"></i> Simpan Penilaian</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SLIP GAJI GENERATOR -->
+    <div class="modal-overlay" id="crewSlipModal" style="display: none; align-items: center; justify-content: center; z-index: 1070;">
+        <div class="modal-content" style="max-width: 580px; width: 95%; max-height: 90vh; overflow-y: auto; background: white; border-radius: 16px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; border-bottom: 2px solid #f1f5f9; padding-bottom: 14px;">
+                <div>
+                    <span style="font-size: 10px; font-weight: 800; background: var(--sidebar-active-bg); color: var(--primary); padding: 3px 8px; border-radius: 6px; letter-spacing: 1px;">SLIP GAJI GENERATOR</span>
+                    <h2 style="font-size: 20px; font-weight: 700; margin: 6px 0 2px; color: #0f172a;" id="modal_slip_crew_name">Nama Karyawan</h2>
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 0;"><span id="modal_slip_crew_pos">Divisi</span> &bull; Periode: <span id="modal_slip_period">Bulan Berjalan</span></p>
+                </div>
+                <button onclick="closeCrewSlipModal()" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div id="printableSlipArea" style="background: #ffffff; padding: 4px 0;">
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase;">Beban Kerja Bulan Ini</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #0f172a;" id="modal_slip_sessions">0 Sesi Foto / Proyek</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="badge" style="background: #dcfce7; color: #15803d; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px;">
+                            <i class="fa-solid fa-circle-check"></i> Siap Dibayarkan
+                        </span>
+                    </div>
+                </div>
+
+                <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 16px;">
+                    <div style="background: #f1f5f9; padding: 10px 16px; font-size: 12px; font-weight: 700; color: #475569; letter-spacing: 0.5px;">
+                        RINCIAN KOMPONEN PENDAPATAN
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <tbody>
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 12px 16px; color: #334155;">Gaji Pokok / Standar</td>
+                                <td style="padding: 12px 16px; text-align: right; font-weight: 600;" id="modal_slip_base">Rp 0</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 12px 16px; color: #334155;">Uang Makan &amp; Operasional Jalan</td>
+                                <td style="padding: 12px 16px; text-align: right; font-weight: 600;" id="modal_slip_meal">Rp 0</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 12px 16px; color: #334155;">Uang Lembur (Overtime)</td>
+                                <td style="padding: 12px 16px; text-align: right; font-weight: 600;" id="modal_slip_overtime">Rp 0</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 12px 16px; color: #10b981; font-weight: 600;">Bonus / Fee Per Proyek</td>
+                                <td style="padding: 12px 16px; text-align: right; font-weight: 600; color: #10b981;" id="modal_slip_bonus">Rp 0</td>
+                            </tr>
+                            <tr style="background: var(--sidebar-active-bg);">
+                                <td style="padding: 14px 16px; font-size: 14px; font-weight: 700; color: #0f172a;">TOTAL GAJI BERSIH (TAKE HOME PAY)</td>
+                                <td style="padding: 14px 16px; text-align: right; font-size: 18px; font-weight: 800; color: var(--primary);" id="modal_slip_total">Rp 0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="font-size: 11px; color: #94a3b8; text-align: center; margin-bottom: 8px;">
+                    Dokumen ini digenerate secara otomatis oleh sistem CloseMateAI Studio Management.
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                <button type="button" class="btn btn-secondary" onclick="closeCrewSlipModal()" style="font-size: 13px; padding: 8px 18px;">Tutup</button>
+                <button type="button" class="btn btn-primary" onclick="printCrewSlip()" style="font-size: 13px; padding: 8px 20px; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-print"></i> Cetak PDF / Print
+                </button>
             </div>
         </div>
     </div>
@@ -1901,6 +1978,89 @@
             window.location.href = '/api/finance/export/excel';
         }
 
+        let currentSelectedCrew = null;
+
+        function openCrewSlipModal(crewEncoded) {
+            let crew = crewEncoded;
+            if (typeof crewEncoded === 'string') {
+                try {
+                    crew = JSON.parse(decodeURIComponent(crewEncoded));
+                } catch(e) {
+                    try { crew = JSON.parse(crewEncoded); } catch(err){}
+                }
+            }
+            currentSelectedCrew = crew;
+            document.getElementById('modal_slip_crew_name').innerText = crew.name || 'Karyawan';
+            document.getElementById('modal_slip_crew_pos').innerText = crew.position || crew.division || '-';
+            document.getElementById('modal_slip_period').innerText = document.getElementById('report_period')?.innerText || 'Bulan Berjalan';
+            document.getElementById('modal_slip_sessions').innerText = (crew.sessions || 0) + ' Sesi Foto / Proyek';
+            document.getElementById('modal_slip_base').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(crew.base_salary || 0);
+            document.getElementById('modal_slip_meal').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(crew.meal_transport || 0);
+            document.getElementById('modal_slip_overtime').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(crew.overtime || 0);
+            document.getElementById('modal_slip_bonus').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(crew.bonus || 0);
+            document.getElementById('modal_slip_total').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(crew.net_salary || 0);
+
+            const m = document.getElementById('crewSlipModal');
+            if (m) m.style.display = 'flex';
+        }
+
+        function closeCrewSlipModal() {
+            const m = document.getElementById('crewSlipModal');
+            if (m) m.style.display = 'none';
+        }
+
+        function printCrewSlip() {
+            if (!currentSelectedCrew) return;
+            const printContent = document.getElementById('printableSlipArea').innerHTML;
+            const printWindow = window.open('', '_blank', 'width=750,height=650');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Slip Gaji - ${currentSelectedCrew.name}</title>
+                    <style>
+                        body { font-family: 'Inter', -apple-system, sans-serif; padding: 30px; color: #181c32; }
+                        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; }
+                        table { width: 100%; border-collapse: collapse; }
+                        @media print {
+                            body { padding: 10px; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div style="text-align: center; margin-bottom: 24px; border-bottom: 2px solid #334155; padding-bottom: 14px;">
+                        <h2 style="margin:0; font-size: 20px;">SLIP PENGGAJIAN KARYAWAN</h2>
+                        <div style="font-size: 13px; color: #64748b; margin-top: 4px;">CloseMateAI Studio &bull; Periode: ${document.getElementById('report_period')?.innerText || 'Bulan Berjalan'}</div>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <strong>Nama:</strong> ${currentSelectedCrew.name} <br>
+                        <strong>Jabatan / Divisi:</strong> ${currentSelectedCrew.position || currentSelectedCrew.division}
+                    </div>
+                    ${printContent}
+                    <div style="display: flex; justify-content: space-between; margin-top: 50px;">
+                        <div style="text-align: center;">
+                            <p style="margin-bottom: 60px;">Penerima,</p>
+                            <p><strong>(${currentSelectedCrew.name})</strong></p>
+                        </div>
+                        <div style="text-align: center;">
+                            <p style="margin-bottom: 60px;">Finance / Pimpinan Studio,</p>
+                            <p><strong>(.......................................)</strong></p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+            }, 400);
+        }
+
+        function printAllCrewRecap() {
+            window.open('/hris/recap/print', '_blank');
+        }
+
         async function loadAnalyticsData() {
             try {
                 let url = '/api/finance/analytics';
@@ -1933,6 +2093,11 @@
                                 <td style="text-align: right;">Rp ${new Intl.NumberFormat('id-ID').format(c.overtime)}</td>
                                 <td style="text-align: right; color:#10b981; font-weight:600;">Rp ${new Intl.NumberFormat('id-ID').format(c.bonus)}</td>
                                 <td style="text-align: right; font-weight:700;">Rp ${new Intl.NumberFormat('id-ID').format(c.net_salary)}</td>
+                                <td style="text-align: center;">
+                                    <button class="btn btn-sm btn-primary" onclick="openCrewSlipModal('${encodeURIComponent(JSON.stringify(c))}')" style="font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+                                        <i class="fa-solid fa-file-invoice-dollar"></i> Slip Gaji
+                                    </button>
+                                </td>
                             </tr>
                         `).join('');
                     }
