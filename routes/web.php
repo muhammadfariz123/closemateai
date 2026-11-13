@@ -221,6 +221,7 @@ Route::delete('/api/hris/admin/employees/{id}', [\App\Http\Controllers\HrisContr
 Route::post('/api/hris/admin/settings', [\App\Http\Controllers\HrisController::class, 'saveSettings']);
 Route::post('/api/hris/admin/payroll/save', [\App\Http\Controllers\HrisController::class, 'savePayroll']);
 Route::post('/api/hris/admin/payrolls/generate', [\App\Http\Controllers\HrisController::class, 'generateMonthlyPayroll']);
+Route::get('/api/hris/admin/recap/data', [\App\Http\Controllers\HrisController::class, 'getRecapData']);
 Route::post('/api/hris/admin/announcements', [\App\Http\Controllers\HrisController::class, 'saveAnnouncement']);
 Route::delete('/api/hris/admin/announcements/{id}', [\App\Http\Controllers\HrisController::class, 'deleteAnnouncement']);
 

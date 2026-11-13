@@ -902,33 +902,56 @@ class HrisController extends Controller
         $id = $request->input('id');
 
         $division = $request->input('division', 'Fotografer');
-        $defaultPrefix = [
-            'Fotografer' => 'PHOTO',
-            'Videografer' => 'VIDEO',
-            'Editor' => 'EDIT',
-            'Produksi' => 'PROD',
-            'Marketing' => 'MKT',
-            'HR' => 'HR',
-            'Admin' => 'ADM',
-        ][$division] ?? 'KRY';
+        $code = $request->input('employee_code');
+        if (!$code) {
+            $nextNum = HrisEmployee::where('user_id', $ownerId)->count() + 1;
+            $code = 'EMP-' . str_pad($nextNum, 3, '0', STR_PAD_LEFT);
+        }
 
-        $code = $request->input('employee_code') ?: ($defaultPrefix . '-' . str_pad(HrisEmployee::where('user_id', $ownerId)->count() + 1, 3, '0', STR_PAD_LEFT));
+        // If email and password provided, create/link User so employee can login
+        $authUserId = null;
+        if ($request->filled('email')) {
+            $existingUser = User::where('email', $request->input('email'))->first();
+            if ($existingUser) {
+                $authUserId = $existingUser->id;
+                if ($request->filled('password')) {
+                    $existingUser->update(['password' => Hash::make($request->input('password'))]);
+                }
+            } else {
+                $createdUser = User::create([
+                    'name' => $request->input('name', 'Karyawan'),
+                    'email' => $request->input('email'),
+                    'password' => Hash::make($request->input('password', 'Studio123!')),
+                    'role' => strtolower($request->input('role', 'karyawan')),
+                ]);
+                $authUserId = $createdUser->id;
+            }
+        }
 
         $data = [
             'user_id' => $ownerId,
             'employee_code' => $code,
             'name' => $request->input('name'),
             'email' => $request->input('email'),
+            'nik' => $request->input('nik'),
             'phone' => $request->input('phone'),
+            'gender' => $request->input('gender', 'Laki-laki'),
+            'birth_date' => $request->input('birth_date'),
+            'address' => $request->input('address'),
             'division' => $division,
             'position' => $request->input('position', 'Staff'),
+            'shift' => $request->input('shift', 'Shift Pagi (08:00 - 17:00 WIB)'),
             'role' => $request->input('role', 'karyawan'),
-            'base_salary' => floatval($request->input('base_salary', 3500000)),
+            'base_salary' => floatval($request->input('base_salary', 4500000)),
             'allowance' => floatval($request->input('allowance', 500000)),
             'leave_balance' => intval($request->input('leave_balance', 12)),
             'status' => $request->input('status', 'active'),
             'avatar_url' => $request->input('avatar_url') ?: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
         ];
+
+        if ($authUserId) {
+            $data['auth_user_id'] = $authUserId;
+        }
 
         if ($id) {
             $employee = HrisEmployee::where('user_id', $ownerId)->findOrFail($id);
@@ -968,8 +991,8 @@ class HrisController extends Controller
             'user_id' => $ownerId,
             'studio_name' => $request->input('studio_name', 'Studio Foto Utama'),
             'studio_address' => $request->input('studio_address'),
-            'studio_lat' => floatval($request->input('studio_lat', -6.175392)),
-            'studio_lng' => floatval($request->input('studio_lng', 106.827153)),
+            'studio_lat' => floatval($request->input('studio_lat', -7.672585)),
+            'studio_lng' => floatval($request->input('studio_lng', 109.649065)),
             'radius_meters' => intval($request->input('radius_meters', 100)),
             'work_start_time' => $request->input('work_start_time', '08:00'),
             'work_end_time' => $request->input('work_end_time', '17:00'),
@@ -1005,9 +1028,11 @@ class HrisController extends Controller
         $overtimePay = floatval($request->input('overtime_pay', 0));
         $bonus = floatval($request->input('bonus', 0));
         $lateDeduction = floatval($request->input('late_deductions', 0));
-        $deductions = floatval($request->input('deductions', 0));
+        $unexcused = floatval($request->input('unexcused_deductions', 0));
+        $otherDeduction = floatval($request->input('other_deductions', 0));
+        $totalDeductions = $lateDeduction + $unexcused + $otherDeduction;
 
-        $netSalary = max(0, $baseSalary + $allowance + $overtimePay + $bonus - $lateDeduction - $deductions);
+        $netSalary = max(0, $baseSalary + $allowance + $overtimePay + $bonus - $totalDeductions);
 
         $payroll = HrisPayroll::updateOrCreate(
             [
@@ -1020,16 +1045,19 @@ class HrisController extends Controller
                 'allowance' => $allowance,
                 'overtime_pay' => $overtimePay,
                 'bonus' => $bonus,
-                'deductions' => $deductions,
                 'late_deductions' => $lateDeduction,
+                'unexcused_deductions' => $unexcused,
+                'other_deductions' => $otherDeduction,
+                'deductions' => $totalDeductions,
                 'net_salary' => $netSalary,
-                'total_present' => intval($request->input('total_present', 20)),
+                'total_present' => intval($request->input('total_present', 0)),
                 'total_late' => intval($request->input('total_late', 0)),
                 'total_leave' => intval($request->input('total_leave', 0)),
                 'total_overtime_hours' => floatval($request->input('total_overtime_hours', 0)),
                 'status' => 'paid',
+                'published_at' => Carbon::now(),
                 'payment_date' => Carbon::now()->toDateString(),
-                'notes' => $request->input('notes', "Slip Gaji Periode {$month}"),
+                'notes' => $request->input('notes', ''),
             ]
         );
 
@@ -1037,6 +1065,78 @@ class HrisController extends Controller
             'success' => true,
             'message' => 'Slip Gaji Diterbitkan: Data penggajian berhasil disimpan ke database!',
             'payroll' => $payroll,
+        ]);
+    }
+
+    /**
+     * API: Get Attendance Recap Data
+     */
+    public function getRecapData(Request $request)
+    {
+        $ownerId = $this->getOwnerId();
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
+        $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->toDateString());
+        $division = $request->input('division', 'all');
+
+        $query = HrisEmployee::where('user_id', $ownerId)->where('status', 'active');
+        if ($division !== 'all' && $division) {
+            $query->where('division', $division);
+        }
+        $employees = $query->orderBy('name')->get();
+
+        $data = [];
+        foreach ($employees as $emp) {
+            $attendances = HrisAttendance::where('user_id', $ownerId)
+                ->where('employee_id', $emp->id)
+                ->whereBetween('date', [$startDate, $endDate])
+                ->get();
+
+            $presentCount = $attendances->count();
+            $lateCount = $attendances->where('status', 'terlambat')->count();
+            $lateMinutes = $attendances->sum('late_minutes');
+
+            $leavesCount = HrisLeave::where('user_id', $ownerId)
+                ->where('employee_id', $emp->id)
+                ->where('status', 'approved')
+                ->where(function($q) use ($startDate, $endDate) {
+                    $q->whereBetween('start_date', [$startDate, $endDate])
+                      ->orWhereBetween('end_date', [$startDate, $endDate]);
+                })
+                ->sum('total_days');
+
+            $overtimes = HrisOvertime::where('user_id', $ownerId)
+                ->where('employee_id', $emp->id)
+                ->where('status', 'approved')
+                ->whereBetween('date', [$startDate, $endDate])
+                ->get();
+            $overtimeMinutes = round($overtimes->sum('duration_hours') * 60);
+
+            $workMinutes = 0;
+            foreach ($attendances as $att) {
+                if ($att->clock_in && $att->clock_out) {
+                    $in = Carbon::parse($att->clock_in);
+                    $out = Carbon::parse($att->clock_out);
+                    $workMinutes += max(0, $out->diffInMinutes($in));
+                }
+            }
+
+            $data[] = [
+                'employee' => $emp,
+                'hadir_days' => $presentCount,
+                'terlambat_count' => $lateCount,
+                'cuti_days' => $leavesCount,
+                'izin_days' => 0,
+                'work_minutes' => $workMinutes,
+                'overtime_minutes' => $overtimeMinutes,
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'division' => $division,
+            'recap' => $data,
         ]);
     }
 

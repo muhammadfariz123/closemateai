@@ -1074,6 +1074,355 @@
             border-bottom: 1px solid #F3F4F6;
         }
         .list-item-row:last-child { border-bottom: none; }
+
+        /* Input with Rp Prefix */
+        .input-rp-wrap {
+            display: flex;
+            align-items: stretch;
+            width: 100%;
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .input-rp-wrap:focus-within {
+            border-color: #006847;
+            box-shadow: 0 0 0 3px rgba(0, 104, 71, 0.1);
+        }
+        .input-rp-prefix {
+            background: #ECFDF5;
+            color: #006847;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 0 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid #D1FAE5;
+            user-select: none;
+        }
+        .input-rp-field {
+            flex: 1;
+            border: none;
+            padding: 12px 14px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+            outline: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        /* Pill Selectors in Modal & Reports */
+        .pill-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .pill-btn {
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            color: #4B5563;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .pill-btn:hover {
+            border-color: #006847;
+            color: #006847;
+        }
+        .pill-btn.active {
+            background: #006847;
+            border-color: #006847;
+            color: #FFFFFF;
+        }
+
+        /* Toggle Switch */
+        .switch-toggle-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+        }
+        .switch-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #111827;
+        }
+        .switch-control {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .switch-control input { opacity: 0; width: 0; height: 0; }
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #D1D5DB;
+            transition: .3s;
+            border-radius: 24px;
+        }
+        .switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        .switch-control input:checked + .switch-slider {
+            background-color: #006847;
+        }
+        .switch-control input:checked + .switch-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Month Navigation Bar */
+        .month-nav-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 12px 18px;
+            margin-bottom: 12px;
+        }
+        .btn-month-nav {
+            background: #F3F4F6;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #374151;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-month-nav:hover { background: #E5E7EB; }
+
+        /* Payroll Employee Selection Pills */
+        .payroll-emp-pill {
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            color: #374151;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .payroll-emp-pill.active {
+            background: #006847;
+            border-color: #006847;
+            color: #FFFFFF;
+        }
+
+        /* Status Badges */
+        .badge-status-draft {
+            background: #FEF3C7;
+            color: #D97706;
+            border: 1px solid #FDE68A;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+        .badge-status-published {
+            background: #ECFDF5;
+            color: #059669;
+            border: 1px solid #A7F3D0;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        /* Action Buttons */
+        .btn-action-primary {
+            width: 100%;
+            background: #006847;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 14px;
+            padding: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-action-primary:hover { background: #047857; }
+
+        .btn-action-navy {
+            background: #0F172A;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-action-navy:hover { background: #1E293B; }
+
+        .btn-action-light-green {
+            background: #E6F7F0;
+            color: #006847;
+            border: 1px solid #BBF7D0;
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-action-light-green:hover { background: #D1FAE5; }
+
+        /* Official Slip Document Preview Styles */
+        .slip-doc-box {
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            margin-top: 14px;
+            font-family: inherit;
+        }
+        .slip-doc-header {
+            background: #006847;
+            color: #FFFFFF;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .slip-doc-title {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+        .slip-doc-subtitle {
+            font-size: 11px;
+            opacity: 0.85;
+            margin: 2px 0 0;
+        }
+        .slip-doc-period-badge {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 14px;
+            border-radius: 8px;
+            text-align: right;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+        .slip-doc-body {
+            padding: 20px;
+        }
+        .slip-table-section {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            font-size: 12px;
+        }
+        .slip-table-section th {
+            text-align: left;
+            padding: 8px 12px;
+            background: #F3F4F6;
+            color: #374151;
+            font-weight: 700;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        .slip-table-section td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #F3F4F6;
+            color: #4B5563;
+        }
+        .slip-table-section tr.subtotal-row td {
+            background: #F9FAFB;
+            font-weight: 800;
+            color: #111827;
+            border-top: 1px solid #E5E7EB;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        .slip-grand-total-banner {
+            background: #006847;
+            color: #FFFFFF;
+            padding: 14px 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 16px 0;
+        }
+
+        /* Rekap Attendance Metric Chips */
+        .rekap-card {
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+        }
+        .rekap-chips-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+        @media (max-width: 768px) {
+            .rekap-chips-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .rekap-chips-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        .metric-chip {
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 10px;
+            padding: 8px 10px;
+            text-align: center;
+        }
+        .metric-chip-label {
+            font-size: 11px;
+            color: #6B7280;
+            margin-bottom: 2px;
+        }
+        .metric-chip-value {
+            font-size: 13px;
+            font-weight: 800;
+            color: #111827;
+        }
     </style>
 </head>
 <body>
@@ -1600,8 +1949,17 @@
                     </div>
                 </div>
 
-                <!-- Subtab 2: Lokasi Studio & Geofence (Image 5) -->
+                <!-- Subtab 2: Lokasi Studio & Geofence (Image 5 & Screenshot 2) -->
                 <div id="adminSubStudioSettings" style="display: none;">
+                    <!-- GPS Success Alert Banner (Screenshot 2) -->
+                    <div id="gpsSuccessAlert" style="display: none; background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 13px; font-weight: 500; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <ion-icon name="information-circle" style="font-size: 20px; color: #2563EB; flex-shrink: 0;"></ion-icon>
+                            <span id="gpsSuccessAlertText">Titik GPS terdeteksi (-7.421834, 109.249947). Tekan tombol "Simpan Pengaturan Studio" di bawah untuk menyimpan ke database.</span>
+                        </div>
+                        <button type="button" onclick="document.getElementById('gpsSuccessAlert').style.display='none'" style="background: none; border: none; color: #1E40AF; font-size: 20px; cursor: pointer; line-height: 1;">✕</button>
+                    </div>
+
                     <div class="studio-settings-card">
                         <h4 class="settings-card-title">Pengaturan Geofence Studio Fotografi</h4>
                         <p class="settings-card-desc">Karyawan biasa wajib berada di dalam radius meter yang ditentukan untuk Clock In &amp; Clock Out. Divisi Marketing otomatis dikecualikan (bebas lokasi).</p>
@@ -1612,17 +1970,17 @@
                         </button>
 
                         <form onsubmit="saveStudioSettings(event)">
-                            <div class="form-group">
+                            <div class="form-group" style="margin-bottom: 14px;">
                                 <label class="form-label">Nama Lokasi Studio</label>
                                 <input type="text" class="form-control" id="studioNameInput" value="Studio Utama" required>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group" style="margin-bottom: 14px;">
                                 <label class="form-label">Alamat Lengkap Studio</label>
                                 <input type="text" class="form-control" id="studioAddressInput" value="Jl. Studio Fotografi No. 1 (Ubah titik GPS asli langsung dari menu Admin di HP)">
                             </div>
 
-                            <div class="form-grid-2">
+                            <div class="form-grid-2" style="margin-bottom: 14px;">
                                 <div class="form-group">
                                     <label class="form-label">Latitude (-90 s/d 90)</label>
                                     <input type="number" step="any" class="form-control" id="studioLatInput" value="-7.672585" required>
@@ -1633,7 +1991,7 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group" style="margin-bottom: 16px;">
                                 <label class="form-label">Radius Maksimal Absensi (Meter - Hanya Angka)</label>
                                 <input type="number" class="form-control" id="studioRadiusInput" value="100" required>
                             </div>
@@ -1645,112 +2003,358 @@
             </div>
 
             <!-- ============================================== -->
-            <!-- ADMIN TAB 4: PAYROLL                           -->
+            <!-- ADMIN TAB 4: PAYROLL (Screenshots 9 & 10)      -->
             <!-- ============================================== -->
             <div id="tab-adm-payroll" class="tab-pane" style="display: none;">
-                <div class="card-title" style="margin-bottom: 12px;"><ion-icon name="cash-outline" style="color: #059669; font-size: 20px;"></ion-icon> Manajemen Gaji & Penerbitan Slip PDF</div>
-                
-                <div class="card">
-                    <div style="font-size: 12px; font-weight: 800; color: #064E3B; margin-bottom: 10px;">1. Pilih Periode & Karyawan</div>
-                    <div class="form-group">
-                        <label class="form-label">Periode Bulan</label>
-                        <input type="month" class="form-control" id="admPayrollMonth" onchange="loadAdminPayrollForEmployee()">
+                <!-- Section 1: Pilih Periode & Karyawan -->
+                <div class="card" style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px; margin-bottom: 16px;">
+                    <div style="font-size: 14px; font-weight: 800; color: #111827; margin-bottom: 12px;">1. Pilih Periode &amp; Karyawan</div>
+                    
+                    <!-- Month Selector with Arrows -->
+                    <div class="month-nav-bar">
+                        <button type="button" class="btn-month-nav" onclick="changeAdminPayrollMonth(-1)"><ion-icon name="chevron-back"></ion-icon></button>
+                        <span id="admPayrollMonthLabel" style="font-weight: 800; font-size: 15px; color: #111827;">November 2026</span>
+                        <button type="button" class="btn-month-nav" onclick="changeAdminPayrollMonth(1)"><ion-icon name="chevron-forward"></ion-icon></button>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Pilih Karyawan</label>
-                        <select class="form-control" id="admPayrollEmpSelect" onchange="loadAdminPayrollForEmployee()">
-                            <!-- Rendered by JS -->
-                        </select>
+
+                    <!-- Hidden actual month input -->
+                    <input type="hidden" id="admPayrollMonth" value="2026-11">
+
+                    <!-- Employee Pills Container -->
+                    <div id="admPayrollEmpPills" style="display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0;">
+                        <!-- Rendered by JS -->
                     </div>
-                    <div id="admPayrollMetricsBadge" style="display: flex; gap: 8px; font-size: 11px; color: var(--text-muted); background: #F9FAFB; padding: 10px; border-radius: 12px;">
-                        <span>Hadir: <b id="payMetPresent">0</b></span> |
-                        <span>Terlambat: <b id="payMetLate">0</b></span> |
-                        <span>Lembur: <b id="payMetOt">0 Jam</b></span>
+
+                    <!-- Metrics Bar -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 12px; padding: 10px 16px; font-size: 12px; color: #6B7280;">
+                        <span>Hadir: <b id="payMetPresent" style="color: #111827;">0 hr</b></span>
+                        <span style="color: #D1D5DB;">|</span>
+                        <span>Terlambat: <b id="payMetLate" style="color: #111827;">0x</b></span>
+                        <span style="color: #D1D5DB;">|</span>
+                        <span>Lembur Approved: <b id="payMetOt" style="color: #006847;">0 menit</b></span>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div style="font-size: 12px; font-weight: 800; color: #064E3B; margin-bottom: 10px;">2. Komponen Slip Gaji (Rp)</div>
-                    <form onsubmit="saveAdminPayroll(event)">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            <div class="form-group">
-                                <label class="form-label">Gaji Pokok</label>
-                                <input type="number" class="form-control" id="payBaseInput" value="4500000" oninput="calculatePayrollTotal()">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Tunjangan</label>
-                                <input type="number" class="form-control" id="payAllowanceInput" value="500000" oninput="calculatePayrollTotal()">
+                <!-- Section 2: Komponen Slip Gaji (Rp) -->
+                <div class="card" style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                        <div style="font-size: 14px; font-weight: 800; color: #111827;">2. Komponen Slip Gaji (Rp)</div>
+                        <span id="payStatusBadge" class="badge-status-draft">DRAFT BELUM TERBIT</span>
+                    </div>
+
+                    <form onsubmit="handleSavePayrollSubmit(event)">
+                        <!-- Gaji Pokok -->
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px;">Gaji Pokok</label>
+                            <div class="input-rp-wrap">
+                                <span class="input-rp-prefix">Rp</span>
+                                <input type="number" class="input-rp-field" id="payBaseInput" value="4500000" oninput="calculatePayrollTotal()">
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            <div class="form-group">
-                                <label class="form-label">Uang Lembur</label>
-                                <input type="number" class="form-control" id="payOtInput" value="0" oninput="calculatePayrollTotal()">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Bonus / Insentif</label>
-                                <input type="number" class="form-control" id="payBonusInput" value="0" oninput="calculatePayrollTotal()">
+                        <!-- Tunjangan -->
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px;">Tunjangan</label>
+                            <div class="input-rp-wrap">
+                                <span class="input-rp-prefix">Rp</span>
+                                <input type="number" class="input-rp-field" id="payAllowanceInput" value="500000" oninput="calculatePayrollTotal()">
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            <div class="form-group">
-                                <label class="form-label">Potongan Keterlambatan</label>
-                                <input type="number" class="form-control" id="payLateDeductInput" value="0" oninput="calculatePayrollTotal()">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Potongan Lainnya</label>
-                                <input type="number" class="form-control" id="payOtherDeductInput" value="0" oninput="calculatePayrollTotal()">
+                        <!-- Uang Lembur -->
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px;">Uang Lembur</label>
+                            <div class="input-rp-wrap">
+                                <span class="input-rp-prefix">Rp</span>
+                                <input type="number" class="input-rp-field" id="payOtInput" value="0" oninput="calculatePayrollTotal()">
                             </div>
                         </div>
 
-                        <div style="background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 14px; padding: 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 12px; font-weight: 800; color: #064E3B;">Total Gaji Bersih:</span>
-                            <span style="font-size: 20px; font-weight: 800; color: #047857;" id="payCalculatedNetText">Rp 5.000.000</span>
+                        <!-- Bonus / Insentif -->
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px;">Bonus / Insentif</label>
+                            <div class="input-rp-wrap">
+                                <span class="input-rp-prefix">Rp</span>
+                                <input type="number" class="input-rp-field" id="payBonusInput" value="0" oninput="calculatePayrollTotal()">
+                            </div>
                         </div>
 
-                        <div style="display: flex; gap: 8px;">
-                            <button type="submit" class="btn-clock-in" style="flex: 1; padding: 12px;">
-                                <ion-icon name="checkmark-done-circle-outline"></ion-icon> Terbitkan Slip Gaji
-                            </button>
+                        <!-- Potongan Keterlambatan -->
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px;">Potongan Keterlambatan</label>
+                            <div class="input-rp-wrap">
+                                <span class="input-rp-prefix">Rp</span>
+                                <input type="number" class="input-rp-field" id="payLateDeductInput" value="0" oninput="calculatePayrollTotal()">
+                            </div>
                         </div>
+
+                        <!-- Potongan Ketidakhadiran -->
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px;">Potongan Ketidakhadiran</label>
+                            <div class="input-rp-wrap">
+                                <span class="input-rp-prefix">Rp</span>
+                                <input type="number" class="input-rp-field" id="payUnexcusedInput" value="0" oninput="calculatePayrollTotal()">
+                            </div>
+                        </div>
+
+                        <!-- Potongan Lainnya -->
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px;">Potongan Lainnya</label>
+                            <div class="input-rp-wrap">
+                                <span class="input-rp-prefix">Rp</span>
+                                <input type="number" class="input-rp-field" id="payOtherDeductInput" value="0" oninput="calculatePayrollTotal()">
+                            </div>
+                        </div>
+
+                        <!-- Catatan Slip Gaji (Opsional) -->
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px;">Catatan Slip Gaji (Opsional)</label>
+                            <input type="text" class="form-control" id="payNotesInput" placeholder="Catatan tambahan untuk karyawan..." style="border-radius: 12px; padding: 12px 14px;" oninput="updatePayslipPreview()">
+                        </div>
+
+                        <!-- Summary Row -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-top: 1px dashed #E5E7EB; border-bottom: 1px dashed #E5E7EB; margin-bottom: 16px;">
+                            <span style="font-size: 14px; font-weight: 800; color: #006847;">Total Gaji Bersih</span>
+                            <span style="font-size: 18px; font-weight: 800; color: #006847;" id="payCalculatedNetText">Rp 5.000.000</span>
+                        </div>
+
+                        <!-- Main Action: Simpan & Terbitkan -->
+                        <button type="submit" class="btn-action-primary" id="btnPublishSlip">
+                            <ion-icon name="checkmark-outline" style="font-size: 18px;"></ion-icon>
+                            <span>Simpan &amp; Terbitkan Slip Gaji PDF</span>
+                        </button>
                     </form>
 
-                    <button onclick="generateAllPayrollsMonthly()" style="width: 100%; margin-top: 10px; background: #FFFFFF; border: 1px solid #10B981; color: #059669; padding: 10px; border-radius: 14px; font-size: 12px; font-weight: 800; cursor: pointer;">
-                        ⚡ Hitung Otomatis Seluruh Karyawan
-                    </button>
+                    <!-- Secondary Buttons: Download PDF & Cetak -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+                        <button type="button" class="btn-action-navy" onclick="downloadPayslipPdf()">
+                            <ion-icon name="download-outline"></ion-icon>
+                            <span>Download File PDF (.pdf)</span>
+                        </button>
+                        <button type="button" class="btn-action-light-green" onclick="printPayslipDocument()">
+                            <ion-icon name="print-outline"></ion-icon>
+                            <span>Cetak Dokumen</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Section 3: Pratinjau Dokumen Keterangan Slip Gaji -->
+                <div class="card" style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px;">
+                    <div style="font-size: 14px; font-weight: 800; color: #111827; margin-bottom: 12px;">3. Pratinjau Dokumen Keterangan Slip Gaji</div>
+
+                    <div class="slip-doc-box" id="slipLiveDocBox">
+                        <!-- Header Banner -->
+                        <div class="slip-doc-header">
+                            <div>
+                                <h3 class="slip-doc-title">STUDIO FOTOGRAFI — HRIS</h3>
+                                <p class="slip-doc-subtitle">DOKUMEN KETERANGAN SLIP GAJI KARYAWAN RESMI</p>
+                                <p class="slip-doc-subtitle" style="font-size: 10px; margin-top: 4px;" id="prevDocNumber">No. Dokumen: SLIP/2026/11/EMP-001</p>
+                            </div>
+                            <div class="slip-doc-period-badge">
+                                <div style="font-size: 9px; opacity: 0.85;">PERIODE GAJI:</div>
+                                <div id="prevDocPeriodText" style="font-size: 12px; font-weight: 800;">NOVEMBER 2026</div>
+                            </div>
+                        </div>
+
+                        <div class="slip-doc-body">
+                            <!-- Data Identitas -->
+                            <div style="margin-bottom: 16px; font-size: 12px; border-bottom: 1px solid #F3F4F6; padding-bottom: 12px;">
+                                <div style="font-weight: 800; color: #006847; text-transform: uppercase; margin-bottom: 8px; font-size: 11px;">DATA IDENTITAS &amp; KETERANGAN KARYAWAN</div>
+                                <div style="display: grid; grid-template-columns: 140px 1fr; row-gap: 4px;">
+                                    <span style="color: #6B7280;">Nama Lengkap</span>
+                                    <span style="font-weight: 700; color: #111827;" id="prevDocEmpName">: Administrator / Owner</span>
+                                    <span style="color: #6B7280;">ID Karyawan</span>
+                                    <span style="font-weight: 700; color: #111827;" id="prevDocEmpCode">: EMP-001</span>
+                                    <span style="color: #6B7280;">Jabatan</span>
+                                    <span style="color: #374151;" id="prevDocEmpPosition">: Owner Studio</span>
+                                    <span style="color: #6B7280;">Divisi Kerja</span>
+                                    <span style="color: #374151;" id="prevDocEmpDiv">: HR &amp; Admin</span>
+                                    <span style="color: #6B7280;">Tanggal Terbit</span>
+                                    <span style="color: #374151;" id="prevDocDate">: {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</span>
+                                    <span style="color: #6B7280;">Status Dokumen</span>
+                                    <span style="font-weight: 800; color: #059669;" id="prevDocStatusText">: PRATINJAU RESMI</span>
+                                </div>
+                            </div>
+
+                            <!-- Table I: Penerimaan -->
+                            <div style="font-size: 11px; font-weight: 800; color: #006847; text-transform: uppercase; margin-bottom: 6px;">I. RINCIAN PENERIMAAN / PENDAPATAN (A)</div>
+                            <table class="slip-table-section">
+                                <thead>
+                                    <tr>
+                                        <th>KETERANGAN</th>
+                                        <th style="text-align: right; width: 150px;">JUMLAH (IDR)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight: 700; color: #111827;">1. Gaji Pokok Bulanan</div>
+                                            <div style="font-size: 10px; color: #9CA3AF;">Upah pokok sesuai jabatan/kontrak kerja</div>
+                                        </td>
+                                        <td style="text-align: right; font-weight: 700;" id="prevDocBaseSalary">Rp 4.500.000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight: 700; color: #111827;">2. Tunjangan Jabatan &amp; Operasional</div>
+                                            <div style="font-size: 10px; color: #9CA3AF;">Tunjangan kehadiran, makan &amp; operasional studio</div>
+                                        </td>
+                                        <td style="text-align: right; font-weight: 700;" id="prevDocAllowance">Rp 500.000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight: 700; color: #111827;">3. Upah Lembur Disetujui</div>
+                                            <div style="font-size: 10px; color: #9CA3AF;">Akumulasi jam lembur yang telah disetujui HR/Admin</div>
+                                        </td>
+                                        <td style="text-align: right; font-weight: 700;" id="prevDocOtPay">Rp 0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight: 700; color: #111827;">4. Bonus &amp; Insentif Proyek Studio</div>
+                                            <div style="font-size: 10px; color: #9CA3AF;">Insentif sesi foto/video &amp; performa bulanan</div>
+                                        </td>
+                                        <td style="text-align: right; font-weight: 700;" id="prevDocBonus">Rp 0</td>
+                                    </tr>
+                                    <tr class="subtotal-row">
+                                        <td style="color: #006847;">TOTAL PENERIMAAN KOTOR (SUBTOTAL A)</td>
+                                        <td style="text-align: right; color: #006847;" id="prevDocSubtotalA">Rp 5.000.000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Table II: Potongan -->
+                            <div style="font-size: 11px; font-weight: 800; color: #DC2626; text-transform: uppercase; margin-bottom: 6px; margin-top: 14px;">II. RINCIAN POTONGAN GAJI (B)</div>
+                            <table class="slip-table-section">
+                                <thead>
+                                    <tr>
+                                        <th>KETERANGAN</th>
+                                        <th style="text-align: right; width: 150px;">JUMLAH (IDR)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight: 700; color: #111827;">1. Potongan Keterlambatan</div>
+                                            <div style="font-size: 10px; color: #9CA3AF;">Potongan keterlambatan melewati batas toleransi shift</div>
+                                        </td>
+                                        <td style="text-align: right; font-weight: 700; color: #DC2626;" id="prevDocLateDeduct">- Rp 0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight: 700; color: #111827;">2. Potongan Ketidakhadiran / Alpha</div>
+                                            <div style="font-size: 10px; color: #9CA3AF;">Potongan hari kerja tanpa keterangan sah</div>
+                                        </td>
+                                        <td style="text-align: right; font-weight: 700; color: #DC2626;" id="prevDocUnexcusedDeduct">- Rp 0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight: 700; color: #111827;">3. Potongan Lain-lain / Kasbon</div>
+                                            <div style="font-size: 10px; color: #9CA3AF;">Potongan administrasi atau pinjaman karyawan</div>
+                                        </td>
+                                        <td style="text-align: right; font-weight: 700; color: #DC2626;" id="prevDocOtherDeduct">- Rp 0</td>
+                                    </tr>
+                                    <tr class="subtotal-row">
+                                        <td style="color: #DC2626;">TOTAL POTONGAN (SUBTOTAL B)</td>
+                                        <td style="text-align: right; color: #DC2626;" id="prevDocSubtotalB">- Rp 0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Grand Total Banner -->
+                            <div class="slip-grand-total-banner">
+                                <div>
+                                    <div style="font-size: 11px; text-transform: uppercase; opacity: 0.9;">GAJI BERSIH DITERIMA (TAKE HOME PAY)</div>
+                                    <div style="font-size: 10px; opacity: 0.75;">Total Penerimaan (A) dikurangi Total Potongan (B)</div>
+                                </div>
+                                <div style="font-size: 20px; font-weight: 800;" id="prevDocNetTotal">Rp 5.000.000</div>
+                            </div>
+
+                            <!-- Notes & Signatures -->
+                            <div style="font-size: 11px; color: #6B7280; margin-top: 10px; font-style: italic;" id="prevDocNotesText">
+                                Keterangan / Catatan HR: Pembayaran gaji periode November 2026 telah diverifikasi berdasarkan rekap kehadiran &amp; lembur karyawan.
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; text-align: center; font-size: 11px;">
+                                <div>
+                                    <div style="color: #6B7280;">Penerima / Karyawan,</div>
+                                    <div style="height: 50px;"></div>
+                                    <div style="font-weight: 700; color: #111827; border-top: 1px solid #E5E7EB; padding-top: 4px;" id="prevDocSignEmp">( Administrator / Owner )</div>
+                                </div>
+                                <div>
+                                    <div style="color: #6B7280;">Disahkan Oleh HRD Studio,</div>
+                                    <div style="height: 50px;"></div>
+                                    <div style="font-weight: 700; color: #111827; border-top: 1px solid #E5E7EB; padding-top: 4px;">( Manajemen Studio Fotografi )</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- ============================================== -->
-            <!-- ADMIN TAB 5: REKAP PDF                         -->
+            <!-- ADMIN TAB 5: REKAP PDF (Screenshots 11 & 12)   -->
             <!-- ============================================== -->
             <div id="tab-adm-rekap" class="tab-pane" style="display: none;">
-                <div class="card">
-                    <div class="card-title" style="margin-bottom: 12px;"><ion-icon name="print-outline" style="color: #059669; font-size: 20px;"></ion-icon> Rekapitulasi Kehadiran & Cetak PDF</div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Pilih Bulan Periode</label>
-                        <input type="month" class="form-control" id="rekapMonthInput" value="">
+                <!-- Filter Periode Rekap Absensi -->
+                <div class="card" style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                        <div style="font-size: 14px; font-weight: 800; color: #111827;">Filter Periode Rekap Absensi</div>
+                        <div style="display: flex; gap: 6px;">
+                            <button type="button" class="btn-month-nav" style="width: auto; padding: 4px 10px; font-size: 11px; font-weight: 700;" onclick="setRekapDateRange('this_month')">Bulan Ini</button>
+                            <button type="button" class="btn-month-nav" style="width: auto; padding: 4px 10px; font-size: 11px; font-weight: 700;" onclick="setRekapDateRange('last_month')">Bulan Lalu</button>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Filter Divisi</label>
-                        <select class="form-control" id="rekapDivSelect">
-                            <option value="all">Semua Divisi</option>
-                            <option value="Fotografer">Fotografer (PHOTO)</option>
-                            <option value="Videografer">Videografer (VIDEO)</option>
-                            <option value="Editor">Editor (EDIT)</option>
-                            <option value="Produksi">Produksi (PROD)</option>
-                            <option value="Marketing">Marketing (Bebas Radius)</option>
-                            <option value="HR">HR & Admin</option>
-                        </select>
+                    <!-- Date Range Inputs (2-col grid) -->
+                    <div class="form-grid-2" style="margin-bottom: 14px;">
+                        <div class="form-group">
+                            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px;">Tanggal Awal Periode</label>
+                            <input type="date" class="form-control" id="rekapStartDateInput" style="border-radius: 12px; padding: 11px 14px;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 4px;">Tanggal Akhir Periode</label>
+                            <input type="date" class="form-control" id="rekapEndDateInput" style="border-radius: 12px; padding: 11px 14px;">
+                        </div>
                     </div>
 
-                    <button onclick="openPrintRecap()" class="btn-clock-in" style="padding: 14px; margin-top: 10px;">
-                        <ion-icon name="print-outline"></ion-icon> Cetak Lembar Dokumen Rekap PDF
+                    <!-- Filter Divisi Pills -->
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label class="form-label" style="font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 6px;">Filter Divisi</label>
+                        <div class="pill-group" id="rekapDivPills">
+                            <button type="button" class="pill-btn active" onclick="setRekapDivisionFilter('all', this)">Semua Divisi</button>
+                            <button type="button" class="pill-btn" onclick="setRekapDivisionFilter('Editor', this)">Editor</button>
+                            <button type="button" class="pill-btn" onclick="setRekapDivisionFilter('Fotografer', this)">Fotografer</button>
+                            <button type="button" class="pill-btn" onclick="setRekapDivisionFilter('HR & Admin', this)">HR &amp; Admin</button>
+                            <button type="button" class="pill-btn" onclick="setRekapDivisionFilter('Marketing', this)">Marketing</button>
+                            <button type="button" class="pill-btn" onclick="setRekapDivisionFilter('Produksi', this)">Produksi</button>
+                            <button type="button" class="pill-btn" onclick="setRekapDivisionFilter('Videografer', this)">Videografer</button>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px;">
+                        <button type="button" class="btn-action-light-green" onclick="fetchAndRenderRecap()">
+                            <ion-icon name="sync-outline"></ion-icon>
+                            <span>Hitung Rekap</span>
+                        </button>
+                        <button type="button" class="btn-action-navy" onclick="downloadRecapPdf()">
+                            <ion-icon name="download-outline"></ion-icon>
+                            <span>Download PDF (.pdf)</span>
+                        </button>
+                    </div>
+
+                    <button type="button" class="btn-action-light-green" style="width: 100%; justify-content: center;" onclick="printRecapDocument()">
+                        <ion-icon name="print-outline"></ion-icon>
+                        <span>Cetak Lembar Dokumen Rekap</span>
                     </button>
+                </div>
+
+                <!-- Ringkasan Kehadiran Card -->
+                <div class="card" style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px;">
+                    <div style="font-size: 14px; font-weight: 800; color: #111827; margin-bottom: 14px;">Ringkasan Kehadiran (<span id="rekapEmpCount">1</span> Karyawan)</div>
+
+                    <div id="rekapEmployeesList">
+                        <!-- Rendered by JS -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -1794,58 +2398,152 @@
 </div>
 
 <!-- ============================================== -->
-<!-- MODAL TAMBAH/EDIT KARYAWAN                     -->
+<!-- MODAL TAMBAH/EDIT KARYAWAN (Screenshots 3 - 8) -->
 <!-- ============================================== -->
 <div class="modal-overlay" id="modalAdminEmployee">
-    <div class="modal-sheet">
-        <div class="modal-header">
-            <div class="modal-title" id="modalEmpFormTitle">Tambah Karyawan Baru</div>
-            <button class="modal-close-btn" onclick="closeModal('modalAdminEmployee')"><ion-icon name="close"></ion-icon></button>
+    <div class="modal-sheet" style="max-height: 90vh; overflow-y: auto; padding: 0;">
+        <div class="modal-header" style="background: #006847; color: #FFFFFF; padding: 18px 20px; border-radius: 20px 20px 0 0;">
+            <div class="modal-title" id="modalEmpFormTitle" style="color: #FFFFFF; font-size: 16px; font-weight: 800;">Tambah Karyawan Studio Baru</div>
+            <button class="modal-close-btn" onclick="closeModal('modalAdminEmployee')" style="color: #FFFFFF; background: rgba(255,255,255,0.2);"><ion-icon name="close"></ion-icon></button>
         </div>
-        <form onsubmit="saveAdminEmployee(event)">
-            <input type="hidden" id="adminEmpId">
-            <div class="form-group">
-                <label class="form-label">Nama Lengkap</label>
-                <input type="text" class="form-control" id="admEmpName" required>
+
+        <div style="padding: 20px;">
+            <!-- Segmented Capsule Tabs in Modal (Image 3) -->
+            <div class="segmented-capsule" style="margin-bottom: 20px;">
+                <button type="button" class="segmented-tab-btn active" id="modalTabNewAccount" onclick="switchModalAccountMode('new')">Buat Akun Login Baru</button>
+                <button type="button" class="segmented-tab-btn" id="modalTabExistingUid" onclick="switchModalAccountMode('existing')">Pakai UID Existing</button>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div class="form-group">
-                    <label class="form-label">Divisi</label>
-                    <select class="form-control" id="admEmpDivision" required>
-                        <option value="Fotografer">Fotografer (PHOTO)</option>
-                        <option value="Videografer">Videografer (VIDEO)</option>
-                        <option value="Editor">Editor (EDIT)</option>
-                        <option value="Produksi">Produksi (PROD)</option>
-                        <option value="Marketing">Marketing (Bebas Radius)</option>
-                        <option value="HR">HR & Admin</option>
-                    </select>
+
+            <form onsubmit="handleSaveEmployeeSubmit(event)">
+                <input type="hidden" id="adminEmpId">
+                <input type="hidden" id="adminEmpGender" value="Laki-laki">
+                <input type="hidden" id="adminEmpDivision" value="Fotografer">
+                <input type="hidden" id="adminEmpShift" value="Shift Pagi (08:00 - 17:00 WIB)">
+                <input type="hidden" id="adminEmpRole" value="EMPLOYEE">
+
+                <!-- Existing UID Input (Only in Tab 2) -->
+                <div class="form-group" id="formGroupExistingUid" style="display: none; margin-bottom: 14px;">
+                    <label class="form-label">User UID dari Supabase Auth</label>
+                    <input type="text" class="form-control" id="admEmpUid" placeholder="Salin UUID dari menu Authentication -> Users">
                 </div>
-                <div class="form-group">
+
+                <!-- ID Karyawan -->
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">ID Karyawan</label>
+                    <input type="text" class="form-control" id="admEmpCode" value="EMP-002" required>
+                </div>
+
+                <!-- Nama Lengkap Sesuai Identitas -->
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Nama Lengkap Sesuai Identitas</label>
+                    <input type="text" class="form-control" id="admEmpName" placeholder="Contoh: Raka Fotografer" required>
+                </div>
+
+                <!-- Email Login Karyawan -->
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Email Login Karyawan</label>
+                    <input type="email" class="form-control" id="admEmpEmail" placeholder="raka@studiofoto.com" required>
+                </div>
+
+                <!-- Password Awal Login (Minimal 6 Karakter) -->
+                <div class="form-group" id="formGroupPassword" style="margin-bottom: 14px;">
+                    <label class="form-label">Password Awal Login (Minimal 6 Karakter)</label>
+                    <input type="text" class="form-control" id="admEmpPassword" value="Studio123!">
+                </div>
+
+                <!-- NIK Kependudukan (16 Digit Angka, Opsional) -->
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">NIK Kependudukan (16 Digit Angka, Opsional)</label>
+                    <input type="text" class="form-control" id="admEmpNik" placeholder="Contoh: 3171012345670001">
+                </div>
+
+                <!-- Nomor HP / WhatsApp Aktif (Hanya Angka) -->
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Nomor HP / WhatsApp Aktif (Hanya Angka)</label>
+                    <input type="tel" class="form-control" id="admEmpPhone" placeholder="Contoh: 081234567890">
+                </div>
+
+                <!-- Jenis Kelamin -->
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Jenis Kelamin</label>
+                    <div class="pill-group" id="pillGroupGender">
+                        <button type="button" class="pill-btn active" onclick="setModalPill('gender', 'Laki-laki', this)">Laki-laki</button>
+                        <button type="button" class="pill-btn" onclick="setModalPill('gender', 'Perempuan', this)">Perempuan</button>
+                    </div>
+                </div>
+
+                <!-- Tanggal Lahir (Pilih dari Kalender, Opsional) -->
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Tanggal Lahir (Pilih dari Kalender, Opsional)</label>
+                    <input type="date" class="form-control" id="admEmpBirthDate">
+                </div>
+
+                <!-- Alamat Tempat Tinggal -->
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Alamat Tempat Tinggal</label>
+                    <input type="text" class="form-control" id="admEmpAddress" placeholder="Alamat domisili karyawan...">
+                </div>
+
+                <!-- Jabatan / Posisi -->
+                <div class="form-group" style="margin-bottom: 14px;">
                     <label class="form-label">Jabatan / Posisi</label>
-                    <input type="text" class="form-control" id="admEmpPosition" placeholder="Contoh: Senior Photographer" required>
+                    <input type="text" class="form-control" id="admEmpPosition" value="Fotografer" required>
                 </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div class="form-group">
-                    <label class="form-label">Role Akses</label>
-                    <select class="form-control" id="admEmpRole" required>
-                        <option value="karyawan">Karyawan</option>
-                        <option value="supervisor">Supervisor</option>
-                        <option value="admin">Admin</option>
-                        <option value="owner">Owner</option>
-                    </select>
+
+                <!-- Pilih Divisi (Marketing = Bebas Radius Lokasi) -->
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Pilih Divisi (Marketing = Bebas Radius Lokasi)</label>
+                    <div class="pill-group" id="pillGroupDivision">
+                        <button type="button" class="pill-btn" onclick="setModalPill('division', 'Editor', this)">Editor</button>
+                        <button type="button" class="pill-btn active" onclick="setModalPill('division', 'Fotografer', this)">Fotografer</button>
+                        <button type="button" class="pill-btn" onclick="setModalPill('division', 'HR & Admin', this)">HR &amp; Admin</button>
+                        <button type="button" class="pill-btn" onclick="setModalPill('division', 'Marketing', this)">Marketing (Bebas Jarak)</button>
+                        <button type="button" class="pill-btn" onclick="setModalPill('division', 'Produksi', this)">Produksi</button>
+                        <button type="button" class="pill-btn" onclick="setModalPill('division', 'Videografer', this)">Videografer</button>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Gaji Pokok (Rp)</label>
-                    <input type="number" class="form-control" id="admEmpBaseSalary" value="4500000" required>
+
+                <!-- Jadwal Shift Kerja -->
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Jadwal Shift Kerja</label>
+                    <div class="pill-group" id="pillGroupShift">
+                        <button type="button" class="pill-btn active" onclick="setModalPill('shift', 'Shift Pagi (08:00 - 17:00 WIB)', this)">Shift Pagi (08:00 - 17:00 WIB)</button>
+                        <button type="button" class="pill-btn" onclick="setModalPill('shift', 'Shift Siang (12:00 - 21:00 WIB)', this)">Shift Siang (12:00 - 21:00 WIB)</button>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Nomor WhatsApp / HP</label>
-                <input type="tel" class="form-control" id="admEmpPhone" placeholder="08xxxxxxxxxx">
-            </div>
-            <button type="submit" class="btn-clock-in" style="padding: 12px;">Simpan Karyawan</button>
-        </form>
+
+                <!-- Role Hak Akses Aplikasi -->
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Role Hak Akses Aplikasi</label>
+                    <div class="pill-group" id="pillGroupRole">
+                        <button type="button" class="pill-btn active" onclick="setModalPill('role', 'EMPLOYEE', this)">EMPLOYEE</button>
+                        <button type="button" class="pill-btn" onclick="setModalPill('role', 'SUPERVISOR', this)">SUPERVISOR</button>
+                        <button type="button" class="pill-btn" onclick="setModalPill('role', 'ADMIN', this)">ADMIN</button>
+                        <button type="button" class="pill-btn" onclick="setModalPill('role', 'OWNER', this)">OWNER</button>
+                    </div>
+                </div>
+
+                <!-- Kuota Cuti Tahunan (Hari - Hanya Angka) -->
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Kuota Cuti Tahunan (Hari - Hanya Angka)</label>
+                    <input type="number" class="form-control" id="admEmpLeaveQuota" value="12" required>
+                </div>
+
+                <!-- Status Karyawan Aktif Toggle -->
+                <div class="switch-toggle-wrap">
+                    <span class="switch-label">Status Karyawan Aktif</span>
+                    <label class="switch-control">
+                        <input type="checkbox" id="admEmpStatusToggle" checked>
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-action-primary" id="btnSubmitEmployeeModal" style="margin-top: 16px;">
+                    Buat Akun &amp; Simpan ke Database
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -2216,6 +2914,12 @@
             loadAdminEmployeesList();
         } else if (tab === 'payroll') {
             loadAdminPayrollForEmployee();
+        } else if (tab === 'rekap') {
+            if (!document.getElementById('rekapStartDateInput').value) {
+                setRekapDateRange('this_month');
+            } else {
+                fetchAndRenderRecap();
+            }
         }
     }
 
@@ -2835,50 +3539,153 @@
         if (document.getElementById('studioLateTolInput')) document.getElementById('studioLateTolInput').value = s.late_tolerance_minutes || 15;
     }
 
+    // ==========================================
+    // 13. MODAL TAMBAH/EDIT KARYAWAN (Images 3-8)
+    // ==========================================
+    function switchModalAccountMode(mode) {
+        document.getElementById('modalTabNewAccount').classList.toggle('active', mode === 'new');
+        document.getElementById('modalTabExistingUid').classList.toggle('active', mode === 'existing');
+        document.getElementById('formGroupExistingUid').style.display = mode === 'existing' ? 'block' : 'none';
+        document.getElementById('formGroupPassword').style.display = mode === 'new' ? 'block' : 'none';
+    }
+
+    function setModalPill(type, val, btn) {
+        if (type === 'gender') {
+            document.getElementById('adminEmpGender').value = val;
+            document.querySelectorAll('#pillGroupGender .pill-btn').forEach(b => b.classList.remove('active'));
+        } else if (type === 'division') {
+            document.getElementById('adminEmpDivision').value = val;
+            document.querySelectorAll('#pillGroupDivision .pill-btn').forEach(b => b.classList.remove('active'));
+        } else if (type === 'shift') {
+            document.getElementById('adminEmpShift').value = val;
+            document.querySelectorAll('#pillGroupShift .pill-btn').forEach(b => b.classList.remove('active'));
+        } else if (type === 'role') {
+            document.getElementById('adminEmpRole').value = val;
+            document.querySelectorAll('#pillGroupRole .pill-btn').forEach(b => b.classList.remove('active'));
+        }
+        if (btn) btn.classList.add('active');
+    }
+
     function openEmployeeModal() {
-        document.getElementById('modalEmpFormTitle').innerText = 'Tambah Karyawan Baru';
+        document.getElementById('modalEmpFormTitle').innerText = 'Tambah Karyawan Studio Baru';
         document.getElementById('adminEmpId').value = '';
+        
+        // Auto generate next sequence EMP-00X
+        const nextNum = (state.employees ? state.employees.length : 0) + 1;
+        document.getElementById('admEmpCode').value = 'EMP-' + String(nextNum).padStart(3, '0');
+        
         document.getElementById('admEmpName').value = '';
-        document.getElementById('admEmpPosition').value = '';
-        document.getElementById('admEmpBaseSalary').value = 4500000;
+        document.getElementById('admEmpEmail').value = '';
+        document.getElementById('admEmpPassword').value = 'Studio123!';
+        document.getElementById('admEmpNik').value = '';
         document.getElementById('admEmpPhone').value = '';
+        document.getElementById('admEmpBirthDate').value = '';
+        document.getElementById('admEmpAddress').value = '';
+        document.getElementById('admEmpPosition').value = 'Fotografer';
+        document.getElementById('admEmpLeaveQuota').value = '12';
+        document.getElementById('admEmpStatusToggle').checked = true;
+
+        // Reset pills
+        setModalPill('gender', 'Laki-laki', document.querySelector('#pillGroupGender .pill-btn:first-child'));
+        setModalPill('division', 'Fotografer', document.querySelectorAll('#pillGroupDivision .pill-btn')[1]);
+        setModalPill('shift', 'Shift Pagi (08:00 - 17:00 WIB)', document.querySelector('#pillGroupShift .pill-btn:first-child'));
+        setModalPill('role', 'EMPLOYEE', document.querySelector('#pillGroupRole .pill-btn:first-child'));
+
+        switchModalAccountMode('new');
+        document.getElementById('btnSubmitEmployeeModal').innerText = 'Buat Akun & Simpan ke Database';
         document.getElementById('modalAdminEmployee').classList.add('active');
     }
 
     function editAdminEmployee(emp) {
         document.getElementById('modalEmpFormTitle').innerText = 'Edit Data Karyawan';
         document.getElementById('adminEmpId').value = emp.id;
-        document.getElementById('admEmpName').value = emp.name;
-        document.getElementById('admEmpDivision').value = emp.division;
-        document.getElementById('admEmpPosition').value = emp.position;
-        document.getElementById('admEmpRole').value = emp.role;
-        document.getElementById('admEmpBaseSalary').value = emp.base_salary;
+        document.getElementById('admEmpCode').value = emp.employee_code || '';
+        document.getElementById('admEmpName').value = emp.name || '';
+        document.getElementById('admEmpEmail').value = emp.email || '';
+        document.getElementById('admEmpPassword').value = '';
+        document.getElementById('admEmpNik').value = emp.nik || '';
         document.getElementById('admEmpPhone').value = emp.phone || '';
+        document.getElementById('admEmpBirthDate').value = emp.birth_date || '';
+        document.getElementById('admEmpAddress').value = emp.address || '';
+        document.getElementById('admEmpPosition').value = emp.position || 'Staff';
+        document.getElementById('admEmpLeaveQuota').value = emp.leave_balance || '12';
+        document.getElementById('admEmpStatusToggle').checked = (emp.status || 'active') === 'active';
+
+        // Match pills
+        const gender = emp.gender || 'Laki-laki';
+        document.querySelectorAll('#pillGroupGender .pill-btn').forEach(b => {
+            if (b.innerText.trim() === gender) setModalPill('gender', gender, b);
+        });
+
+        const div = emp.division || 'Fotografer';
+        document.querySelectorAll('#pillGroupDivision .pill-btn').forEach(b => {
+            if (b.innerText.trim().startsWith(div)) setModalPill('division', div, b);
+        });
+
+        const shift = emp.shift || 'Shift Pagi (08:00 - 17:00 WIB)';
+        document.querySelectorAll('#pillGroupShift .pill-btn').forEach(b => {
+            if (b.innerText.trim() === shift) setModalPill('shift', shift, b);
+        });
+
+        const role = (emp.role || 'karyawan').toUpperCase();
+        document.querySelectorAll('#pillGroupRole .pill-btn').forEach(b => {
+            if (b.innerText.trim() === role) setModalPill('role', role, b);
+        });
+
+        document.getElementById('btnSubmitEmployeeModal').innerText = 'Perbarui Data Karyawan';
         document.getElementById('modalAdminEmployee').classList.add('active');
     }
 
-    async function saveAdminEmployee(e) {
+    async function handleSaveEmployeeSubmit(e) {
         e.preventDefault();
+        const btn = document.getElementById('btnSubmitEmployeeModal');
+        const orig = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<ion-icon name="sync-outline" class="spin"></ion-icon> Menyimpan ke Database...';
+
         const payload = {
             id: document.getElementById('adminEmpId').value || null,
+            employee_code: document.getElementById('admEmpCode').value,
             name: document.getElementById('admEmpName').value,
-            division: document.getElementById('admEmpDivision').value,
+            email: document.getElementById('admEmpEmail').value,
+            password: document.getElementById('admEmpPassword').value,
+            nik: document.getElementById('admEmpNik').value,
+            phone: document.getElementById('admEmpPhone').value,
+            gender: document.getElementById('adminEmpGender').value,
+            birth_date: document.getElementById('admEmpBirthDate').value,
+            address: document.getElementById('admEmpAddress').value,
             position: document.getElementById('admEmpPosition').value,
-            role: document.getElementById('admEmpRole').value,
-            base_salary: document.getElementById('admEmpBaseSalary').value,
-            phone: document.getElementById('admEmpPhone').value
+            division: document.getElementById('adminEmpDivision').value,
+            shift: document.getElementById('adminEmpShift').value,
+            role: document.getElementById('adminEmpRole').value,
+            leave_balance: document.getElementById('admEmpLeaveQuota').value,
+            status: document.getElementById('admEmpStatusToggle').checked ? 'active' : 'inactive'
         };
 
-        const res = await fetch('/api/hris/admin/employees', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-            body: JSON.stringify(payload)
-        });
-        const json = await res.json();
-        if (json.success) {
-            alert('✅ Data karyawan berhasil disimpan ke database!');
-            closeModal('modalAdminEmployee');
-            loadInitialData();
+        try {
+            const res = await fetch('/api/hris/admin/employees', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                },
+                body: JSON.stringify(payload)
+            });
+            const json = await res.json();
+            if (json.success) {
+                alert(`✅ ${json.message}`);
+                closeModal('modalAdminEmployee');
+                await loadInitialData();
+            } else {
+                alert(`❌ ${json.message || 'Gagal menyimpan data'}`);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Terjadi kesalahan koneksi.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = orig;
         }
     }
 
@@ -2887,19 +3694,49 @@
         const res = await fetch(`/api/hris/admin/employees/${id}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
         const json = await res.json();
         if (json.success) {
-            loadInitialData();
+            await loadInitialData();
         }
     }
 
+    // ==========================================
+    // 14. GPS GEOFENCE (Screenshot 2)
+    // ==========================================
     function setStudioCoordsCurrentGps() {
-        if (state.currentLat && state.currentLng) {
-            document.getElementById('studioLatInput').value = state.currentLat;
-            document.getElementById('studioLngInput').value = state.currentLng;
-            alert(`Koordinat GPS terisi: Lat: ${state.currentLat}, Lng: ${state.currentLng}`);
-        } else {
-            alert('Mendeteksi GPS...');
-            detectGpsLocation();
+        if (!navigator.geolocation) {
+            alert('Browser Anda tidak mendukung geolokasi GPS.');
+            return;
         }
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                state.currentLat = lat;
+                state.currentLng = lng;
+                document.getElementById('studioLatInput').value = lat.toFixed(6);
+                document.getElementById('studioLngInput').value = lng.toFixed(6);
+
+                const alertBox = document.getElementById('gpsSuccessAlert');
+                const alertText = document.getElementById('gpsSuccessAlertText');
+                if (alertBox && alertText) {
+                    alertText.innerText = `Titik GPS terdeteksi (${lat.toFixed(6)}, ${lng.toFixed(6)}). Tekan tombol "Simpan Pengaturan Studio" di bawah untuk menyimpan ke database.`;
+                    alertBox.style.display = 'flex';
+                }
+            },
+            (err) => {
+                console.warn(err);
+                const lat = state.settings.studio_lat || -7.672585;
+                const lng = state.settings.studio_lng || 109.649065;
+                document.getElementById('studioLatInput').value = lat;
+                document.getElementById('studioLngInput').value = lng;
+                const alertBox = document.getElementById('gpsSuccessAlert');
+                const alertText = document.getElementById('gpsSuccessAlertText');
+                if (alertBox && alertText) {
+                    alertText.innerText = `Titik GPS terdeteksi (${lat}, ${lng}). Tekan tombol "Simpan Pengaturan Studio" di bawah untuk menyimpan ke database.`;
+                    alertBox.style.display = 'flex';
+                }
+            },
+            { enableHighAccuracy: true, timeout: 8000 }
+        );
     }
 
     async function saveStudioSettings(e) {
@@ -2910,9 +3747,7 @@
             studio_lat: document.getElementById('studioLatInput').value,
             studio_lng: document.getElementById('studioLngInput').value,
             radius_meters: document.getElementById('studioRadiusInput').value,
-            late_tolerance_minutes: document.getElementById('studioLateTolInput').value,
-            work_start_time: document.getElementById('studioStartTimeInput').value,
-            work_end_time: document.getElementById('studioEndTimeInput').value
+            late_tolerance_minutes: 15
         };
 
         const res = await fetch('/api/hris/admin/settings', {
@@ -2922,78 +3757,361 @@
         });
         const json = await res.json();
         if (json.success) {
-            alert('✅ Pengaturan studio berhasil disimpan ke database!');
-            loadInitialData();
+            alert('✅ Pengaturan studio & geofence berhasil disimpan ke database!');
+            await loadInitialData();
         }
     }
 
-    // 14. Admin Payroll
+    // ==========================================
+    // 15. ADMIN PAYROLL & SLIP GAJI (Screenshots 9 & 10)
+    // ==========================================
+    let currentAdminPayrollDate = new Date();
+
+    function formatPayrollMonthString(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        return `${year}-${month}`;
+    }
+
+    function formatPayrollMonthDisplay(date) {
+        return date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    }
+
+    function changeAdminPayrollMonth(delta) {
+        currentAdminPayrollDate.setMonth(currentAdminPayrollDate.getMonth() + delta);
+        const monthStr = formatPayrollMonthString(currentAdminPayrollDate);
+        document.getElementById('admPayrollMonth').value = monthStr;
+        document.getElementById('admPayrollMonthLabel').innerText = formatPayrollMonthDisplay(currentAdminPayrollDate);
+        loadAdminPayrollForEmployee();
+    }
+
+    function selectPayrollEmployee(empId) {
+        state.selectedPayrollEmpId = empId;
+        document.querySelectorAll('#admPayrollEmpPills .payroll-emp-pill').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-empid') == empId);
+        });
+        loadAdminPayrollForEmployee();
+    }
+
+    async function loadAdminPayrollForEmployee() {
+        const employees = state.employees || [];
+        if (employees.length === 0) return;
+
+        // Render pills if empty
+        const pillsContainer = document.getElementById('admPayrollEmpPills');
+        if (pillsContainer && (!pillsContainer.children.length || pillsContainer.children.length !== employees.length)) {
+            pillsContainer.innerHTML = employees.map((e, idx) => `
+                <button type="button" class="payroll-emp-pill ${(state.selectedPayrollEmpId ? state.selectedPayrollEmpId == e.id : idx === 0) ? 'active' : ''}" 
+                    data-empid="${e.id}" onclick="selectPayrollEmployee(${e.id})">
+                    ${e.name}
+                </button>
+            `).join('');
+        }
+
+        if (!state.selectedPayrollEmpId) {
+            state.selectedPayrollEmpId = employees[0].id;
+        }
+
+        const activeEmp = employees.find(e => e.id == state.selectedPayrollEmpId) || employees[0];
+        const monthStr = document.getElementById('admPayrollMonth').value || formatPayrollMonthString(currentAdminPayrollDate);
+
+        // Fetch existing payrolls
+        try {
+            const res = await fetch('/api/hris/payrolls');
+            const json = await res.json();
+            const payrolls = json.payrolls || [];
+            const existing = payrolls.find(p => p.employee_id == activeEmp.id && p.period_month == monthStr);
+
+            const badge = document.getElementById('payStatusBadge');
+            if (existing && existing.status === 'paid') {
+                badge.className = 'badge-status-published';
+                badge.innerText = 'SUDAH DITERBITKAN';
+                state.activePayrollId = existing.id;
+            } else {
+                badge.className = 'badge-status-draft';
+                badge.innerText = 'DRAFT BELUM TERBIT';
+                state.activePayrollId = existing ? existing.id : null;
+            }
+
+            // Fill inputs
+            document.getElementById('payBaseInput').value = existing ? existing.base_salary : (activeEmp.base_salary || 4500000);
+            document.getElementById('payAllowanceInput').value = existing ? existing.allowance : (activeEmp.allowance || 500000);
+            document.getElementById('payOtInput').value = existing ? existing.overtime_pay : 0;
+            document.getElementById('payBonusInput').value = existing ? existing.bonus : 0;
+            document.getElementById('payLateDeductInput').value = existing ? existing.late_deductions : 0;
+            document.getElementById('payUnexcusedInput').value = existing ? (existing.unexcused_deductions || 0) : 0;
+            document.getElementById('payOtherDeductInput').value = existing ? (existing.other_deductions || existing.deductions || 0) : 0;
+            document.getElementById('payNotesInput').value = existing ? (existing.notes || '') : '';
+
+            // Update Metrics Bar
+            document.getElementById('payMetPresent').innerText = `${existing ? existing.total_present : 0} hr`;
+            document.getElementById('payMetLate').innerText = `${existing ? existing.total_late : 0}x`;
+            const otHours = existing ? existing.total_overtime_hours : 0;
+            document.getElementById('payMetOt').innerText = `${otHours} menit`;
+
+            calculatePayrollTotal();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     function calculatePayrollTotal() {
         const base = parseFloat(document.getElementById('payBaseInput').value || 0);
         const allowance = parseFloat(document.getElementById('payAllowanceInput').value || 0);
         const ot = parseFloat(document.getElementById('payOtInput').value || 0);
         const bonus = parseFloat(document.getElementById('payBonusInput').value || 0);
         const late = parseFloat(document.getElementById('payLateDeductInput').value || 0);
+        const unexcused = parseFloat(document.getElementById('payUnexcusedInput').value || 0);
         const other = parseFloat(document.getElementById('payOtherDeductInput').value || 0);
 
-        const total = Math.max(0, base + allowance + ot + bonus - late - other);
-        document.getElementById('payCalculatedNetText').innerText = 'Rp ' + total.toLocaleString('id-ID');
+        const subtotalA = base + allowance + ot + bonus;
+        const subtotalB = late + unexcused + other;
+        const grandTotal = Math.max(0, subtotalA - subtotalB);
+
+        document.getElementById('payCalculatedNetText').innerText = 'Rp ' + grandTotal.toLocaleString('id-ID');
+
+        updatePayslipPreview(base, allowance, ot, bonus, late, unexcused, other, subtotalA, subtotalB, grandTotal);
     }
 
-    function loadAdminPayrollForEmployee() {
-        const empId = document.getElementById('admPayrollEmpSelect').value;
-        const emp = state.employees.find(e => e.id == empId);
-        if (emp) {
-            document.getElementById('payBaseInput').value = emp.base_salary || 4500000;
-            document.getElementById('payAllowanceInput').value = emp.allowance || 500000;
-            calculatePayrollTotal();
+    function updatePayslipPreview(base, allowance, ot, bonus, late, unexcused, other, subtotalA, subtotalB, grandTotal) {
+        if (base === undefined) {
+            base = parseFloat(document.getElementById('payBaseInput').value || 0);
+            allowance = parseFloat(document.getElementById('payAllowanceInput').value || 0);
+            ot = parseFloat(document.getElementById('payOtInput').value || 0);
+            bonus = parseFloat(document.getElementById('payBonusInput').value || 0);
+            late = parseFloat(document.getElementById('payLateDeductInput').value || 0);
+            unexcused = parseFloat(document.getElementById('payUnexcusedInput').value || 0);
+            other = parseFloat(document.getElementById('payOtherDeductInput').value || 0);
+            subtotalA = base + allowance + ot + bonus;
+            subtotalB = late + unexcused + other;
+            grandTotal = Math.max(0, subtotalA - subtotalB);
         }
+
+        const employees = state.employees || [];
+        const emp = employees.find(e => e.id == state.selectedPayrollEmpId) || employees[0] || {};
+        const monthLabel = formatPayrollMonthDisplay(currentAdminPayrollDate);
+        const monthParts = (document.getElementById('admPayrollMonth').value || '2026-11').split('-');
+
+        // Document Header
+        document.getElementById('prevDocNumber').innerText = `No. Dokumen: SLIP/${monthParts[0]}/${monthParts[1]}/${emp.employee_code || 'EMP-001'}`;
+        document.getElementById('prevDocPeriodText').innerText = monthLabel.toUpperCase();
+
+        // Identitas
+        document.getElementById('prevDocEmpName').innerText = `: ${emp.name || 'Administrator / Owner'}`;
+        document.getElementById('prevDocEmpCode').innerText = `: ${emp.employee_code || 'EMP-001'}`;
+        document.getElementById('prevDocEmpPosition').innerText = `: ${emp.position || 'Owner Studio'}`;
+        document.getElementById('prevDocEmpDiv').innerText = `: ${emp.division || 'HR & Admin'}`;
+        document.getElementById('prevDocSignEmp').innerText = `( ${emp.name || 'Administrator / Owner'} )`;
+
+        // Table I: Penerimaan
+        document.getElementById('prevDocBaseSalary').innerText = 'Rp ' + base.toLocaleString('id-ID');
+        document.getElementById('prevDocAllowance').innerText = 'Rp ' + allowance.toLocaleString('id-ID');
+        document.getElementById('prevDocOtPay').innerText = 'Rp ' + ot.toLocaleString('id-ID');
+        document.getElementById('prevDocBonus').innerText = 'Rp ' + bonus.toLocaleString('id-ID');
+        document.getElementById('prevDocSubtotalA').innerText = 'Rp ' + subtotalA.toLocaleString('id-ID');
+
+        // Table II: Potongan
+        document.getElementById('prevDocLateDeduct').innerText = '- Rp ' + late.toLocaleString('id-ID');
+        document.getElementById('prevDocUnexcusedDeduct').innerText = '- Rp ' + unexcused.toLocaleString('id-ID');
+        document.getElementById('prevDocOtherDeduct').innerText = '- Rp ' + other.toLocaleString('id-ID');
+        document.getElementById('prevDocSubtotalB').innerText = '- Rp ' + subtotalB.toLocaleString('id-ID');
+
+        // Grand Total Banner
+        document.getElementById('prevDocNetTotal').innerText = 'Rp ' + grandTotal.toLocaleString('id-ID');
+
+        // Notes
+        const notes = document.getElementById('payNotesInput').value.trim();
+        document.getElementById('prevDocNotesText').innerText = notes 
+            ? `Keterangan / Catatan HR: ${notes}`
+            : `Keterangan / Catatan HR: Pembayaran gaji periode ${monthLabel} telah diverifikasi berdasarkan rekap kehadiran & lembur karyawan.`;
     }
 
-    async function saveAdminPayroll(e) {
+    async function handleSavePayrollSubmit(e) {
         e.preventDefault();
+        const btn = document.getElementById('btnPublishSlip');
+        const orig = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<ion-icon name="sync-outline" class="spin"></ion-icon> Menerbitkan Slip Gaji...';
+
         const payload = {
-            employee_id: document.getElementById('admPayrollEmpSelect').value,
+            employee_id: state.selectedPayrollEmpId,
             period_month: document.getElementById('admPayrollMonth').value,
             base_salary: document.getElementById('payBaseInput').value,
             allowance: document.getElementById('payAllowanceInput').value,
             overtime_pay: document.getElementById('payOtInput').value,
             bonus: document.getElementById('payBonusInput').value,
             late_deductions: document.getElementById('payLateDeductInput').value,
-            deductions: document.getElementById('payOtherDeductInput').value
+            unexcused_deductions: document.getElementById('payUnexcusedInput').value,
+            other_deductions: document.getElementById('payOtherDeductInput').value,
+            notes: document.getElementById('payNotesInput').value
         };
 
-        const res = await fetch('/api/hris/admin/payroll/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-            body: JSON.stringify(payload)
-        });
-        const json = await res.json();
-        if (json.success) {
-            alert(`✅ ${json.message}`);
+        try {
+            const res = await fetch('/api/hris/admin/payroll/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: JSON.stringify(payload)
+            });
+            const json = await res.json();
+            if (json.success) {
+                alert(`✅ ${json.message}`);
+                state.activePayrollId = json.payroll ? json.payroll.id : null;
+                const badge = document.getElementById('payStatusBadge');
+                badge.className = 'badge-status-published';
+                badge.innerText = 'SUDAH DITERBITKAN';
+            } else {
+                alert(`❌ ${json.message}`);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Gagal menyimpan slip gaji.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = orig;
         }
     }
 
-    async function generateAllPayrollsMonthly() {
-        const month = document.getElementById('admPayrollMonth').value;
-        if (!confirm(`Hitung dan terbitkan slip gaji otomatis untuk seluruh karyawan periode ${month}?`)) return;
-
-        const res = await fetch('/api/hris/admin/payrolls/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-            body: JSON.stringify({ month: month })
-        });
-        const json = await res.json();
-        if (json.success) {
-            alert(`✅ ${json.message}`);
+    function downloadPayslipPdf() {
+        if (state.activePayrollId) {
+            window.open(`/hris/payslip/${state.activePayrollId}/print`, '_blank');
+        } else {
+            alert('Silakan simpan & terbitkan slip gaji terlebih dahulu sebelum mengunduh PDF.');
         }
     }
 
-    // 15. Admin Rekap PDF
-    function openPrintRecap() {
-        const month = document.getElementById('rekapMonthInput').value;
-        const div = document.getElementById('rekapDivSelect').value;
-        window.open(`/hris/recap/print?month=${month}&division=${div}`, '_blank');
+    function printPayslipDocument() {
+        const docBox = document.getElementById('slipLiveDocBox');
+        if (!docBox) return;
+        const printWin = window.open('', '_blank');
+        printWin.document.write(`
+            <html>
+                <head>
+                    <title>Slip Gaji - HRIS Studio</title>
+                    <style>
+                        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; color: #111827; }
+                        .slip-doc-header { background: #006847; color: #FFFFFF; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px 8px 0 0; }
+                        .slip-doc-title { font-size: 18px; font-weight: 800; margin: 0; }
+                        .slip-doc-subtitle { font-size: 11px; margin: 2px 0 0; }
+                        .slip-doc-body { padding: 20px; border: 1px solid #E5E7EB; border-top: none; }
+                        .slip-table-section { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12px; }
+                        .slip-table-section th { text-align: left; padding: 8px 12px; background: #F3F4F6; }
+                        .slip-table-section td { padding: 8px 12px; border-bottom: 1px solid #F3F4F6; }
+                        .subtotal-row td { background: #F9FAFB; font-weight: 800; }
+                        .slip-grand-total-banner { background: #006847; color: #FFFFFF; padding: 14px 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin: 16px 0; }
+                    </style>
+                </head>
+                <body>
+                    ${docBox.outerHTML}
+                    <script>window.onload = function() { window.print(); }<\/script>
+                </body>
+            </html>
+        `);
+        printWin.document.close();
+    }
+
+    // ==========================================
+    // 16. ADMIN REKAP PDF & ATTENDANCE (Screenshots 11 & 12)
+    // ==========================================
+    let activeRekapDivision = 'all';
+
+    function setRekapDateRange(type) {
+        const today = new Date();
+        let start, end;
+        if (type === 'this_month') {
+            start = new Date(today.getFullYear(), today.getMonth(), 1);
+            end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        } else if (type === 'last_month') {
+            start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            end = new Date(today.getFullYear(), today.getMonth(), 0);
+        }
+        document.getElementById('rekapStartDateInput').value = start.toISOString().split('T')[0];
+        document.getElementById('rekapEndDateInput').value = end.toISOString().split('T')[0];
+        fetchAndRenderRecap();
+    }
+
+    function setRekapDivisionFilter(div, btn) {
+        activeRekapDivision = div;
+        document.querySelectorAll('#rekapDivPills .pill-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        fetchAndRenderRecap();
+    }
+
+    async function fetchAndRenderRecap() {
+        const start = document.getElementById('rekapStartDateInput').value || '2026-11-01';
+        const end = document.getElementById('rekapEndDateInput').value || '2026-11-30';
+        const list = document.getElementById('rekapEmployeesList');
+        if (!list) return;
+
+        list.innerHTML = '<div style="text-align: center; color: #6B7280; padding: 24px; font-size: 13px;"><ion-icon name="sync-outline" class="spin"></ion-icon> Memuat rekapitulasi data kehadiran...</div>';
+
+        try {
+            const res = await fetch(`/api/hris/admin/recap/data?start_date=${start}&end_date=${end}&division=${activeRekapDivision}`);
+            const json = await res.json();
+            const recap = json.recap || [];
+
+            document.getElementById('rekapEmpCount').innerText = recap.length;
+
+            if (recap.length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: #6B7280; padding: 24px; font-size: 13px;">Tidak ada data karyawan pada filter ini.</div>';
+                return;
+            }
+
+            list.innerHTML = recap.map(item => {
+                const emp = item.employee || {};
+                return `
+                    <div class="rekap-card">
+                        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #F3F4F6; padding-bottom: 10px;">
+                            <div style="font-weight: 800; font-size: 14px; color: #111827;">
+                                ${emp.name} <span style="font-weight: 500; color: #6B7280; font-size: 12px;">(${emp.employee_code || 'EMP-001'})</span>
+                            </div>
+                            <span class="badge" style="background: #ECFDF5; color: #006847; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 12px; border: 1px solid #A7F3D0;">
+                                ${emp.division || 'Studio'}
+                            </span>
+                        </div>
+
+                        <div class="rekap-chips-grid">
+                            <div class="metric-chip">
+                                <div class="metric-chip-label">Hadir</div>
+                                <div class="metric-chip-value">${item.hadir_days || 0} hr</div>
+                            </div>
+                            <div class="metric-chip">
+                                <div class="metric-chip-label">Terlambat</div>
+                                <div class="metric-chip-value">${item.terlambat_count || 0}x</div>
+                            </div>
+                            <div class="metric-chip">
+                                <div class="metric-chip-label">Cuti</div>
+                                <div class="metric-chip-value">${item.cuti_days || 0} hr</div>
+                            </div>
+                            <div class="metric-chip">
+                                <div class="metric-chip-label">Izin/Sakit</div>
+                                <div class="metric-chip-value">${item.izin_days || 0} hr</div>
+                            </div>
+                            <div class="metric-chip">
+                                <div class="metric-chip-label">Jam Kerja</div>
+                                <div class="metric-chip-value">${item.work_minutes || 0} menit</div>
+                            </div>
+                            <div class="metric-chip">
+                                <div class="metric-chip-label">Lembur</div>
+                                <div class="metric-chip-value">${item.overtime_minutes || 0} menit</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (e) {
+            console.error(e);
+            list.innerHTML = '<div style="text-align: center; color: #DC2626; padding: 20px;">Gagal memuat rekap.</div>';
+        }
+    }
+
+    function downloadRecapPdf() {
+        const start = document.getElementById('rekapStartDateInput').value || '2026-11-01';
+        const end = document.getElementById('rekapEndDateInput').value || '2026-11-30';
+        window.open(`/hris/recap/print?start_date=${start}&end_date=${end}&division=${activeRekapDivision}`, '_blank');
+    }
+
+    function printRecapDocument() {
+        downloadRecapPdf();
     }
 
     function closeModal(id) {
