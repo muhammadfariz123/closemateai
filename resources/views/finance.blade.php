@@ -659,7 +659,11 @@
                             <h3>Ulasan Klien Terbaru untuk Kru</h3>
                             <p>Ulasan masuk dari form review publik</p>
                         </div>
-                        <a href="/api/reviews/export/csv" class="btn btn-outline" style="font-size: 12px;"><i class="fa-solid fa-download"></i> Unduh CSV Review</a>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="openClientReviewModal()" style="font-size: 12px; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-plus"></i> Catat Ulasan Klien</button>
+                            <button class="btn btn-outline" onclick="copyClientReviewLink()" style="font-size: 12px; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-link"></i> Link Form Review Publik</button>
+                            <a href="/api/reviews/export/csv" class="btn btn-outline" style="font-size: 12px; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-download"></i> Unduh CSV Review</a>
+                        </div>
                     </div>
                     <table class="data-table">
                         <thead>
@@ -1174,6 +1178,75 @@
                 <button type="button" class="btn btn-primary" onclick="printCrewSlip()" style="font-size: 13px; padding: 8px 20px; display: inline-flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-print"></i> Cetak PDF / Print
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CATAT ULASAN KEPUASAN KLIEN -->
+    <div class="modal-overlay" id="clientReviewModal" style="display: none; align-items: center; justify-content: center; z-index: 1070;">
+        <div class="modal-content" style="max-width: 540px; width: 95%; max-height: 90vh; overflow-y: auto; background: white; border-radius: 16px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                <div>
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 4px; color: #0f172a;">Catat Ulasan &amp; Penilaian Klien</h2>
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Rating kepuasan pelayanan kru lapangan (skor bintang 1 - 5 ala Grab)</p>
+                </div>
+                <button onclick="closeClientReviewModal()" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Nama Klien</label>
+                        <input type="text" id="cr_client_name" class="form-control" placeholder="Contoh: Sarah &amp; Dimas">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">No WhatsApp Klien</label>
+                        <input type="text" id="cr_client_phone" class="form-control" placeholder="08xxxxxxxx">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Kru Lapangan yang Bertugas</label>
+                    <input type="text" id="cr_field_crew_names" class="form-control" placeholder="Contoh: Dika (FG) &amp; Arya (VG)">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Rating Kepuasan Klien</label>
+                    <select id="cr_rating_overall" class="form-control" style="font-weight: 600;">
+                        <option value="5">⭐⭐⭐⭐⭐ 5.0 - Sangat Puas / Istimewa</option>
+                        <option value="4">⭐⭐⭐⭐ 4.0 - Puas / Bagus</option>
+                        <option value="3">⭐⭐⭐ 3.0 - Cukup Baik</option>
+                        <option value="2">⭐⭐ 2.0 - Kurang Memuaskan</option>
+                        <option value="1">⭐ 1.0 - Kecewa</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Tag Pujian (Pilih beberapa)</label>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px;">
+                        <label style="font-size: 12px; display: inline-flex; align-items: center; gap: 4px; background: #f1f5f9; padding: 4px 10px; border-radius: 20px; cursor: pointer;">
+                            <input type="checkbox" name="cr_tags" value="Ramah &amp; Sabar" checked> Ramah &amp; Sabar
+                        </label>
+                        <label style="font-size: 12px; display: inline-flex; align-items: center; gap: 4px; background: #f1f5f9; padding: 4px 10px; border-radius: 20px; cursor: pointer;">
+                            <input type="checkbox" name="cr_tags" value="Hasil Foto Keren" checked> Hasil Foto Keren
+                        </label>
+                        <label style="font-size: 12px; display: inline-flex; align-items: center; gap: 4px; background: #f1f5f9; padding: 4px 10px; border-radius: 20px; cursor: pointer;">
+                            <input type="checkbox" name="cr_tags" value="Arahan Gaya Bagus"> Arahan Gaya Bagus
+                        </label>
+                        <label style="font-size: 12px; display: inline-flex; align-items: center; gap: 4px; background: #f1f5f9; padding: 4px 10px; border-radius: 20px; cursor: pointer;">
+                            <input type="checkbox" name="cr_tags" value="Tepat Waktu"> Tepat Waktu
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label">Komentar / Ulasan Klien</label>
+                    <textarea id="cr_review_comment" class="form-control" rows="3" placeholder="Contoh: Pelayanan fotografer sangat ramah, sabar mengarahkan gaya, dan hasil fotonya sangat memuaskan!"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid #e2e8f0; padding-top: 14px;">
+                    <button type="button" class="btn btn-outline" onclick="closeClientReviewModal()">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="saveClientReview()"><i class="fa-regular fa-floppy-disk"></i> Simpan Ulasan</button>
+                </div>
             </div>
         </div>
     </div>
@@ -2294,6 +2367,65 @@
             if (json.success) {
                 showToast('Data evaluasi berhasil dihapus', 'success');
                 loadAnalyticsData();
+            }
+        }
+
+        function openClientReviewModal() {
+            document.getElementById('cr_client_name').value = '';
+            document.getElementById('cr_client_phone').value = '';
+            document.getElementById('cr_field_crew_names').value = '';
+            document.getElementById('cr_review_comment').value = '';
+            document.getElementById('clientReviewModal').style.display = 'flex';
+        }
+
+        function closeClientReviewModal() {
+            document.getElementById('clientReviewModal').style.display = 'none';
+        }
+
+        async function saveClientReview() {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const tags = Array.from(document.querySelectorAll('input[name="cr_tags"]:checked')).map(el => el.value);
+            const data = {
+                client_name: document.getElementById('cr_client_name').value || 'Klien Studio',
+                client_phone: document.getElementById('cr_client_phone').value || '-',
+                field_crew_names: document.getElementById('cr_field_crew_names').value || 'Tim Lapangan',
+                rating_overall: document.getElementById('cr_rating_overall').value,
+                rating_field_crew: document.getElementById('cr_rating_overall').value,
+                rating_punctuality: document.getElementById('cr_rating_overall').value,
+                rating_hospitality: document.getElementById('cr_rating_overall').value,
+                positive_tags: tags,
+                review_comment: document.getElementById('cr_review_comment').value || 'Pelayanan memuaskan'
+            };
+
+            const res = await fetch('/api/reviews', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify(data)
+            });
+
+            const json = await res.json();
+            if (json.success) {
+                showToast('Ulasan klien berhasil disimpan!', 'success');
+                closeClientReviewModal();
+                loadAnalyticsData();
+            } else {
+                alert('Gagal menyimpan ulasan klien');
+            }
+        }
+
+        function copyClientReviewLink() {
+            const url = window.location.origin + '/review/penapict';
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('Link Form Review Klien (Bintang 5) berhasil disalin!', 'success');
+                }).catch(() => {
+                    prompt('Salin link form review klien:', url);
+                });
+            } else {
+                prompt('Salin link form review klien:', url);
             }
         }
 

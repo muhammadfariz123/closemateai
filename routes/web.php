@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
 
     // Client Reviews & Office Evaluations APIs
     Route::get('/api/reviews', [\App\Http\Controllers\ClientReviewController::class, 'getReviews']);
+    Route::post('/api/reviews', [\App\Http\Controllers\ClientReviewController::class, 'storeManual']);
     Route::delete('/api/reviews/{id}', [\App\Http\Controllers\ClientReviewController::class, 'deleteReview']);
     Route::get('/api/reviews/export/csv', [\App\Http\Controllers\ClientReviewController::class, 'exportCsv']);
     Route::get('/api/office-evaluations', [\App\Http\Controllers\OfficeEvaluationController::class, 'getEvaluations']);
